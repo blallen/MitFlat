@@ -44,7 +44,36 @@ namespace photonzll {
     value_type* array_{0};
   };
 
-  class JetCollection : public ParticleCollection {
+  class ParticleMCollection : public ParticleCollection {
+  public:
+    typedef photonzll::ParticleM value_type;
+    typedef value_type& reference;
+    typedef value_type const& const_reference;
+    typedef flatutils::iterator<ParticleM> iterator;
+    typedef flatutils::const_iterator<ParticleM> const_iterator;
+
+    ParticleMCollection();
+    virtual ~ParticleMCollection();
+
+    reference at(UInt_t idx);
+    const_reference at(UInt_t idx) const;
+    reference operator[](UInt_t);
+    const_reference operator[](UInt_t) const;
+    iterator begin() { return iterator(static_cast<ParticleM*>(array_), objSize_); }
+    const_iterator begin() const { return const_iterator(static_cast<ParticleM*>(array_), objSize_); }
+    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<ParticleM*>(p), objSize_); }
+    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<ParticleM*>(p), objSize_); }
+
+    virtual void setAddress(TTree&, TString const& objName);
+    virtual void book(TTree&, TString const& objName);
+
+    Float_t mass[NMAX] = {};
+
+  protected:
+    ParticleMCollection(Bool_t);
+  };
+
+  class JetCollection : public ParticleMCollection {
   public:
     typedef photonzll::Jet value_type;
     typedef value_type& reference;

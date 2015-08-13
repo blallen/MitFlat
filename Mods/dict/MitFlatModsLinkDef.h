@@ -1,4 +1,5 @@
 #include "MitFlat/Mods/interface/MonoJetTree.h"
+#include "MitFlat/Mods/interface/PhotonZllTree.h"
 
 #ifdef __CINT__
 #pragma link off all globals;
@@ -9,4 +10,5 @@
 #pragma link C++ namespace mithep;
 
 #pragma link C++ class mithep::MonoJetTree+;
+#pragma link C++ class mithep::PhotonZllTree+;
 #endif

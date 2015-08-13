@@ -92,8 +92,87 @@ photonzll::ParticleCollection::book(TTree& _tree, TString const& _objName)
   _tree.Branch(_objName + ".phi", phi, "phi[" + _objName + ".size]/F");
 }
 
-photonzll::JetCollection::JetCollection() :
+photonzll::ParticleMCollection::ParticleMCollection() :
   ParticleCollection(kFALSE)
+{
+  objSize_ = sizeof(ParticleM);
+  array_ = std::allocator<ParticleM>().allocate(NMAX);
+  for (unsigned iP(0); iP != NMAX; ++iP)
+    new (static_cast<ParticleM*>(array_) + iP) ParticleM(*this, iP);
+}
+
+//protected
+photonzll::ParticleMCollection::ParticleMCollection(Bool_t) :
+  ParticleCollection(kFALSE)
+{
+}
+
+photonzll::ParticleMCollection::~ParticleMCollection()
+{
+  if (array_) {
+    std::allocator<ParticleM>().deallocate(static_cast<ParticleM*>(array_), NMAX);
+    array_ = 0;
+  }
+}
+
+photonzll::ParticleMCollection::reference
+photonzll::ParticleMCollection::at(UInt_t _idx)
+{
+  if (_idx < size) {
+    auto* p(array_);
+    flatutils::shiftAddr(p, _idx * objSize_);
+    return *static_cast<ParticleM*>(p);
+  }
+
+  throw std::out_of_range("ParticleMCollection::at");
+}
+
+photonzll::ParticleMCollection::const_reference
+photonzll::ParticleMCollection::at(UInt_t _idx) const
+{
+  if (_idx < size) {
+    auto* p(array_);
+    flatutils::shiftAddr(p, _idx * objSize_);
+    return *static_cast<ParticleM const*>(p);
+  }
+
+  throw std::out_of_range("ParticleMCollection::at");
+}
+
+photonzll::ParticleMCollection::reference
+photonzll::ParticleMCollection::operator[](UInt_t _idx)
+{
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<ParticleM*>(p);
+}
+
+photonzll::ParticleMCollection::const_reference
+photonzll::ParticleMCollection::operator[](UInt_t _idx) const
+{
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<ParticleM const*>(p);
+}
+
+void
+photonzll::ParticleMCollection::setAddress(TTree& _tree, TString const& _objName)
+{
+  ParticleCollection::setAddress(_tree, _objName);
+
+  _tree.SetBranchAddress(_objName + ".mass", mass);
+}
+
+void
+photonzll::ParticleMCollection::book(TTree& _tree, TString const& _objName)
+{
+  ParticleCollection::book(_tree, _objName);
+
+  _tree.Branch(_objName + ".mass", mass, "mass[" + _objName + ".size]/F");
+}
+
+photonzll::JetCollection::JetCollection() :
+  ParticleMCollection(kFALSE)
 {
   objSize_ = sizeof(Jet);
   array_ = std::allocator<Jet>().allocate(NMAX);
@@ -103,7 +182,7 @@ photonzll::JetCollection::JetCollection() :
 
 //protected
 photonzll::JetCollection::JetCollection(Bool_t) :
-  ParticleCollection(kFALSE)
+  ParticleMCollection(kFALSE)
 {
 }
 
@@ -158,14 +237,14 @@ photonzll::JetCollection::operator[](UInt_t _idx) const
 void
 photonzll::JetCollection::setAddress(TTree& _tree, TString const& _objName)
 {
-  ParticleCollection::setAddress(_tree, _objName);
+  ParticleMCollection::setAddress(_tree, _objName);
 
 }
 
 void
 photonzll::JetCollection::book(TTree& _tree, TString const& _objName)
 {
-  ParticleCollection::book(_tree, _objName);
+  ParticleMCollection::book(_tree, _objName);
 
 }
 

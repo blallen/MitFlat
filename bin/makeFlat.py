@@ -46,7 +46,7 @@ args = argParser.parse_args()
 
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=[0-9]+|[A-Z][a-zA-Z0-9]+))\\] *$')
 brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)/(.+) *$')
-fncPat = re.compile('^[a-zA-Z_][^ ]* +[a-zA-Z_][a-zA-Z0-9_]* *\\([^\\)]*\\) *\{ *return +[^;]+; *\} *$')
+fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\} *$')
 incPat = re.compile('#include [^ ]+ *$')
 treePat = re.compile('^\\{([^\\}]+)\\} *$')
 
