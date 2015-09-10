@@ -1,8 +1,8 @@
-#ifndef TreeEntries_photonzll_h
-#define TreeEntries_photonzll_h
-#include "MitFlat/DataFormats/interface/Collections_photonzll.h"
+#ifndef TreeEntries_mugamma_h
+#define TreeEntries_mugamma_h
+#include "MitFlat/DataFormats/interface/Collections_mugamma.h"
 
-namespace photonzll {
+namespace mugamma {
 
   class Event {
   public:
@@ -15,19 +15,22 @@ namespace photonzll {
     Float_t genZpt{};
     JetCollection jets{};
     PhotonCollection photons{};
+    ElectronCollection electrons{};
+    MuonCollection muons{};
+    UInt_t ntau{};
     Met rawMet{};
     Met t1Met{};
     Met t1NoCHSMet{};
     Met eta30Met{};
     Met eta30T1Met{};
     Met eta30T1NoCHSMet{};
+    Met nhScaledMet{};
     Met chMet{};
     Met nhMet{};
     Met neMet{};
     Met chGt30Met{};
     Met nhGt30Met{};
     Met neGt30Met{};
-    ZCand z{};
 
     void setAddress(TTree&);
     void book(TTree&);

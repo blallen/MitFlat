@@ -1,16 +1,16 @@
-#ifndef Collections_photonzll_h
-#define Collections_photonzll_h
-#include "MitFlat/DataFormats/interface/Objects_photonzll.h"
+#ifndef Collections_mugamma_h
+#define Collections_mugamma_h
+#include "MitFlat/DataFormats/interface/Objects_mugamma.h"
 #include "MitFlat/DataFormats/interface/Utils.h"
 
 class TTree;
 
-namespace photonzll {
+namespace mugamma {
 
   class ParticleCollection {
   public:
     static UInt_t const NMAX = 256;
-    typedef photonzll::Particle value_type;
+    typedef mugamma::Particle value_type;
     typedef value_type& reference;
     typedef value_type const& const_reference;
     typedef flatutils::iterator<Particle> iterator;
@@ -46,7 +46,7 @@ namespace photonzll {
 
   class ParticleMCollection : public ParticleCollection {
   public:
-    typedef photonzll::ParticleM value_type;
+    typedef mugamma::ParticleM value_type;
     typedef value_type& reference;
     typedef value_type const& const_reference;
     typedef flatutils::iterator<ParticleM> iterator;
@@ -75,7 +75,7 @@ namespace photonzll {
 
   class JetCollection : public ParticleMCollection {
   public:
-    typedef photonzll::Jet value_type;
+    typedef mugamma::Jet value_type;
     typedef value_type& reference;
     typedef value_type const& const_reference;
     typedef flatutils::iterator<Jet> iterator;
@@ -103,7 +103,7 @@ namespace photonzll {
 
   class PhotonCollection : public ParticleCollection {
   public:
-    typedef photonzll::Photon value_type;
+    typedef mugamma::Photon value_type;
     typedef value_type& reference;
     typedef value_type const& const_reference;
     typedef flatutils::iterator<Photon> iterator;
@@ -137,6 +137,64 @@ namespace photonzll {
 
   protected:
     PhotonCollection(Bool_t);
+  };
+
+  class ElectronCollection : public ParticleMCollection {
+  public:
+    typedef mugamma::Electron value_type;
+    typedef value_type& reference;
+    typedef value_type const& const_reference;
+    typedef flatutils::iterator<Electron> iterator;
+    typedef flatutils::const_iterator<Electron> const_iterator;
+
+    ElectronCollection();
+    virtual ~ElectronCollection();
+
+    reference at(UInt_t idx);
+    const_reference at(UInt_t idx) const;
+    reference operator[](UInt_t);
+    const_reference operator[](UInt_t) const;
+    iterator begin() { return iterator(static_cast<Electron*>(array_), objSize_); }
+    const_iterator begin() const { return const_iterator(static_cast<Electron*>(array_), objSize_); }
+    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Electron*>(p), objSize_); }
+    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Electron*>(p), objSize_); }
+
+    virtual void setAddress(TTree&, TString const& objName);
+    virtual void book(TTree&, TString const& objName);
+
+    Bool_t tight[NMAX] = {};
+
+  protected:
+    ElectronCollection(Bool_t);
+  };
+
+  class MuonCollection : public ParticleMCollection {
+  public:
+    typedef mugamma::Muon value_type;
+    typedef value_type& reference;
+    typedef value_type const& const_reference;
+    typedef flatutils::iterator<Muon> iterator;
+    typedef flatutils::const_iterator<Muon> const_iterator;
+
+    MuonCollection();
+    virtual ~MuonCollection();
+
+    reference at(UInt_t idx);
+    const_reference at(UInt_t idx) const;
+    reference operator[](UInt_t);
+    const_reference operator[](UInt_t) const;
+    iterator begin() { return iterator(static_cast<Muon*>(array_), objSize_); }
+    const_iterator begin() const { return const_iterator(static_cast<Muon*>(array_), objSize_); }
+    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Muon*>(p), objSize_); }
+    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Muon*>(p), objSize_); }
+
+    virtual void setAddress(TTree&, TString const& objName);
+    virtual void book(TTree&, TString const& objName);
+
+    Bool_t tight[NMAX] = {};
+
+  protected:
+    MuonCollection(Bool_t);
   };
 
 }

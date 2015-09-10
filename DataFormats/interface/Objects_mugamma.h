@@ -1,16 +1,18 @@
-#ifndef Objects_photonzll_h
-#define Objects_photonzll_h
+#ifndef Objects_mugamma_h
+#define Objects_mugamma_h
 #include "MitCommon/DataFormats/interface/Types.h"
 #include "TVector2.h"
 #include "Rtypes.h"
 class TTree;
 
-namespace photonzll {
+namespace mugamma {
 
   class ParticleCollection;
   class ParticleMCollection;
   class JetCollection;
   class PhotonCollection;
+  class ElectronCollection;
+  class MuonCollection;
 
   class Particle {
   public:
@@ -72,22 +74,20 @@ namespace photonzll {
     Bool_t& isTight;
   };
 
-  class ZCand {
+  class Electron : public ParticleM {
   public:
-    ZCand() {}
-    virtual ~ZCand() {}
-    virtual void setAddress(TTree&, TString const& objName);
-    virtual void book(TTree&, TString const& objName);
+    Electron(ElectronCollection&, UInt_t idx);
+    virtual ~Electron() {}
 
-    mithep::FourVectorM pMu(UInt_t iM) const { if (iM == 0) return mithep::FourVectorM(pt0, eta0, phi0, 0.106); else return mithep::FourVectorM(pt1, eta1, phi1, 0.106); }
-    mithep::FourVectorM pZ() const { return pMu(0) + pMu(1); }
+    Bool_t& tight;
+  };
 
-    Float_t pt0;
-    Float_t eta0;
-    Float_t phi0;
-    Float_t pt1;
-    Float_t eta1;
-    Float_t phi1;
+  class Muon : public ParticleM {
+  public:
+    Muon(MuonCollection&, UInt_t idx);
+    virtual ~Muon() {}
+
+    Bool_t& tight;
   };
 
 }

@@ -31,15 +31,11 @@ isLoose/O
 isMedium/O
 isTight/O
 
-[ZCand:SINGLE]
-pt0/F
-eta0/F
-phi0/F
-pt1/F
-eta1/F
-phi1/F
-mithep::FourVectorM pMu(UInt_t iM) const { if (iM == 0) return mithep::FourVectorM(pt0, eta0, phi0, 0.106); else return mithep::FourVectorM(pt1, eta1, phi1, 0.106); }
-mithep::FourVectorM pZ() const { return pMu(0) + pMu(1); }
+[Electron:ParticleM]
+tight/O
+
+[Muon:ParticleM]
+tight/O
 
 {Event}
 run/i
@@ -51,19 +47,22 @@ genHt/F
 genZpt/F
 jets/JetCollection
 photons/PhotonCollection
+electrons/ElectronCollection
+muons/MuonCollection
+ntau/i
 rawMet/Met
 t1Met/Met
 t1NoCHSMet/Met
 eta30Met/Met
 eta30T1Met/Met
 eta30T1NoCHSMet/Met
+nhScaledMet/Met
 chMet/Met
 nhMet/Met
 neMet/Met
 chGt30Met/Met
 nhGt30Met/Met
 neGt30Met/Met
-z/ZCand
 
 {Weight}
 run/i

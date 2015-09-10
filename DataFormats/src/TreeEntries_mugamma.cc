@@ -1,8 +1,8 @@
-#include "MitFlat/DataFormats/interface/TreeEntries_photonzll.h"
+#include "MitFlat/DataFormats/interface/TreeEntries_mugamma.h"
 #include "TTree.h"
 
 void
-photonzll::Event::setAddress(TTree& _tree)
+mugamma::Event::setAddress(TTree& _tree)
 {
   _tree.SetBranchAddress("run", &run);
   _tree.SetBranchAddress("lumi", &lumi);
@@ -11,26 +11,29 @@ photonzll::Event::setAddress(TTree& _tree)
   _tree.SetBranchAddress("rho", &rho);
   _tree.SetBranchAddress("genHt", &genHt);
   _tree.SetBranchAddress("genZpt", &genZpt);
+  _tree.SetBranchAddress("ntau", &ntau);
 
   jets.setAddress(_tree, "jets");
   photons.setAddress(_tree, "photons");
+  electrons.setAddress(_tree, "electrons");
+  muons.setAddress(_tree, "muons");
   rawMet.setAddress(_tree, "rawMet");
   t1Met.setAddress(_tree, "t1Met");
   t1NoCHSMet.setAddress(_tree, "t1NoCHSMet");
   eta30Met.setAddress(_tree, "eta30Met");
   eta30T1Met.setAddress(_tree, "eta30T1Met");
   eta30T1NoCHSMet.setAddress(_tree, "eta30T1NoCHSMet");
+  nhScaledMet.setAddress(_tree, "nhScaledMet");
   chMet.setAddress(_tree, "chMet");
   nhMet.setAddress(_tree, "nhMet");
   neMet.setAddress(_tree, "neMet");
   chGt30Met.setAddress(_tree, "chGt30Met");
   nhGt30Met.setAddress(_tree, "nhGt30Met");
   neGt30Met.setAddress(_tree, "neGt30Met");
-  z.setAddress(_tree, "z");
 }
 
 void
-photonzll::Event::book(TTree& _tree)
+mugamma::Event::book(TTree& _tree)
 {
   _tree.Branch("run", &run, "run/i");
   _tree.Branch("lumi", &lumi, "lumi/i");
@@ -39,26 +42,29 @@ photonzll::Event::book(TTree& _tree)
   _tree.Branch("rho", &rho, "rho/D");
   _tree.Branch("genHt", &genHt, "genHt/F");
   _tree.Branch("genZpt", &genZpt, "genZpt/F");
+  _tree.Branch("ntau", &ntau, "ntau/i");
 
   jets.book(_tree, "jets");
   photons.book(_tree, "photons");
+  electrons.book(_tree, "electrons");
+  muons.book(_tree, "muons");
   rawMet.book(_tree, "rawMet");
   t1Met.book(_tree, "t1Met");
   t1NoCHSMet.book(_tree, "t1NoCHSMet");
   eta30Met.book(_tree, "eta30Met");
   eta30T1Met.book(_tree, "eta30T1Met");
   eta30T1NoCHSMet.book(_tree, "eta30T1NoCHSMet");
+  nhScaledMet.book(_tree, "nhScaledMet");
   chMet.book(_tree, "chMet");
   nhMet.book(_tree, "nhMet");
   neMet.book(_tree, "neMet");
   chGt30Met.book(_tree, "chGt30Met");
   nhGt30Met.book(_tree, "nhGt30Met");
   neGt30Met.book(_tree, "neGt30Met");
-  z.book(_tree, "z");
 }
 
 void
-photonzll::Weight::setAddress(TTree& _tree)
+mugamma::Weight::setAddress(TTree& _tree)
 {
   _tree.SetBranchAddress("run", &run);
   _tree.SetBranchAddress("lumi", &lumi);
@@ -69,7 +75,7 @@ photonzll::Weight::setAddress(TTree& _tree)
 }
 
 void
-photonzll::Weight::book(TTree& _tree)
+mugamma::Weight::book(TTree& _tree)
 {
   _tree.Branch("run", &run, "run/i");
   _tree.Branch("lumi", &lumi, "lumi/i");
