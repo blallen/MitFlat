@@ -44,13 +44,15 @@ argParser.add_argument('config', metavar = 'CONFIG')
 
 args = argParser.parse_args()
 
-objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=[0-9]+|[A-Z][a-zA-Z0-9]+))\\] *$')
-brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)/(.+) *$')
-fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\} *$')
-incPat = re.compile('#include [^ ]+ *$')
-treePat = re.compile('^\\{([^\\}]+)\\} *$')
+objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=[0-9]+|[A-Z][a-zA-Z0-9]+))\\]$')
+brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)/(.+)$')
+fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\}$')
+incPat = re.compile('#include [^ ]+$')
+typedefPat = re.compile('typedef [^ ]+ [^ ]+$')
+treePat = re.compile('^\\{([^\\}]+)\\}$')
 
 includes = []
+typedefs = []
 objs = [] # keep object declarations in order of appearance in the input
 inheritance = {}
 trees = []
@@ -104,6 +106,9 @@ with open(args.config) as configFile:
         elif incPat.match(line):
             includes.append(line)
 
+        elif typedefPat.match(line):
+            typedefs.append(line)
+
         elif treePat.match(line):
             matches = treePat.match(line)
             treeName = matches.group(1)
@@ -148,6 +153,14 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
 
     header.write('namespace ' + namespace + ' {\n\n')
 
+    for typedef in typedefs:
+        if not typedef.endswith(';'):
+            typedef += ';'
+        header.write('  ' + typedef + '\n')
+
+    if len(typedefs) != 0:
+        header.write('\n')
+
     for obj in objs:
         if sizes[obj] != 0:
             header.write('  class ' + obj + 'Collection;\n')
@@ -172,6 +185,7 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
             header.write('    ' + obj + '(' + obj + 'Collection&, UInt_t idx);\n')
             header.write('    virtual ~' + obj + '() {}\n')
 
+        header.write('    ' + obj + '& operator=(' + obj + ' const&);\n')
         header.write('\n')
         
         for func in defs[obj][1]:
@@ -232,6 +246,7 @@ with open(FULLPATH + '/interface/Collections_' + namespace + '.h', 'w') as heade
         header.write('    const_iterator begin() const { return const_iterator(static_cast<' + obj + '*>(array_), objSize_); }\n')
         header.write('    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<' + obj + '*>(p), objSize_); }\n')
         header.write('    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<' + obj + '*>(p), objSize_); }\n')
+        header.write('    void push_back(const_reference);\n')
         if obj not in inheritance:
             header.write('    void clear() { resize(0); }\n')
             header.write('    void resize(UInt_t size);\n')
@@ -331,7 +346,19 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 else:
                     src.write(',\n')
     
-            src.write('{\n}\n\n')
+            src.write('{\n}\n')
+
+        src.write(namespace + '::' + obj + '&\n')
+        src.write(namespace + '::' + obj + '::operator=(' + obj + ' const& _rhs)\n')
+        src.write('{\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + '::operator=(_rhs);\n\n')
+        for brName, brType in defs[obj][0]:
+            src.write('  ' + brName + ' = _rhs.' + brName + ';\n')
+        src.write('\n')
+        src.write('  return *this;\n')
+        src.write('}\n\n')
+
 
 # Collection source
 with open(FULLPATH + '/src/Collections_' + namespace + '.cc', 'w') as src:
@@ -406,6 +433,14 @@ with open(FULLPATH + '/src/Collections_' + namespace + '.cc', 'w') as src:
         src.write('  auto* p(array_);\n')
         src.write('  flatutils::shiftAddr(p, _idx * objSize_);\n')
         src.write('  return *static_cast<' + obj + ' const*>(p);\n')
+        src.write('}\n\n')
+
+        src.write('void\n')
+        src.write(namespace + '::' + obj + 'Collection::push_back(const_reference val)\n')
+        src.write('{\n')
+        src.write('  UInt_t current(size);\n')
+        src.write('  resize(current + 1);\n')
+        src.write('  array_[current] = val;\n')
         src.write('}\n\n')
 
         if obj not in inheritance:

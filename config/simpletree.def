@@ -1,0 +1,80 @@
+#include "Math/GenVector/LorentzVector.h"
+#include "Math/GenVector/PtEtaPhiM4D.h"
+#include "TVector2.h"
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
+
+[Particle:MAX=256]
+pt/F
+eta/F
+phi/F
+virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+
+[ParticleM:Particle]
+mass/F
+LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+
+[Jet:ParticleM]
+
+[Met:SINGLE]
+met/F
+phi/F
+sumEt/F
+TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+
+[Photon:Particle]
+chIso/F
+nhIso/F
+phIso/F
+sieie/F
+hOverE/F
+pixelVeto/O
+csafeVeto/O
+isLoose/O
+isMedium/O
+isTight/O
+
+[Electron:ParticleM]
+int charge() const { return positive ? 1 : -1; }
+positive/O
+tight/O
+
+[Muon:ParticleM]
+int charge() const { return positive ? 1 : -1; }
+positive/O
+tight/O
+
+{Event}
+run/i
+lumi/i
+event/i
+weight/D
+rho/D
+npv/s
+genHt/F
+genZpt/F
+jets/JetCollection
+photons/PhotonCollection
+electrons/ElectronCollection
+muons/MuonCollection
+ntau/i
+rawMet/Met
+t1Met/Met
+t1NoCHSMet/Met
+eta30Met/Met
+eta30T1Met/Met
+eta30T1NoCHSMet/Met
+nhScaledMet/Met
+chMet/Met
+nhMet/Met
+neMet/Met
+chGt30Met/Met
+nhGt30Met/Met
+neGt30Met/Met
+
+{Weight}
+run/i
+lumi/i
+event/i
+weight/D
+rho/D

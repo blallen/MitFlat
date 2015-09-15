@@ -1,6 +1,7 @@
 #include "MitFlat/Mods/interface/MonoJetTree.h"
 #include "MitFlat/Mods/interface/MuGammaTree.h"
 #include "MitFlat/Mods/interface/MetTreeFiller.h"
+#include "MitFlat/Mods/interface/SimpleTreeMod.h"
 
 #ifdef __CINT__
 #pragma link off all globals;
@@ -13,4 +14,5 @@
 #pragma link C++ class mithep::MonoJetTree+;
 #pragma link C++ class mithep::MuGammaTree+;
 #pragma link C++ class mithep::MetTreeFiller+;
+#pragma link C++ class mithep::SimpleTreeMod+;
 #endif

@@ -175,7 +175,7 @@ jetCleaning = mithep.JetCleaningMod('JetCleaning',
     CleanTausName = tightTaus.GetOutputName()
 )
 
-ntuples = mithep.MuGammaTree(
+ntuples = mithep.SimpleTreeMod(
     EventTreeName = 'events',
     AllEventTreeName = 'allevents',
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
