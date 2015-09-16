@@ -14,27 +14,29 @@ namespace simpletree {
     UShort_t npv{};
     Float_t genHt{};
     Float_t genZpt{};
-    JetCollection jets{};
-    PhotonCollection photons{};
-    ElectronCollection electrons{};
-    MuonCollection muons{};
     UInt_t ntau{};
-    Met rawMet{};
-    Met t1Met{};
-    Met t1NoCHSMet{};
-    Met eta30Met{};
-    Met eta30T1Met{};
-    Met eta30T1NoCHSMet{};
-    Met nhScaledMet{};
-    Met chMet{};
-    Met nhMet{};
-    Met neMet{};
-    Met chGt30Met{};
-    Met nhGt30Met{};
-    Met neGt30Met{};
+    JetCollection jets = JetCollection("jets");
+    PhotonCollection photons = PhotonCollection("photons");
+    ElectronCollection electrons = ElectronCollection("electrons");
+    MuonCollection muons = MuonCollection("muons");
+    Met rawMet = Met("rawMet");
+    Met t1Met = Met("t1Met");
+    Met t1NoCHSMet = Met("t1NoCHSMet");
+    Met eta30Met = Met("eta30Met");
+    Met eta30T1Met = Met("eta30T1Met");
+    Met eta30T1NoCHSMet = Met("eta30T1NoCHSMet");
+    Met nhScaledMet = Met("nhScaledMet");
+    Met chMet = Met("chMet");
+    Met nhMet = Met("nhMet");
+    Met neMet = Met("neMet");
+    Met chGt30Met = Met("chGt30Met");
+    Met nhGt30Met = Met("nhGt30Met");
+    Met neGt30Met = Met("neGt30Met");
+    HLTCollection hlt = HLTCollection("hlt");
 
-    void setAddress(TTree&);
-    void book(TTree&);
+    void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
+    void setAddress(TTree&, BranchList const& = BranchList());
+    void book(TTree&, BranchList const& = BranchList());
   };
 
   class Weight {
@@ -45,8 +47,9 @@ namespace simpletree {
     Double_t weight{};
     Double_t rho{};
 
-    void setAddress(TTree&);
-    void book(TTree&);
+    void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
+    void setAddress(TTree&, BranchList const& = BranchList());
+    void book(TTree&, BranchList const& = BranchList());
   };
 
 }

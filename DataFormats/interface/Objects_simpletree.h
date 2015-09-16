@@ -3,20 +3,38 @@
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
+#include "TString.h"
 #include "Rtypes.h"
 class TTree;
 
 namespace simpletree {
 
   typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
+  typedef std::vector<void*> BranchList;
+
+  Bool_t branchIn(void* bPtr, BranchList const&);
+  void setStatusAndAddress(TTree&, TString const& bName, void* bPtr);
+
+  enum HLTPath {
+    kPhoton165HE10,
+    kPhoton175,
+    kEle23Loose,
+    kEle27Loose,
+    kMu24,
+    kMu27,
+    kMETNoMu90MHTNoMu90,
+    kMETNoMu120MHTNoMu120,
+    nHLTPaths
+  };
 
   class ParticleCollection;
   class ParticleMCollection;
   class JetCollection;
   class PhotonCollection;
+  class LeptonCollection;
   class ElectronCollection;
   class MuonCollection;
-
+  class HLTCollection;
   class Particle {
   public:
     Particle(ParticleCollection&, UInt_t idx);
@@ -51,10 +69,11 @@ namespace simpletree {
 
   class Met {
   public:
-    Met() {}
+    Met(TString const& name = "met") : name_(name) {}
     virtual ~Met() {}
-    virtual void setAddress(TTree&, TString const& objName);
-    virtual void book(TTree&, TString const& objName);
+    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
+    virtual void setAddress(TTree&, BranchList const& = BranchList());
+    virtual void book(TTree&, BranchList const& = BranchList());
     Met& operator=(Met const&);
 
     TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
@@ -62,6 +81,8 @@ namespace simpletree {
     Float_t met;
     Float_t phi;
     Float_t sumEt;
+  private:
+    TString const name_;
   };
 
   class Photon : public Particle {
@@ -75,35 +96,59 @@ namespace simpletree {
     Float_t& phIso;
     Float_t& sieie;
     Float_t& hOverE;
+    Int_t& matchedGen;
+    Bool_t& hadDecay;
     Bool_t& pixelVeto;
     Bool_t& csafeVeto;
-    Bool_t& isLoose;
-    Bool_t& isMedium;
-    Bool_t& isTight;
+    Bool_t& loose;
+    Bool_t& medium;
+    Bool_t& tight;
+    Bool_t& matchHLT165HE10;
+    Bool_t& matchHLT175;
   };
 
-  class Electron : public ParticleM {
+  class Lepton : public ParticleM {
+  public:
+    Lepton(LeptonCollection&, UInt_t idx);
+    virtual ~Lepton() {}
+    Lepton& operator=(Lepton const&);
+
+    int charge() const { return positive ? 1 : -1; }
+
+    Int_t& matchedGen;
+    Bool_t& tauDecay;
+    Bool_t& hadDecay;
+    Bool_t& positive;
+    Bool_t& tight;
+  };
+
+  class Electron : public Lepton {
   public:
     Electron(ElectronCollection&, UInt_t idx);
     virtual ~Electron() {}
     Electron& operator=(Electron const&);
 
-    int charge() const { return positive ? 1 : -1; }
-
-    Bool_t& positive;
-    Bool_t& tight;
+    Bool_t& matchHLT23Loose;
+    Bool_t& matchHLT27Loose;
   };
 
-  class Muon : public ParticleM {
+  class Muon : public Lepton {
   public:
     Muon(MuonCollection&, UInt_t idx);
     virtual ~Muon() {}
     Muon& operator=(Muon const&);
 
-    int charge() const { return positive ? 1 : -1; }
+    Bool_t& matchHLT24;
+    Bool_t& matchHLT27;
+  };
 
-    Bool_t& positive;
-    Bool_t& tight;
+  class HLT {
+  public:
+    HLT(HLTCollection&, UInt_t idx);
+    virtual ~HLT() {}
+    HLT& operator=(HLT const&);
+
+    Bool_t& pass;
   };
 
 }

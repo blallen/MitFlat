@@ -4,6 +4,22 @@
 
 #include "TTree.h"
 
+#include <algorithm>
+
+Bool_t
+simpletree::branchIn(void* _bPtr, BranchList const& _bList)
+{
+  return _bList.size() == 0 || std::find(_bList.begin(), _bList.end(), _bPtr) != _bList.end();
+}
+
+void
+simpletree::setStatusAndAddress(TTree& _tree, TString const& _bName, void* _bPtr)
+{
+  if (!_tree.GetBranchStatus(_bName))
+    _tree.SetBranchStatus(_bName, true);
+  _tree.SetBranchAddress(_bName, _bPtr);
+}
+
 simpletree::Particle::Particle(ParticleCollection& col, UInt_t idx) :
   pt(col.pt[idx]),
   eta(col.eta[idx]),
@@ -49,19 +65,36 @@ simpletree::Jet::operator=(Jet const& _rhs)
 }
 
 void
-simpletree::Met::setAddress(TTree& _tree, TString const& _objName)
+simpletree::Met::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
 {
-  _tree.SetBranchAddress(_objName + ".met", &met);
-  _tree.SetBranchAddress(_objName + ".phi", &phi);
-  _tree.SetBranchAddress(_objName + ".sumEt", &sumEt);
+  if (branchIn(&met, _branches))
+    _tree.SetBranchStatus(name_ + ".met", _status);
+  if (branchIn(&phi, _branches))
+    _tree.SetBranchStatus(name_ + ".phi", _status);
+  if (branchIn(&sumEt, _branches))
+    _tree.SetBranchStatus(name_ + ".sumEt", _status);
 }
 
 void
-simpletree::Met::book(TTree& _tree, TString const& _objName)
+simpletree::Met::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
 {
-  _tree.Branch(_objName + ".met", &met, "met/F");
-  _tree.Branch(_objName + ".phi", &phi, "phi/F");
-  _tree.Branch(_objName + ".sumEt", &sumEt, "sumEt/F");
+  if (branchIn(&met, _branches))
+    setStatusAndAddress(_tree, name_ + ".met", &met);
+  if (branchIn(&phi, _branches))
+    setStatusAndAddress(_tree, name_ + ".phi", &phi);
+  if (branchIn(&sumEt, _branches))
+    setStatusAndAddress(_tree, name_ + ".sumEt", &sumEt);
+}
+
+void
+simpletree::Met::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+{
+  if (branchIn(&met, _branches))
+    _tree.Branch(name_ + ".met", &met, "met/F");
+  if (branchIn(&phi, _branches))
+    _tree.Branch(name_ + ".phi", &phi, "phi/F");
+  if (branchIn(&sumEt, _branches))
+    _tree.Branch(name_ + ".sumEt", &sumEt, "sumEt/F");
 }
 
 simpletree::Met&
@@ -81,11 +114,15 @@ simpletree::Photon::Photon(PhotonCollection& col, UInt_t idx) :
   phIso(col.phIso[idx]),
   sieie(col.sieie[idx]),
   hOverE(col.hOverE[idx]),
+  matchedGen(col.matchedGen[idx]),
+  hadDecay(col.hadDecay[idx]),
   pixelVeto(col.pixelVeto[idx]),
   csafeVeto(col.csafeVeto[idx]),
-  isLoose(col.isLoose[idx]),
-  isMedium(col.isMedium[idx]),
-  isTight(col.isTight[idx])
+  loose(col.loose[idx]),
+  medium(col.medium[idx]),
+  tight(col.tight[idx]),
+  matchHLT165HE10(col.matchHLT165HE10[idx]),
+  matchHLT175(col.matchHLT175[idx])
 {
 }
 simpletree::Photon&
@@ -98,45 +135,84 @@ simpletree::Photon::operator=(Photon const& _rhs)
   phIso = _rhs.phIso;
   sieie = _rhs.sieie;
   hOverE = _rhs.hOverE;
+  matchedGen = _rhs.matchedGen;
+  hadDecay = _rhs.hadDecay;
   pixelVeto = _rhs.pixelVeto;
   csafeVeto = _rhs.csafeVeto;
-  isLoose = _rhs.isLoose;
-  isMedium = _rhs.isMedium;
-  isTight = _rhs.isTight;
+  loose = _rhs.loose;
+  medium = _rhs.medium;
+  tight = _rhs.tight;
+  matchHLT165HE10 = _rhs.matchHLT165HE10;
+  matchHLT175 = _rhs.matchHLT175;
+
+  return *this;
+}
+
+simpletree::Lepton::Lepton(LeptonCollection& col, UInt_t idx) :
+  ParticleM(col, idx),
+  matchedGen(col.matchedGen[idx]),
+  tauDecay(col.tauDecay[idx]),
+  hadDecay(col.hadDecay[idx]),
+  positive(col.positive[idx]),
+  tight(col.tight[idx])
+{
+}
+simpletree::Lepton&
+simpletree::Lepton::operator=(Lepton const& _rhs)
+{
+  ParticleM::operator=(_rhs);
+
+  matchedGen = _rhs.matchedGen;
+  tauDecay = _rhs.tauDecay;
+  hadDecay = _rhs.hadDecay;
+  positive = _rhs.positive;
+  tight = _rhs.tight;
 
   return *this;
 }
 
 simpletree::Electron::Electron(ElectronCollection& col, UInt_t idx) :
-  ParticleM(col, idx),
-  positive(col.positive[idx]),
-  tight(col.tight[idx])
+  Lepton(col, idx),
+  matchHLT23Loose(col.matchHLT23Loose[idx]),
+  matchHLT27Loose(col.matchHLT27Loose[idx])
 {
 }
 simpletree::Electron&
 simpletree::Electron::operator=(Electron const& _rhs)
 {
-  ParticleM::operator=(_rhs);
+  Lepton::operator=(_rhs);
 
-  positive = _rhs.positive;
-  tight = _rhs.tight;
+  matchHLT23Loose = _rhs.matchHLT23Loose;
+  matchHLT27Loose = _rhs.matchHLT27Loose;
 
   return *this;
 }
 
 simpletree::Muon::Muon(MuonCollection& col, UInt_t idx) :
-  ParticleM(col, idx),
-  positive(col.positive[idx]),
-  tight(col.tight[idx])
+  Lepton(col, idx),
+  matchHLT24(col.matchHLT24[idx]),
+  matchHLT27(col.matchHLT27[idx])
 {
 }
 simpletree::Muon&
 simpletree::Muon::operator=(Muon const& _rhs)
 {
-  ParticleM::operator=(_rhs);
+  Lepton::operator=(_rhs);
 
-  positive = _rhs.positive;
-  tight = _rhs.tight;
+  matchHLT24 = _rhs.matchHLT24;
+  matchHLT27 = _rhs.matchHLT27;
+
+  return *this;
+}
+
+simpletree::HLT::HLT(HLTCollection& col, UInt_t idx) :
+  pass(col.pass[idx])
+{
+}
+simpletree::HLT&
+simpletree::HLT::operator=(HLT const& _rhs)
+{
+  pass = _rhs.pass;
 
   return *this;
 }

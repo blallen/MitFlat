@@ -42,6 +42,8 @@ namespace mithep {
     void SetCHGt30MetName(char const* n) { fCHGt30MetName = n; }
     void SetNHGt30MetName(char const* n) { fNHGt30MetName = n; }
     void SetNEGt30MetName(char const* n) { fNEGt30MetName = n; }
+    void SetTriggerObjectsName(UInt_t p, char const* n) { fTriggerObjectsName[p] = n; }
+    void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
     void SetIsMC(Bool_t k) { fIsMC = k; }
 
     void SetCondition(BaseMod* m) { fCondition = m; }
@@ -49,6 +51,7 @@ namespace mithep {
   protected:
     void Process() override;
     void SlaveBegin() override;
+    void BeginRun() override;
 
     // output
     TString fEventTreeName{"events"};
@@ -85,10 +88,14 @@ namespace mithep {
     TString fCHGt30MetName{""};
     TString fNHGt30MetName{""};
     TString fNEGt30MetName{""};
+    TString fTriggerObjectsName[simpletree::nHLTPaths] = {};
+    TString fTriggerPathName[simpletree::nHLTPaths] = {};
 
     Bool_t fIsMC{kTRUE};
 
     BaseMod* fCondition{0};
+
+    int fHLTIds[simpletree::nHLTPaths] = {};
 
     ClassDef(SimpleTreeMod, 0)
   };

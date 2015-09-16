@@ -1,22 +1,28 @@
 #include "MitFlat/Mods/interface/SimpleTreeMod.h"
 #include "MitAna/DataTree/interface/EventHeader.h"
 #include "MitAna/DataTree/interface/MCEventInfo.h"
+#include "MitAna/DataTree/interface/ParticleCol.h"
 #include "MitAna/DataTree/interface/MetCol.h"
 #include "MitAna/DataTree/interface/JetCol.h"
-#include "MitAna/DataTree/interface/MuonCol.h"
 #include "MitAna/DataTree/interface/PhotonCol.h"
-#include "MitAna/DataTree/interface/ElectronCol.h"
 #include "MitAna/DataTree/interface/PFTauCol.h"
 #include "MitAna/DataTree/interface/DecayParticleCol.h"
 #include "MitAna/DataTree/interface/VertexCol.h"
 #include "MitAna/DataTree/interface/PFCandidateCol.h"
 #include "MitAna/DataTree/interface/VertexCol.h"
 #include "MitAna/DataTree/interface/PileupEnergyDensityCol.h"
+#include "MitAna/DataTree/interface/MCParticleCol.h"
+#include "MitAna/DataTree/interface/TriggerMask.h"
+#include "MitAna/DataTree/interface/TriggerTable.h"
+#include "MitAna/DataTree/interface/TriggerObjectCol.h"
 #include "MitAna/DataTree/interface/Names.h"
 #include "MitAna/DataCont/interface/Types.h"
+#include "MitCommon/MathTools/interface/MathUtils.h"
 
 #include "MitPhysics/Utils/interface/PhotonTools.h"
 #include "MitPhysics/Utils/interface/IsolationTools.h"
+
+#include "TVector3.h"
 
 #include <iostream>
 #include <cstring>
@@ -48,6 +54,11 @@ mithep::SimpleTreeMod::Process()
     return;
 
   auto* vertices = GetObject<mithep::VertexCol>(fVerticesName);
+  auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
+  mithep::MCParticleCol* mcParticles(0);
+  std::vector<MCParticle*> finalState;
+
+  mithep::TriggerObjectCol* triggerObjects[simpletree::nHLTPaths] = {};
 
   fEvent.run = eventHeader->RunNum();
   fEvent.lumi = eventHeader->LumiSec();
@@ -56,7 +67,23 @@ mithep::SimpleTreeMod::Process()
   fEvent.rho = energyDensity->At(0)->Rho(fRhoAlgo);
   fEvent.npv = vertices->GetEntries();
 
+  for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
+    if (fHLTIds[iH] != -1) {
+      fEvent.hlt[iH].pass = triggerMask->At(fHLTIds[iH]);
+      if (fEvent.hlt[iH].pass)
+        triggerObjects[iH] = GetObject<mithep::TriggerObjectCol>(fTriggerObjectsName[iH]);
+    }
+    else
+      fEvent.hlt[iH].pass = false;
+  }
+
   if (fIsMC) {
+    mcParticles = GetObject<mithep::MCParticleCol>("MCParticles");
+    for (unsigned iP(0); iP != mcParticles->GetEntries(); ++iP) {
+      if (mcParticles->At(iP)->Status() == 1)
+        finalState.push_back(mcParticles->At(iP));
+    }
+
     fEvent.weight = mcEvent->Weight();
     fEvent.genHt = 0.;
     fEvent.genZpt = -1.;
@@ -149,9 +176,67 @@ mithep::SimpleTreeMod::Process()
       outPhoton.hOverE = inPhoton.HadOverEm();
       outPhoton.pixelVeto = !inPhoton.HasPixelSeed();
       outPhoton.csafeVeto = !PhotonTools::PassElectronVetoConvRecovery(&inPhoton, electrons, conversions, vertices->At(0));
-      outPhoton.isLoose = looseMask->At(iP);
-      outPhoton.isMedium = mediumMask->At(iP);
-      outPhoton.isTight = tightMask->At(iP);
+      outPhoton.loose = looseMask->At(iP);
+      outPhoton.medium = mediumMask->At(iP);
+      outPhoton.tight = tightMask->At(iP);
+
+      auto&& caloPos(inPhoton.CaloPos());
+
+      bool* hltMatch[] = {
+        &outPhoton.matchHLT165HE10,
+        &outPhoton.matchHLT175
+      };
+      mithep::TriggerObjectCol* objCol[] = {
+        triggerObjects[simpletree::kPhoton165HE10],
+        triggerObjects[simpletree::kPhoton175]
+      };
+
+      for (unsigned iT(0); iT != 2; ++iT) {
+        if (!objCol[iT]) {
+          *hltMatch[iT] = false;
+          continue;
+        }
+
+        unsigned iO(0);
+        for (; iO != objCol[iT]->GetEntries(); ++iO) {
+          auto& trigObj(*objCol[iT]->At(iO));
+          double dEta(caloPos.Eta() - trigObj.Eta());
+          double dPhi(TVector2::Phi_mpi_pi(caloPos.Phi() - trigObj.Phi()));
+          if (dEta * dEta + dPhi * dPhi < 0.0225)
+            break;
+        }
+        *hltMatch[iT] = (iO != objCol[iT]->GetEntries());
+      }
+
+      if (fIsMC) {
+        outPhoton.matchedGen = 0;
+
+        double minDR(-1.);
+        mithep::MCParticle* matched(0);
+
+        for (auto* part : finalState) {
+          TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());
+          auto&& vtx(part->Mother()->DecayVertex());
+          caloDir -= TVector3(vtx.X(), vtx.Y(), vtx.Z());
+          double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
+          if (dR < 0.1 && (minDR < 0. || dR < minDR)) {
+            outPhoton.matchedGen = part->PdgId();
+            unsigned absId(std::abs(outPhoton.matchedGen));
+            if (dR < 0.1 && (absId == 11 || absId == 13))
+              break;
+
+            minDR = dR;
+            matched = part;
+          }
+        }
+
+        if (matched) {
+          unsigned motherId(std::abs(matched->DistinctMother()->PdgId()));
+          outPhoton.hadDecay = (motherId == 21 || motherId > 25); // 21 probably never happens..
+        }
+        else
+          outPhoton.hadDecay = false;
+      }
 
       ++nP;
     }
@@ -159,47 +244,104 @@ mithep::SimpleTreeMod::Process()
     fEvent.photons.resize(nP);
   }
 
-  if (fElectronsName.Length() != 0) {
-    auto* electrons = GetObject<mithep::ElectronCol>(fElectronsName);
-    if (!electrons) {
-      SendError(kAbortAnalysis, "Process", fElectronsName);
-      return;
+  TString* inputLeptonName[2] = {
+    &fElectronsName,
+    &fMuonsName
+  };
+
+  TString* tightMaskName[2] = {
+    &fTightElectronsName,
+    &fTightMuonsName
+  };
+
+  simpletree::LeptonCollection* outputCollection[2] = {
+    &fEvent.electrons,
+    &fEvent.muons
+  };
+
+  bool* hltMatch[2][2] = {
+    {
+      fEvent.electrons.matchHLT23Loose,
+      fEvent.electrons.matchHLT27Loose
+    },
+    {
+      fEvent.muons.matchHLT24,
+      fEvent.muons.matchHLT27
     }
+  };
 
-    auto* tightMask = GetObject<mithep::NFArrBool>(fTightElectronsName);
-
-    fEvent.electrons.resize(electrons->GetEntries());
-    for (unsigned iE = 0; iE != electrons->GetEntries(); ++iE) {
-      auto& inElectron(*electrons->At(iE));
-      auto& outElectron(fEvent.electrons[iE]);
-      outElectron.pt = inElectron.Pt();
-      outElectron.eta = inElectron.Eta();
-      outElectron.phi = inElectron.Phi();
-      outElectron.mass = inElectron.Mass();
-      outElectron.positive = inElectron.Charge() > 0.;
-      outElectron.tight = tightMask->At(iE);
+  mithep::TriggerObjectCol* trigObjs[2][2] = {
+    {
+      triggerObjects[simpletree::kEle23Loose],
+      triggerObjects[simpletree::kEle27Loose]
+    },
+    {
+      triggerObjects[simpletree::kMu24],
+      triggerObjects[simpletree::kMu27]
     }
-  }
+  };
 
-  if (fMuonsName.Length() != 0) {
-    auto* muons = GetObject<mithep::MuonCol>(fMuonsName);
-    if (!muons) {
-      SendError(kAbortAnalysis, "Process", fMuonsName);
-      return;
-    }
+  for (unsigned iC(0); iC != 2; ++iC) {
+    if (inputLeptonName[iC]->Length() != 0) {
+      auto* leptons = GetObject<mithep::ParticleCol>(*inputLeptonName[iC]);
+      if (!leptons) {
+        SendError(kAbortAnalysis, "Process", *inputLeptonName[iC]);
+        return;
+      }
 
-    auto* tightMask = GetObject<mithep::NFArrBool>(fTightMuonsName);
+      auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
+    
+      outputCollection[iC]->resize(leptons->GetEntries());
+      for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
+        auto& inLepton(*leptons->At(iL));
+        auto& outLepton((*outputCollection[iC])[iL]);
+        outLepton.pt = inLepton.Pt();
+        outLepton.eta = inLepton.Eta();
+        outLepton.phi = inLepton.Phi();
+        outLepton.mass = inLepton.Mass();
+        outLepton.positive = inLepton.Charge() > 0.;
+        outLepton.tight = tightMask->At(iL);
 
-    fEvent.muons.resize(muons->GetEntries());
-    for (unsigned iM = 0; iM != muons->GetEntries(); ++iM) {
-      auto& inMuon(*muons->At(iM));
-      auto& outMuon(fEvent.muons[iM]);
-      outMuon.pt = inMuon.Pt();
-      outMuon.eta = inMuon.Eta();
-      outMuon.phi = inMuon.Phi();
-      outMuon.mass = inMuon.Mass();
-      outMuon.positive = inMuon.Charge() > 0.;
-      outMuon.tight = tightMask->At(iM);
+        for (unsigned iT(0); iT != 2; ++iT) {
+          if (!trigObjs[iC][iT]) {
+            hltMatch[iC][iT][iL] = false;
+            continue;
+          }
+
+          unsigned iO(0);
+          for (; iO != trigObjs[iC][iT]->GetEntries(); ++iO) {
+            if (mithep::MathUtils::DeltaR(inLepton, *trigObjs[iC][iT]->At(iO)) < 0.1)
+              break;
+          }
+          hltMatch[iC][iT][iL] = (iO != trigObjs[iC][iT]->GetEntries());
+        }
+
+        if (fIsMC) {
+          outLepton.matchedGen = 0;
+
+          double minDR(-1.);
+          mithep::MCParticle* matched(0);
+
+          for (auto* part : finalState) {
+            double dR(mithep::MathUtils::DeltaR(inLepton, *part));
+            if (dR < 0.05 && (minDR < 0. || dR < minDR)) {
+              outLepton.matchedGen = part->PdgId();
+
+              minDR = dR;
+              matched = part;
+            }
+          }
+
+          if (matched) {
+            unsigned motherId(std::abs(matched->DistinctMother()->PdgId()));
+            outLepton.tauDecay = (motherId == 15);
+            outLepton.hadDecay = (motherId == 21 || motherId > 25);
+          }
+          else {
+            outLepton.tauDecay = outLepton.hadDecay = false;
+          }
+        }
+      }
     }
   }
 
@@ -245,4 +387,19 @@ mithep::SimpleTreeMod::SlaveBegin()
 
   AddOutput(fEventTree);
   AddOutput(fAllEventTree);
+}
+
+void
+mithep::SimpleTreeMod::BeginRun()
+{
+  auto* hltTable = GetObject<mithep::TriggerTable>(TString::Format("%sFwk", mithep::Names::gkHltTableBrn));
+  mithep::TriggerName const* triggerName(0);
+
+  for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
+    triggerName = hltTable->GetWildcard("HLT_" + fTriggerPathName[iH] + "_v");
+    if (triggerName)
+      fHLTIds[iH] = triggerName->Id();
+    else
+      fHLTIds[iH] = -1;
+  }
 }

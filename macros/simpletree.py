@@ -1,4 +1,5 @@
 from MitAna.TreeMod.bambu import mithep, analysis
+from MitAna.TreeMod.sequenceable import Chain
 import os
 
 mitdata = os.environ['MIT_DATA']
@@ -11,6 +12,42 @@ from MitPhysics.Mods.MuonIdMod import muonIdMod
 from MitPhysics.Mods.PFTauIdMod import pfTauIdMod
 from MitPhysics.Mods.PhotonIdMod import photonIdMod
 from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
+
+# this has to be in the same order as the HLTPaths enum
+if analysis.isRealData:
+    hltPaths = [
+        'Photon165_HE10',
+        'Photon175',
+        'Ele23_WPLoose_Gsf',
+        'Ele27_eta2p1_WPLoose_Gsf',
+        'IsoMu24_eta2p1',
+        'IsoMu27',
+        'PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight',
+        'PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight'
+    ]
+
+else: # translate to Spring15 menu
+    hltPaths = [
+        'Photon165_HE10',
+        'Photon175',
+        'Ele23_CaloIdL_TrackIdL_IsoVL',
+        'Ele27_eta2p1_WP75_Gsf',
+        'IsoMu24_eta2p1',
+        'IsoMu27',
+        'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight',
+        'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight'
+    ]
+
+
+hltMods = []
+for path in hltPaths:
+    hltMod = mithep.HLTMod(path + 'Mod',
+        AbortIfNotAccepted = False,
+    )
+    hltMod.AddTrigger('HLT_' + path + '_v*')
+    hltMods.append(hltMod)
+
+hltModsSequence = Chain(hltMods)
 
 exoticMets = mithep.ExoticMetsMod()
 
@@ -208,6 +245,10 @@ ntuples = mithep.SimpleTreeMod(
     Condition = jetCleaning
 )
 
+for iP in range(len(hltPaths)):
+    ntuples.SetTriggerObjectsName(iP, hltMods[iP].GetOutputName())
+    ntuples.SetTriggerPathName(iP, hltPaths[iP])
+
 analysis.setSequence(
     badEventsFilterMod *
     goodPVFilterMod *
@@ -231,6 +272,7 @@ analysis.setSequence(
     photonTightId *
     jetCorrection *
     jetId *
-    jetCleaning +
+    jetCleaning *
+    hltModsSequence +
     ntuples
 )

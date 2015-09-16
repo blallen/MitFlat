@@ -4,6 +4,18 @@
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
+enum HLTPath {
+  kPhoton165HE10,
+  kPhoton175,
+  kEle23Loose,
+  kEle27Loose,
+  kMu24,
+  kMu27,
+  kMETNoMu90MHTNoMu90,
+  kMETNoMu120MHTNoMu120,
+  nHLTPaths
+};
+
 [Particle:MAX=256]
 pt/F
 eta/F
@@ -28,21 +40,34 @@ nhIso/F
 phIso/F
 sieie/F
 hOverE/F
+matchedGen/I
+hadDecay/O
 pixelVeto/O
 csafeVeto/O
-isLoose/O
-isMedium/O
-isTight/O
+loose/O
+medium/O
+tight/O
+matchHLT165HE10/O
+matchHLT175/O
 
-[Electron:ParticleM]
+[Lepton:ParticleM]
 int charge() const { return positive ? 1 : -1; }
+matchedGen/I
+tauDecay/O
+hadDecay/O
 positive/O
 tight/O
 
-[Muon:ParticleM]
-int charge() const { return positive ? 1 : -1; }
-positive/O
-tight/O
+[Electron:Lepton]
+matchHLT23Loose/O
+matchHLT27Loose/O
+
+[Muon:Lepton]
+matchHLT24/O
+matchHLT27/O
+
+[HLT:SIZE=nHLTPaths]
+pass/O
 
 {Event}
 run/i
@@ -71,6 +96,7 @@ neMet/Met
 chGt30Met/Met
 nhGt30Met/Met
 neGt30Met/Met
+hlt/HLTCollection
 
 {Weight}
 run/i
