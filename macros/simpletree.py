@@ -124,24 +124,26 @@ for jec in jecSourcesNoCHS:
     metCorrectionNoCHS.AddJetCorrectionFromFile(jecDir + jec)
     met30CorrectionNoCHS.AddJetCorrectionFromFile(jecDir + jec)
 
-looseElectrons = electronIdMod.clone('LooseElectrons',
+looseElectronMask = electronIdMod.clone('ElectronLooseId',
     InputName = 'Electrons',
-    OutputName = 'LooseElectrons',
+    OutputName = 'LooseElectronMask',
+    IsFilterMode = False,
     IdType = mithep.ElectronTools.kSummer15Veto,
     IsoType = mithep.ElectronTools.kSummer15VetoIso
 )
 
 tightElectronMask = electronIdMod.clone('ElectronTightId',
-    InputName = looseElectrons.GetOutputName(),
+    InputName = 'Electrons',
     OutputName = 'TightElectronMask',
     IsFilterMode = False,
     IdType = mithep.ElectronTools.kSummer15Tight,
     IsoType = mithep.ElectronTools.kSummer15TightIso
 )
 
-tightElectrons = tightElectronMask.clone('TightElectrons',
-    OutputName = 'TightElectrons',
-    IsFilterMode = True
+tightElectrons = mithep.MaskCollectionMod('TightElectrons',
+    InputName = 'Electrons',
+    MaskName = tightElectronMask.GetOutputName(),
+    OutputName = 'TightElectrons'
 )
 
 looseMuons = muonIdMod.clone('LooseMuons',
@@ -159,9 +161,10 @@ tightMuonMask = muonIdMod.clone('MuonTightId',
     IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight
 )
 
-tightMuons = tightMuonMask.clone('TightMuons',
-    OutputName = 'TightMuons',
-    IsFilterMode = True
+tightMuons = mithep.MaskCollectionMod('TightMuons',
+    InputName = looseMuons.GetOutputName(),
+    MaskName = tightMuonMask.GetOutputName(),
+    OutputName = 'TightMuons'
 )
 
 vetoTaus = mithep.PFTauIdMod('VetoTauId',
@@ -218,7 +221,8 @@ ntuples = mithep.SimpleTreeMod(
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
     JetsName = jetCleaning.GetOutputName(),
     PhotonsName = 'Photons',
-    ElectronsName = looseElectrons.GetOutputName(),
+    ElectronsName = 'Electrons',
+    LooseElectronsName = looseElectronMask.GetOutputName(),
     TightElectronsName = tightElectronMask.GetOutputName(),
     MuonsName = looseMuons.GetOutputName(),
     TightMuonsName = tightMuonMask.GetOutputName(),
@@ -253,7 +257,7 @@ analysis.setSequence(
     badEventsFilterMod *
     goodPVFilterMod *
     separatePileUpMod *
-    looseElectrons *
+    looseElectronMask *
     tightElectronMask *
     tightElectrons *
     looseMuons *

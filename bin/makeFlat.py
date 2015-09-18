@@ -214,47 +214,54 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
         if sizes[obj] != 0:
             header.write('  class ' + obj + 'Collection;\n')
 
+    header.write('\n')
+
     for obj in objs:
         header.write('  class ' + obj)
         if obj in inheritance:
             header.write(' : public ' + inheritance[obj])
-        header.write(' {\n')
-        header.write('  public:\n')
+        header.write(' {')
+        header.write('\n  public:')
         if sizes[obj] == 0:
-            header.write('    ' + obj + '(TString const& name = "' + obj.lower() + '")')
+            header.write('\n    ' + obj + '(TString const& name = "' + obj.lower() + '")')
             if obj in inheritance:
                 header.write(' : ' + inheritance(obj) + '(name)')
             else:
                 header.write(' : name_(name)')
-            header.write(' {}\n')
-            header.write('    virtual ~' + obj + '() {}\n')
-            header.write('    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());\n')
-            header.write('    virtual void setAddress(TTree&, BranchList const& = BranchList());\n')
-            header.write('    virtual void book(TTree&, BranchList const& = BranchList());\n')
+            header.write(' {}')
         else:
-            header.write('    ' + obj + '(' + obj + 'Collection&, UInt_t idx);\n')
-            header.write('    virtual ~' + obj + '() {}\n')
+            header.write('\n    ' + obj + '(' + obj + 'Collection&, UInt_t idx);')
 
-        header.write('    ' + obj + '& operator=(' + obj + ' const&);\n')
-        header.write('\n')
+        header.write('\n    ' + obj + '(' + obj + ' const&);')
+        header.write('\n    virtual ~' + obj + '() {}')
+        header.write('\n    ' + obj + '& operator=(' + obj + ' const&);')
+
+        if sizes[obj] == 0:
+            header.write('\n\n    void setName(TString const& name) { name_ = name; }')
+            header.write('\n    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());')
+            header.write('\n    virtual void setAddress(TTree&, BranchList const& = BranchList());')
+            header.write('\n    virtual void book(TTree&, BranchList const& = BranchList());')
         
-        for func in defs[obj][1]:
-            header.write('    ' + func + '\n')
-
-        if len(defs[obj][1]):
+        if len(defs[obj][1]) != 0:
             header.write('\n')
+
+        for func in defs[obj][1]:
+            header.write('\n    ' + func)
+
+        if sizes[obj] == 0 and obj not in inheritance:
+            header.write('\n\n  protected:')
+            header.write('\n    TString name_;')
+
+        if len(defs[obj][0]) != 0:
+            header.write('\n\n  public:')
 
         for brName, brType in defs[obj][0]:
             if sizes[obj] == 0:
-                header.write('    ' + branchType(brType) + ' ' + brName + ';\n')
+                header.write('\n    ' + branchType(brType) + ' ' + brName + ';')
             else:
-                header.write('    ' + branchType(brType) + '& ' + brName + ';\n')
+                header.write('\n    ' + branchType(brType) + '& ' + brName + ';')
 
-        if sizes[obj] == 0 and obj not in inheritance:
-            header.write('  private:\n')
-            header.write('    TString const name_;\n')
-
-        header.write('  };\n\n')
+        header.write('\n  };\n\n')
 
     header.write('}\n\n')
 
@@ -278,59 +285,62 @@ with open(FULLPATH + '/interface/Collections_' + namespace + '.h', 'w') as heade
         header.write('  class ' + obj + 'Collection')
         if obj in inheritance:
             header.write(' : public ' + inheritance[obj] + 'Collection')
-        header.write(' {\n')
-        header.write('  public:\n')
+        header.write(' {')
+        header.write('\n  public:')
         if obj not in inheritance:
-            header.write('    static UInt_t const NMAX = ' + str(sizes[obj]) + ';\n')
+            header.write('\n    static UInt_t const NMAX = ' + str(sizes[obj]) + ';')
         if obj in fixedSize:
-            header.write('    static UInt_t const size = NMAX;\n')
+            header.write('\n    static UInt_t const size = NMAX;')
 
-        header.write('    typedef ' + namespace + '::' + obj + ' value_type;\n')
-        header.write('    typedef value_type& reference;\n')
-        header.write('    typedef value_type const& const_reference;\n')
-        header.write('    typedef flatutils::iterator<' + obj + '> iterator;\n')
-        header.write('    typedef flatutils::const_iterator<' + obj + '> const_iterator;\n\n')
+        header.write('\n    typedef ' + namespace + '::' + obj + ' value_type;')
+        header.write('\n    typedef value_type& reference;')
+        header.write('\n    typedef value_type const& const_reference;')
+        header.write('\n    typedef flatutils::iterator<' + obj + '> iterator;')
+        header.write('\n    typedef flatutils::const_iterator<' + obj + '> const_iterator;')
 
-        header.write('    ' + obj + 'Collection(TString const& name = "' + obj.lower() + 's");\n')
-        header.write('    virtual ~' + obj + 'Collection();\n\n')
+        header.write('\n\n    ' + obj + 'Collection(TString const& name = "' + obj.lower() + 's");')
+        header.write('\n    ' + obj + 'Collection(' + obj + 'Collection const&);')
+        header.write('\n    virtual ~' + obj + 'Collection();')
+        header.write('\n    ' + obj + 'Collection& operator=(' + obj + 'Collection const&);')
 
-        header.write('    reference at(UInt_t idx);\n')
-        header.write('    const_reference at(UInt_t idx) const;\n')
-        header.write('    reference operator[](UInt_t);\n')
-        header.write('    const_reference operator[](UInt_t) const;\n')
-        header.write('    iterator begin() { return iterator(static_cast<' + obj + '*>(array_), objSize_); }\n')
-        header.write('    const_iterator begin() const { return const_iterator(static_cast<' + obj + '*>(array_), objSize_); }\n')
-        header.write('    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<' + obj + '*>(p), objSize_); }\n')
-        header.write('    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<' + obj + '*>(p), objSize_); }\n')
+        header.write('\n\n    reference at(UInt_t idx);')
+        header.write('\n    const_reference at(UInt_t idx) const;')
+        header.write('\n    reference operator[](UInt_t);')
+        header.write('\n    const_reference operator[](UInt_t) const;')
+        header.write('\n    iterator begin() { return iterator(static_cast<' + obj + '*>(array_), objSize_); }')
+        header.write('\n    const_iterator begin() const { return const_iterator(static_cast<' + obj + '*>(array_), objSize_); }')
+        header.write('\n    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<' + obj + '*>(p), objSize_); }')
+        header.write('\n    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<' + obj + '*>(p), objSize_); }')
         if obj not in fixedSize:
-            header.write('    void push_back(const_reference);\n')
+            header.write('\n    void push_back(const_reference);')
+            if obj not in inheritance:
+                header.write('\n    void clear() { resize(0); }')
+                header.write('\n    void resize(UInt_t size);')
+
+        header.write('\n\n    void setName(TString const& name) { name_ = name; }')
+        header.write('\n    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());')
+        header.write('\n    virtual void setAddress(TTree&, BranchList const& = BranchList());')
+        header.write('\n    virtual void book(TTree&, BranchList const& = BranchList());')
+
+        header.write('\n\n  protected:')
+        header.write('\n    ' + obj + 'Collection(TString const&, Bool_t);') # no-init version
+        if obj not in inheritance: # derived classes use the base class array_
+            header.write('\n    TString name_;')
+            header.write('\n    UInt_t objSize_{0};')
+            header.write('\n    value_type* array_{0};')
+
         if obj not in inheritance and obj not in fixedSize:
-            header.write('    void clear() { resize(0); }\n')
-            header.write('    void resize(UInt_t size);\n')
-
-        header.write('\n')
-
-        header.write('    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());\n')
-        header.write('    virtual void setAddress(TTree&, BranchList const& = BranchList());\n')
-        header.write('    virtual void book(TTree&, BranchList const& = BranchList());\n\n')
-
-        if obj not in inheritance and obj not in fixedSize:
-            header.write('    UInt_t size = 0;\n')
+            header.write('\n\n  public:')
+            header.write('\n    UInt_t size{0};')
+        elif len(defs[obj][0]) != 0:
+            header.write('\n\n  public:')
 
         for brName, brType in defs[obj][0]:
-            header.write('    ' + branchType(brType) + ' ' + brName + '[NMAX] = {};\n')
+            header.write('\n    ' + branchType(brType) + ' ' + brName + '[NMAX]{};')
 
-        header.write('\n')
-        header.write('  protected:\n')
-        header.write('    ' + obj + 'Collection(TString const&, Bool_t);\n') # no-init version
-        if obj not in inheritance: # derived classes use the base class array_
-            header.write('    TString const name_;\n')
-            header.write('    UInt_t objSize_{0};\n')
-            header.write('    value_type* array_{0};\n')
+        header.write('\n  };\n\n')
 
-        header.write('  };\n\n')
-
-    header.write('}\n\n')
+    header.write('}\n')
     header.write('#endif\n')
 
 # Tree header
@@ -392,6 +402,19 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
     for obj in objs:
         if sizes[obj] == 0:
+            src.write(namespace + '::' + obj + '::' + obj + '(' + obj + ' const& _src) :\n')
+            if obj in inheritance:
+                src.write('  ' + inheritance(obj) + '(_src)')
+            else:
+                src.write('  name_(_src.name_)')
+            if len(defs[obj][0]) != 0:
+                src.write(',')
+            for brName, brType in defs[obj][0]:
+                src.write('\n  ' + brName + '(_src.' + brName + ')')
+                if brName != defs[obj][0][-1][0]:
+                    src.write(',')
+            src.write('\n{\n}\n\n')
+
             src.write('void\n')
             src.write(namespace + '::' + obj + '::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)\n')
             src.write('{\n')
@@ -431,15 +454,23 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 src.write('  ' + inheritance[obj] + '(col, idx)')
                 if len(defs[obj][0]) != 0:
                     src.write(',')
+            for brName, brType in defs[obj][0]:
+                src.write('\n  ' + brName + '(col.' + brName + '[idx])')
+                if brName != defs[obj][0][-1][0]:
+                    src.write(',')
+            src.write('\n{\n}\n')
+
+            src.write(namespace + '::' + obj + '::' + obj + '(' + obj + ' const& _src) :\n')
+            if obj in inheritance:
+                src.write('  ' + inheritance[obj] + '(_src)')
+                if len(defs[obj][0]) != 0:
+                    src.write(',')
+            for brName, brType in defs[obj][0]:
+                src.write('  ' + brName + '(_src.' + brName + ')')
+                if brName != defs[obj][0][-1][0]:
+                    src.write(',')
                 src.write('\n')
-            for iB, (brName, brType) in enumerate(defs[obj][0]):
-                src.write('  ' + brName + '(col.' + brName + '[idx])')
-                if iB == len(defs[obj][0]) - 1:
-                    src.write('\n')
-                else:
-                    src.write(',\n')
-    
-            src.write('{\n}\n')
+            src.write('{\n}\n\n')
 
         src.write(namespace + '::' + obj + '&\n')
         src.write(namespace + '::' + obj + '::operator=(' + obj + ' const& _rhs)\n')
@@ -472,8 +503,27 @@ with open(FULLPATH + '/src/Collections_' + namespace + '.cc', 'w') as src:
         src.write('{\n')
         src.write('  objSize_ = sizeof(' + obj + ');\n')
         src.write('  array_ = std::allocator<' + obj + '>().allocate(NMAX);\n')
-        src.write('  for (unsigned iP(0); iP != NMAX; ++iP)\n')
-        src.write('    new (static_cast<' + obj + '*>(array_) + iP) ' + obj + '(*this, iP);\n')
+        src.write('  auto* p(array_);\n')
+        src.write('  for (unsigned iP(0); iP != NMAX; ++iP) {\n')
+        src.write('    new (static_cast<' + obj + '*>(p)) ' + obj + '(*this, iP);\n')
+        src.write('    flatutils::shiftAddr(p, objSize_);\n')
+        src.write('  }\n')
+        src.write('}\n\n')
+
+        src.write(namespace + '::' + obj + 'Collection::' + obj + 'Collection(' + obj + 'Collection const& _src) :\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + 'Collection(_src.name_, kFALSE)\n')
+        else:
+            src.write('  name_(_src.name_)\n')
+        src.write('{\n')
+        src.write('  objSize_ = sizeof(' + obj + ');\n')
+        src.write('  array_ = std::allocator<' + obj + '>().allocate(NMAX);\n')
+        src.write('  auto* p(array_);\n')
+        src.write('  for (unsigned iP(0); iP != NMAX; ++iP) {\n')
+        src.write('    new (static_cast<' + obj + '*>(p)) ' + obj + '(*this, iP);\n')
+        src.write('    static_cast<' + obj + '*>(p)->operator=(_src[iP]);\n')
+        src.write('    flatutils::shiftAddr(p, objSize_);\n')
+        src.write('  }\n')
         src.write('}\n\n')
 
         src.write('//protected\n')
@@ -490,6 +540,21 @@ with open(FULLPATH + '/src/Collections_' + namespace + '.cc', 'w') as src:
         src.write('    std::allocator<' + obj + '>().deallocate(static_cast<' + obj + '*>(array_), NMAX);\n')
         src.write('    array_ = 0;\n')
         src.write('  }\n')
+        src.write('}\n\n')
+
+        src.write(namespace + '::' + obj + 'Collection&\n')
+        src.write(namespace + '::' + obj + 'Collection::operator=(' + obj + 'Collection const& _rhs)\n')
+        src.write('{\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + 'Collection::operator=(_rhs);\n')
+        else:
+            src.write('  name_ = _rhs.name_;\n')
+        src.write('  auto* p(array_);\n')
+        src.write('  for (unsigned iP(0); iP != NMAX; ++iP) {\n')
+        src.write('    static_cast<' + obj + '*>(p)->operator=(_rhs[iP]);\n')
+        src.write('    flatutils::shiftAddr(p, objSize_);\n')
+        src.write('  }\n')
+        src.write('  return *this;\n')
         src.write('}\n\n')
 
         src.write(namespace + '::' + obj + 'Collection::reference\n')
@@ -534,9 +599,12 @@ with open(FULLPATH + '/src/Collections_' + namespace + '.cc', 'w') as src:
             src.write('void\n')
             src.write(namespace + '::' + obj + 'Collection::push_back(const_reference val)\n')
             src.write('{\n')
-            src.write('  UInt_t current(size);\n')
-            src.write('  resize(current + 1);\n')
-            src.write('  array_[current] = val;\n')
+            src.write('  if (size == NMAX - 1)')
+            src.write('    throw std::length_error("' + obj + 'Collection::push_back");\n\n')
+            src.write('  auto* p(array_);\n')
+            src.write('  flatutils::shiftAddr(p, size * objSize_);\n')
+            src.write('  static_cast<' + obj + '*>(p)->operator=(val);\n')
+            src.write('  ++size;\n')
             src.write('}\n\n')
 
         if obj not in inheritance and obj not in fixedSize:

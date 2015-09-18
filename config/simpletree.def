@@ -56,9 +56,15 @@ matchedGen/I
 tauDecay/O
 hadDecay/O
 positive/O
+loose/O
 tight/O
 
 [Electron:Lepton]
+chIsoPh/F
+nhIsoPh/F
+phIsoPh/F
+sieie/F
+hOverE/F
 matchHLT23Loose/O
 matchHLT27Loose/O
 

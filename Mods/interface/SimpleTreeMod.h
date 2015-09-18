@@ -20,6 +20,7 @@ namespace mithep {
     void SetJetsName(char const* n) { fJetsName = n; }
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
+    void SetLooseElectronsName(char const* n) { fLooseElectronsName = n; }
     void SetTightElectronsName(char const* n) { fTightElectronsName = n; }
     void SetMuonsName(char const* n) { fMuonsName = n; }
     void SetTightMuonsName(char const* n) { fTightMuonsName = n; }
@@ -67,6 +68,7 @@ namespace mithep {
     TString fJetsName{"AKt4PFJets"};
     TString fPhotonsName{"Photons"};
     TString fElectronsName{"Electrons"};
+    TString fLooseElectronsName{"LooseElectrons"};
     TString fTightElectronsName{"TightElectrons"};
     TString fMuonsName{"Muons"};
     TString fTightMuonsName{"TightMuons"};

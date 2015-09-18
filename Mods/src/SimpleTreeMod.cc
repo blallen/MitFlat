@@ -54,6 +54,7 @@ mithep::SimpleTreeMod::Process()
     return;
 
   auto* vertices = GetObject<mithep::VertexCol>(fVerticesName);
+  auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
   auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
   mithep::MCParticleCol* mcParticles(0);
   std::vector<MCParticle*> finalState;
@@ -148,7 +149,6 @@ mithep::SimpleTreeMod::Process()
     auto* photons = GetObject<mithep::PhotonCol>(fPhotonsName);
     auto* electrons = GetObject<mithep::ElectronCol>(Names::gkElectronBrn);
     auto* conversions = GetObject<mithep::DecayParticleCol>(fConversionsName);
-    auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
 
     auto* looseMask = GetObject<mithep::NFArrBool>(fLoosePhotonName);
     auto* mediumMask = GetObject<mithep::NFArrBool>(fMediumPhotonName);
@@ -165,13 +165,15 @@ mithep::SimpleTreeMod::Process()
       auto& outPhoton(fEvent.photons[nP]);
 
       double chIso, nhIso, phIso;
-      IsolationTools::PFPhotonIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+      IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+      double scEta(inPhoton.SCluster()->AbsEta());
+
       outPhoton.pt = inPhoton.Pt();
       outPhoton.eta = inPhoton.Eta();
       outPhoton.phi = inPhoton.Phi();
-      outPhoton.chIso = chIso;
-      outPhoton.nhIso = nhIso;
-      outPhoton.phIso = phIso;
+      outPhoton.chIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
+      outPhoton.nhIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
+      outPhoton.phIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, phIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoPhoton03);
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEm();
       outPhoton.pixelVeto = !inPhoton.HasPixelSeed();
@@ -289,8 +291,11 @@ mithep::SimpleTreeMod::Process()
         return;
       }
 
+      mithep::NFArrBool* looseMask = 0;
       auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
-    
+      if (iC == 0)
+        looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
+
       outputCollection[iC]->resize(leptons->GetEntries());
       for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
         auto& inLepton(*leptons->At(iL));
@@ -301,6 +306,27 @@ mithep::SimpleTreeMod::Process()
         outLepton.mass = inLepton.Mass();
         outLepton.positive = inLepton.Charge() > 0.;
         outLepton.tight = tightMask->At(iL);
+
+        if (iC == 0) {
+          auto& inElectron(static_cast<mithep::Electron&>(inLepton));
+          auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
+
+          outElectron.loose = looseMask->At(iL);
+          
+          double chIso, nhIso, phIso;
+          IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+          double scEta(inElectron.SCluster()->AbsEta());
+
+          outElectron.chIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
+          outElectron.nhIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
+          outElectron.phIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, phIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoPhoton03);
+
+          outElectron.sieie = inElectron.CoviEtaiEta5x5();
+          outElectron.hOverE = inElectron.HadOverEmTow();
+        }
+        else {
+          outLepton.loose = true;
+        }
 
         for (unsigned iT(0); iT != 2; ++iT) {
           if (!trigObjs[iC][iT]) {
