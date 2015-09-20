@@ -6,11 +6,11 @@
 simpletree::ParticleCollection::ParticleCollection(TString const& _name) :
   name_(_name)
 {
-  objSize_ = sizeof(Particle);
-  array_ = std::allocator<Particle>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Particle*>(p)) Particle(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -18,12 +18,12 @@ simpletree::ParticleCollection::ParticleCollection(TString const& _name) :
 simpletree::ParticleCollection::ParticleCollection(ParticleCollection const& _src) :
   name_(_src.name_)
 {
-  objSize_ = sizeof(Particle);
-  array_ = std::allocator<Particle>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Particle*>(p)) Particle(*this, iP);
-    static_cast<Particle*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -37,18 +37,18 @@ simpletree::ParticleCollection::ParticleCollection(TString const& _name, Bool_t)
 simpletree::ParticleCollection::~ParticleCollection()
 {
   if (array_) {
-    std::allocator<Particle>().deallocate(static_cast<Particle*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::ParticleCollection&
-simpletree::ParticleCollection::operator=(ParticleCollection const& _rhs)
+simpletree::ParticleCollection::operator=(self_type const& _rhs)
 {
   name_ = _rhs.name_;
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<Particle*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -57,25 +57,23 @@ simpletree::ParticleCollection::operator=(ParticleCollection const& _rhs)
 simpletree::ParticleCollection::reference
 simpletree::ParticleCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Particle*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("ParticleCollection::at");
 
-  throw std::out_of_range("ParticleCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::ParticleCollection::const_reference
 simpletree::ParticleCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Particle const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("ParticleCollection::at");
 
-  throw std::out_of_range("ParticleCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::ParticleCollection::reference
@@ -83,7 +81,7 @@ simpletree::ParticleCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Particle*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::ParticleCollection::const_reference
@@ -91,75 +89,66 @@ simpletree::ParticleCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Particle const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::ParticleCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("ParticleCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("ParticleCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<Particle*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
 simpletree::ParticleCollection::resize(UInt_t _size)
 {
-  if (_size <= NMAX) {
-    size = _size;
-    return;
-  }
-  throw std::length_error("ParticleCollection::resize");
+  if (_size > NMAX)
+    throw std::length_error("ParticleCollection::resize");
+
+  size = _size;
 }
 
 void
-simpletree::ParticleCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::ParticleCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  if (_branches.size() == 0 || _status)
+  if (_status || flatutils::branchIn("size", _branches))
     _tree.SetBranchStatus(name_ + ".size", _status);
-  if (branchIn(&pt, _branches))
-    _tree.SetBranchStatus(name_ + ".pt", _status);
-  if (branchIn(&eta, _branches))
-    _tree.SetBranchStatus(name_ + ".eta", _status);
-  if (branchIn(&phi, _branches))
-    _tree.SetBranchStatus(name_ + ".phi", _status);
+  flatutils::setStatus(_tree, name_, "pt", _status, _branches);
+  flatutils::setStatus(_tree, name_, "eta", _status, _branches);
+  flatutils::setStatus(_tree, name_, "phi", _status, _branches);
 }
 
 void
-simpletree::ParticleCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::ParticleCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  setStatusAndAddress(_tree, name_ + ".size", &size);
-  if (branchIn(&pt, _branches))
-    setStatusAndAddress(_tree, name_ + ".pt", pt);
-  if (branchIn(&eta, _branches))
-    setStatusAndAddress(_tree, name_ + ".eta", eta);
-  if (branchIn(&phi, _branches))
-    setStatusAndAddress(_tree, name_ + ".phi", phi);
+  flatutils::setStatusAndAddress(_tree, name_, "size", &size, {"size"});
+  flatutils::setStatusAndAddress(_tree, name_, "pt", pt, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "eta", eta, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "phi", phi, _branches);
 }
 
 void
-simpletree::ParticleCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::ParticleCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   _tree.Branch(name_ + ".size", &size, "size/i");
-  if (branchIn(&pt, _branches))
-    _tree.Branch(name_ + ".pt", pt, "pt[" + name_ + ".size]/F");
-  if (branchIn(&eta, _branches))
-    _tree.Branch(name_ + ".eta", eta, "eta[" + name_ + ".size]/F");
-  if (branchIn(&phi, _branches))
-    _tree.Branch(name_ + ".phi", phi, "phi[" + name_ + ".size]/F");
+  flatutils::book(_tree, name_, "pt", name_ + ".size", 'F', pt, _branches);
+  flatutils::book(_tree, name_, "eta", name_ + ".size", 'F', eta, _branches);
+  flatutils::book(_tree, name_, "phi", name_ + ".size", 'F', phi, _branches);
 }
 
 simpletree::ParticleMCollection::ParticleMCollection(TString const& _name) :
   ParticleCollection(_name, kFALSE)
 {
-  objSize_ = sizeof(ParticleM);
-  array_ = std::allocator<ParticleM>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<ParticleM*>(p)) ParticleM(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -167,12 +156,12 @@ simpletree::ParticleMCollection::ParticleMCollection(TString const& _name) :
 simpletree::ParticleMCollection::ParticleMCollection(ParticleMCollection const& _src) :
   ParticleCollection(_src.name_, kFALSE)
 {
-  objSize_ = sizeof(ParticleM);
-  array_ = std::allocator<ParticleM>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<ParticleM*>(p)) ParticleM(*this, iP);
-    static_cast<ParticleM*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -186,18 +175,18 @@ simpletree::ParticleMCollection::ParticleMCollection(TString const& _name, Bool_
 simpletree::ParticleMCollection::~ParticleMCollection()
 {
   if (array_) {
-    std::allocator<ParticleM>().deallocate(static_cast<ParticleM*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::ParticleMCollection&
-simpletree::ParticleMCollection::operator=(ParticleMCollection const& _rhs)
+simpletree::ParticleMCollection::operator=(self_type const& _rhs)
 {
   ParticleCollection::operator=(_rhs);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<ParticleM*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -206,25 +195,23 @@ simpletree::ParticleMCollection::operator=(ParticleMCollection const& _rhs)
 simpletree::ParticleMCollection::reference
 simpletree::ParticleMCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<ParticleM*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("ParticleMCollection::at");
 
-  throw std::out_of_range("ParticleMCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::ParticleMCollection::const_reference
 simpletree::ParticleMCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<ParticleM const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("ParticleMCollection::at");
 
-  throw std::out_of_range("ParticleMCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::ParticleMCollection::reference
@@ -232,7 +219,7 @@ simpletree::ParticleMCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<ParticleM*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::ParticleMCollection::const_reference
@@ -240,55 +227,53 @@ simpletree::ParticleMCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<ParticleM const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::ParticleMCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("ParticleMCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("ParticleMCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<ParticleM*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
-simpletree::ParticleMCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::ParticleMCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleCollection::setStatus(_tree, _status, _branches);
 
-  if (branchIn(&mass, _branches))
-    _tree.SetBranchStatus(name_ + ".mass", _status);
+  flatutils::setStatus(_tree, name_, "mass", _status, _branches);
 }
 
 void
-simpletree::ParticleMCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::ParticleMCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleCollection::setAddress(_tree, _branches);
 
-  if (branchIn(&mass, _branches))
-    setStatusAndAddress(_tree, name_ + ".mass", mass);
+  flatutils::setStatusAndAddress(_tree, name_, "mass", mass, _branches);
 }
 
 void
-simpletree::ParticleMCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::ParticleMCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleCollection::book(_tree, _branches);
 
-  if (branchIn(&mass, _branches))
-    _tree.Branch(name_ + ".mass", mass, "mass[" + name_ + ".size]/F");
+  flatutils::book(_tree, name_, "mass", name_ + ".size", 'F', mass, _branches);
 }
 
 simpletree::JetCollection::JetCollection(TString const& _name) :
   ParticleMCollection(_name, kFALSE)
 {
-  objSize_ = sizeof(Jet);
-  array_ = std::allocator<Jet>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Jet*>(p)) Jet(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -296,12 +281,12 @@ simpletree::JetCollection::JetCollection(TString const& _name) :
 simpletree::JetCollection::JetCollection(JetCollection const& _src) :
   ParticleMCollection(_src.name_, kFALSE)
 {
-  objSize_ = sizeof(Jet);
-  array_ = std::allocator<Jet>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Jet*>(p)) Jet(*this, iP);
-    static_cast<Jet*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -315,18 +300,18 @@ simpletree::JetCollection::JetCollection(TString const& _name, Bool_t) :
 simpletree::JetCollection::~JetCollection()
 {
   if (array_) {
-    std::allocator<Jet>().deallocate(static_cast<Jet*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::JetCollection&
-simpletree::JetCollection::operator=(JetCollection const& _rhs)
+simpletree::JetCollection::operator=(self_type const& _rhs)
 {
   ParticleMCollection::operator=(_rhs);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<Jet*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -335,25 +320,23 @@ simpletree::JetCollection::operator=(JetCollection const& _rhs)
 simpletree::JetCollection::reference
 simpletree::JetCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Jet*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("JetCollection::at");
 
-  throw std::out_of_range("JetCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::JetCollection::const_reference
 simpletree::JetCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Jet const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("JetCollection::at");
 
-  throw std::out_of_range("JetCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::JetCollection::reference
@@ -361,7 +344,7 @@ simpletree::JetCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Jet*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::JetCollection::const_reference
@@ -369,36 +352,37 @@ simpletree::JetCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Jet const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::JetCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("JetCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("JetCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<Jet*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
-simpletree::JetCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::JetCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleMCollection::setStatus(_tree, _status, _branches);
 
 }
 
 void
-simpletree::JetCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::JetCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleMCollection::setAddress(_tree, _branches);
 
 }
 
 void
-simpletree::JetCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::JetCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleMCollection::book(_tree, _branches);
 
@@ -407,11 +391,11 @@ simpletree::JetCollection::book(TTree& _tree, BranchList const& _branches/* = Br
 simpletree::PhotonCollection::PhotonCollection(TString const& _name) :
   ParticleCollection(_name, kFALSE)
 {
-  objSize_ = sizeof(Photon);
-  array_ = std::allocator<Photon>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Photon*>(p)) Photon(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -419,12 +403,12 @@ simpletree::PhotonCollection::PhotonCollection(TString const& _name) :
 simpletree::PhotonCollection::PhotonCollection(PhotonCollection const& _src) :
   ParticleCollection(_src.name_, kFALSE)
 {
-  objSize_ = sizeof(Photon);
-  array_ = std::allocator<Photon>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Photon*>(p)) Photon(*this, iP);
-    static_cast<Photon*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -438,18 +422,18 @@ simpletree::PhotonCollection::PhotonCollection(TString const& _name, Bool_t) :
 simpletree::PhotonCollection::~PhotonCollection()
 {
   if (array_) {
-    std::allocator<Photon>().deallocate(static_cast<Photon*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::PhotonCollection&
-simpletree::PhotonCollection::operator=(PhotonCollection const& _rhs)
+simpletree::PhotonCollection::operator=(self_type const& _rhs)
 {
   ParticleCollection::operator=(_rhs);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<Photon*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -458,25 +442,23 @@ simpletree::PhotonCollection::operator=(PhotonCollection const& _rhs)
 simpletree::PhotonCollection::reference
 simpletree::PhotonCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Photon*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("PhotonCollection::at");
 
-  throw std::out_of_range("PhotonCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::PhotonCollection::const_reference
 simpletree::PhotonCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Photon const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("PhotonCollection::at");
 
-  throw std::out_of_range("PhotonCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::PhotonCollection::reference
@@ -484,7 +466,7 @@ simpletree::PhotonCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Photon*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::PhotonCollection::const_reference
@@ -492,133 +474,95 @@ simpletree::PhotonCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Photon const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::PhotonCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("PhotonCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("PhotonCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<Photon*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
-simpletree::PhotonCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::PhotonCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleCollection::setStatus(_tree, _status, _branches);
 
-  if (branchIn(&chIso, _branches))
-    _tree.SetBranchStatus(name_ + ".chIso", _status);
-  if (branchIn(&nhIso, _branches))
-    _tree.SetBranchStatus(name_ + ".nhIso", _status);
-  if (branchIn(&phIso, _branches))
-    _tree.SetBranchStatus(name_ + ".phIso", _status);
-  if (branchIn(&sieie, _branches))
-    _tree.SetBranchStatus(name_ + ".sieie", _status);
-  if (branchIn(&hOverE, _branches))
-    _tree.SetBranchStatus(name_ + ".hOverE", _status);
-  if (branchIn(&matchedGen, _branches))
-    _tree.SetBranchStatus(name_ + ".matchedGen", _status);
-  if (branchIn(&hadDecay, _branches))
-    _tree.SetBranchStatus(name_ + ".hadDecay", _status);
-  if (branchIn(&pixelVeto, _branches))
-    _tree.SetBranchStatus(name_ + ".pixelVeto", _status);
-  if (branchIn(&csafeVeto, _branches))
-    _tree.SetBranchStatus(name_ + ".csafeVeto", _status);
-  if (branchIn(&loose, _branches))
-    _tree.SetBranchStatus(name_ + ".loose", _status);
-  if (branchIn(&medium, _branches))
-    _tree.SetBranchStatus(name_ + ".medium", _status);
-  if (branchIn(&tight, _branches))
-    _tree.SetBranchStatus(name_ + ".tight", _status);
-  if (branchIn(&matchHLT165HE10, _branches))
-    _tree.SetBranchStatus(name_ + ".matchHLT165HE10", _status);
-  if (branchIn(&matchHLT175, _branches))
-    _tree.SetBranchStatus(name_ + ".matchHLT175", _status);
+  flatutils::setStatus(_tree, name_, "chIso", _status, _branches);
+  flatutils::setStatus(_tree, name_, "nhIso", _status, _branches);
+  flatutils::setStatus(_tree, name_, "phIso", _status, _branches);
+  flatutils::setStatus(_tree, name_, "sieie", _status, _branches);
+  flatutils::setStatus(_tree, name_, "hOverE", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchedGen", _status, _branches);
+  flatutils::setStatus(_tree, name_, "hadDecay", _status, _branches);
+  flatutils::setStatus(_tree, name_, "pixelVeto", _status, _branches);
+  flatutils::setStatus(_tree, name_, "csafeVeto", _status, _branches);
+  flatutils::setStatus(_tree, name_, "loose", _status, _branches);
+  flatutils::setStatus(_tree, name_, "medium", _status, _branches);
+  flatutils::setStatus(_tree, name_, "tight", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchHLT120", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchHLT165HE10", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchHLT175", _status, _branches);
 }
 
 void
-simpletree::PhotonCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::PhotonCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleCollection::setAddress(_tree, _branches);
 
-  if (branchIn(&chIso, _branches))
-    setStatusAndAddress(_tree, name_ + ".chIso", chIso);
-  if (branchIn(&nhIso, _branches))
-    setStatusAndAddress(_tree, name_ + ".nhIso", nhIso);
-  if (branchIn(&phIso, _branches))
-    setStatusAndAddress(_tree, name_ + ".phIso", phIso);
-  if (branchIn(&sieie, _branches))
-    setStatusAndAddress(_tree, name_ + ".sieie", sieie);
-  if (branchIn(&hOverE, _branches))
-    setStatusAndAddress(_tree, name_ + ".hOverE", hOverE);
-  if (branchIn(&matchedGen, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchedGen", matchedGen);
-  if (branchIn(&hadDecay, _branches))
-    setStatusAndAddress(_tree, name_ + ".hadDecay", hadDecay);
-  if (branchIn(&pixelVeto, _branches))
-    setStatusAndAddress(_tree, name_ + ".pixelVeto", pixelVeto);
-  if (branchIn(&csafeVeto, _branches))
-    setStatusAndAddress(_tree, name_ + ".csafeVeto", csafeVeto);
-  if (branchIn(&loose, _branches))
-    setStatusAndAddress(_tree, name_ + ".loose", loose);
-  if (branchIn(&medium, _branches))
-    setStatusAndAddress(_tree, name_ + ".medium", medium);
-  if (branchIn(&tight, _branches))
-    setStatusAndAddress(_tree, name_ + ".tight", tight);
-  if (branchIn(&matchHLT165HE10, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchHLT165HE10", matchHLT165HE10);
-  if (branchIn(&matchHLT175, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchHLT175", matchHLT175);
+  flatutils::setStatusAndAddress(_tree, name_, "chIso", chIso, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "nhIso", nhIso, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "phIso", phIso, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "sieie", sieie, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "hOverE", hOverE, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchedGen", matchedGen, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "hadDecay", hadDecay, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "pixelVeto", pixelVeto, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "csafeVeto", csafeVeto, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "loose", loose, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "medium", medium, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "tight", tight, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT120", matchHLT120, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT165HE10", matchHLT165HE10, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT175", matchHLT175, _branches);
 }
 
 void
-simpletree::PhotonCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::PhotonCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleCollection::book(_tree, _branches);
 
-  if (branchIn(&chIso, _branches))
-    _tree.Branch(name_ + ".chIso", chIso, "chIso[" + name_ + ".size]/F");
-  if (branchIn(&nhIso, _branches))
-    _tree.Branch(name_ + ".nhIso", nhIso, "nhIso[" + name_ + ".size]/F");
-  if (branchIn(&phIso, _branches))
-    _tree.Branch(name_ + ".phIso", phIso, "phIso[" + name_ + ".size]/F");
-  if (branchIn(&sieie, _branches))
-    _tree.Branch(name_ + ".sieie", sieie, "sieie[" + name_ + ".size]/F");
-  if (branchIn(&hOverE, _branches))
-    _tree.Branch(name_ + ".hOverE", hOverE, "hOverE[" + name_ + ".size]/F");
-  if (branchIn(&matchedGen, _branches))
-    _tree.Branch(name_ + ".matchedGen", matchedGen, "matchedGen[" + name_ + ".size]/I");
-  if (branchIn(&hadDecay, _branches))
-    _tree.Branch(name_ + ".hadDecay", hadDecay, "hadDecay[" + name_ + ".size]/O");
-  if (branchIn(&pixelVeto, _branches))
-    _tree.Branch(name_ + ".pixelVeto", pixelVeto, "pixelVeto[" + name_ + ".size]/O");
-  if (branchIn(&csafeVeto, _branches))
-    _tree.Branch(name_ + ".csafeVeto", csafeVeto, "csafeVeto[" + name_ + ".size]/O");
-  if (branchIn(&loose, _branches))
-    _tree.Branch(name_ + ".loose", loose, "loose[" + name_ + ".size]/O");
-  if (branchIn(&medium, _branches))
-    _tree.Branch(name_ + ".medium", medium, "medium[" + name_ + ".size]/O");
-  if (branchIn(&tight, _branches))
-    _tree.Branch(name_ + ".tight", tight, "tight[" + name_ + ".size]/O");
-  if (branchIn(&matchHLT165HE10, _branches))
-    _tree.Branch(name_ + ".matchHLT165HE10", matchHLT165HE10, "matchHLT165HE10[" + name_ + ".size]/O");
-  if (branchIn(&matchHLT175, _branches))
-    _tree.Branch(name_ + ".matchHLT175", matchHLT175, "matchHLT175[" + name_ + ".size]/O");
+  flatutils::book(_tree, name_, "chIso", name_ + ".size", 'F', chIso, _branches);
+  flatutils::book(_tree, name_, "nhIso", name_ + ".size", 'F', nhIso, _branches);
+  flatutils::book(_tree, name_, "phIso", name_ + ".size", 'F', phIso, _branches);
+  flatutils::book(_tree, name_, "sieie", name_ + ".size", 'F', sieie, _branches);
+  flatutils::book(_tree, name_, "hOverE", name_ + ".size", 'F', hOverE, _branches);
+  flatutils::book(_tree, name_, "matchedGen", name_ + ".size", 'I', matchedGen, _branches);
+  flatutils::book(_tree, name_, "hadDecay", name_ + ".size", 'O', hadDecay, _branches);
+  flatutils::book(_tree, name_, "pixelVeto", name_ + ".size", 'O', pixelVeto, _branches);
+  flatutils::book(_tree, name_, "csafeVeto", name_ + ".size", 'O', csafeVeto, _branches);
+  flatutils::book(_tree, name_, "loose", name_ + ".size", 'O', loose, _branches);
+  flatutils::book(_tree, name_, "medium", name_ + ".size", 'O', medium, _branches);
+  flatutils::book(_tree, name_, "tight", name_ + ".size", 'O', tight, _branches);
+  flatutils::book(_tree, name_, "matchHLT120", name_ + ".size", 'O', matchHLT120, _branches);
+  flatutils::book(_tree, name_, "matchHLT165HE10", name_ + ".size", 'O', matchHLT165HE10, _branches);
+  flatutils::book(_tree, name_, "matchHLT175", name_ + ".size", 'O', matchHLT175, _branches);
 }
 
 simpletree::LeptonCollection::LeptonCollection(TString const& _name) :
   ParticleMCollection(_name, kFALSE)
 {
-  objSize_ = sizeof(Lepton);
-  array_ = std::allocator<Lepton>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Lepton*>(p)) Lepton(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -626,12 +570,12 @@ simpletree::LeptonCollection::LeptonCollection(TString const& _name) :
 simpletree::LeptonCollection::LeptonCollection(LeptonCollection const& _src) :
   ParticleMCollection(_src.name_, kFALSE)
 {
-  objSize_ = sizeof(Lepton);
-  array_ = std::allocator<Lepton>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Lepton*>(p)) Lepton(*this, iP);
-    static_cast<Lepton*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -645,18 +589,18 @@ simpletree::LeptonCollection::LeptonCollection(TString const& _name, Bool_t) :
 simpletree::LeptonCollection::~LeptonCollection()
 {
   if (array_) {
-    std::allocator<Lepton>().deallocate(static_cast<Lepton*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::LeptonCollection&
-simpletree::LeptonCollection::operator=(LeptonCollection const& _rhs)
+simpletree::LeptonCollection::operator=(self_type const& _rhs)
 {
   ParticleMCollection::operator=(_rhs);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<Lepton*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -665,25 +609,23 @@ simpletree::LeptonCollection::operator=(LeptonCollection const& _rhs)
 simpletree::LeptonCollection::reference
 simpletree::LeptonCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Lepton*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("LeptonCollection::at");
 
-  throw std::out_of_range("LeptonCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::LeptonCollection::const_reference
 simpletree::LeptonCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Lepton const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("LeptonCollection::at");
 
-  throw std::out_of_range("LeptonCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::LeptonCollection::reference
@@ -691,7 +633,7 @@ simpletree::LeptonCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Lepton*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::LeptonCollection::const_reference
@@ -699,85 +641,68 @@ simpletree::LeptonCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Lepton const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::LeptonCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("LeptonCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("LeptonCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<Lepton*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
-simpletree::LeptonCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::LeptonCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleMCollection::setStatus(_tree, _status, _branches);
 
-  if (branchIn(&matchedGen, _branches))
-    _tree.SetBranchStatus(name_ + ".matchedGen", _status);
-  if (branchIn(&tauDecay, _branches))
-    _tree.SetBranchStatus(name_ + ".tauDecay", _status);
-  if (branchIn(&hadDecay, _branches))
-    _tree.SetBranchStatus(name_ + ".hadDecay", _status);
-  if (branchIn(&positive, _branches))
-    _tree.SetBranchStatus(name_ + ".positive", _status);
-  if (branchIn(&loose, _branches))
-    _tree.SetBranchStatus(name_ + ".loose", _status);
-  if (branchIn(&tight, _branches))
-    _tree.SetBranchStatus(name_ + ".tight", _status);
+  flatutils::setStatus(_tree, name_, "matchedGen", _status, _branches);
+  flatutils::setStatus(_tree, name_, "tauDecay", _status, _branches);
+  flatutils::setStatus(_tree, name_, "hadDecay", _status, _branches);
+  flatutils::setStatus(_tree, name_, "positive", _status, _branches);
+  flatutils::setStatus(_tree, name_, "loose", _status, _branches);
+  flatutils::setStatus(_tree, name_, "tight", _status, _branches);
 }
 
 void
-simpletree::LeptonCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::LeptonCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleMCollection::setAddress(_tree, _branches);
 
-  if (branchIn(&matchedGen, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchedGen", matchedGen);
-  if (branchIn(&tauDecay, _branches))
-    setStatusAndAddress(_tree, name_ + ".tauDecay", tauDecay);
-  if (branchIn(&hadDecay, _branches))
-    setStatusAndAddress(_tree, name_ + ".hadDecay", hadDecay);
-  if (branchIn(&positive, _branches))
-    setStatusAndAddress(_tree, name_ + ".positive", positive);
-  if (branchIn(&loose, _branches))
-    setStatusAndAddress(_tree, name_ + ".loose", loose);
-  if (branchIn(&tight, _branches))
-    setStatusAndAddress(_tree, name_ + ".tight", tight);
+  flatutils::setStatusAndAddress(_tree, name_, "matchedGen", matchedGen, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "tauDecay", tauDecay, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "hadDecay", hadDecay, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "positive", positive, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "loose", loose, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "tight", tight, _branches);
 }
 
 void
-simpletree::LeptonCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::LeptonCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   ParticleMCollection::book(_tree, _branches);
 
-  if (branchIn(&matchedGen, _branches))
-    _tree.Branch(name_ + ".matchedGen", matchedGen, "matchedGen[" + name_ + ".size]/I");
-  if (branchIn(&tauDecay, _branches))
-    _tree.Branch(name_ + ".tauDecay", tauDecay, "tauDecay[" + name_ + ".size]/O");
-  if (branchIn(&hadDecay, _branches))
-    _tree.Branch(name_ + ".hadDecay", hadDecay, "hadDecay[" + name_ + ".size]/O");
-  if (branchIn(&positive, _branches))
-    _tree.Branch(name_ + ".positive", positive, "positive[" + name_ + ".size]/O");
-  if (branchIn(&loose, _branches))
-    _tree.Branch(name_ + ".loose", loose, "loose[" + name_ + ".size]/O");
-  if (branchIn(&tight, _branches))
-    _tree.Branch(name_ + ".tight", tight, "tight[" + name_ + ".size]/O");
+  flatutils::book(_tree, name_, "matchedGen", name_ + ".size", 'I', matchedGen, _branches);
+  flatutils::book(_tree, name_, "tauDecay", name_ + ".size", 'O', tauDecay, _branches);
+  flatutils::book(_tree, name_, "hadDecay", name_ + ".size", 'O', hadDecay, _branches);
+  flatutils::book(_tree, name_, "positive", name_ + ".size", 'O', positive, _branches);
+  flatutils::book(_tree, name_, "loose", name_ + ".size", 'O', loose, _branches);
+  flatutils::book(_tree, name_, "tight", name_ + ".size", 'O', tight, _branches);
 }
 
 simpletree::ElectronCollection::ElectronCollection(TString const& _name) :
   LeptonCollection(_name, kFALSE)
 {
-  objSize_ = sizeof(Electron);
-  array_ = std::allocator<Electron>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Electron*>(p)) Electron(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -785,12 +710,12 @@ simpletree::ElectronCollection::ElectronCollection(TString const& _name) :
 simpletree::ElectronCollection::ElectronCollection(ElectronCollection const& _src) :
   LeptonCollection(_src.name_, kFALSE)
 {
-  objSize_ = sizeof(Electron);
-  array_ = std::allocator<Electron>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Electron*>(p)) Electron(*this, iP);
-    static_cast<Electron*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -804,18 +729,18 @@ simpletree::ElectronCollection::ElectronCollection(TString const& _name, Bool_t)
 simpletree::ElectronCollection::~ElectronCollection()
 {
   if (array_) {
-    std::allocator<Electron>().deallocate(static_cast<Electron*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::ElectronCollection&
-simpletree::ElectronCollection::operator=(ElectronCollection const& _rhs)
+simpletree::ElectronCollection::operator=(self_type const& _rhs)
 {
   LeptonCollection::operator=(_rhs);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<Electron*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -824,25 +749,23 @@ simpletree::ElectronCollection::operator=(ElectronCollection const& _rhs)
 simpletree::ElectronCollection::reference
 simpletree::ElectronCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Electron*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("ElectronCollection::at");
 
-  throw std::out_of_range("ElectronCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::ElectronCollection::const_reference
 simpletree::ElectronCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Electron const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("ElectronCollection::at");
 
-  throw std::out_of_range("ElectronCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::ElectronCollection::reference
@@ -850,7 +773,7 @@ simpletree::ElectronCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Electron*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::ElectronCollection::const_reference
@@ -858,91 +781,71 @@ simpletree::ElectronCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Electron const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::ElectronCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("ElectronCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("ElectronCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<Electron*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
-simpletree::ElectronCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::ElectronCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   LeptonCollection::setStatus(_tree, _status, _branches);
 
-  if (branchIn(&chIsoPh, _branches))
-    _tree.SetBranchStatus(name_ + ".chIsoPh", _status);
-  if (branchIn(&nhIsoPh, _branches))
-    _tree.SetBranchStatus(name_ + ".nhIsoPh", _status);
-  if (branchIn(&phIsoPh, _branches))
-    _tree.SetBranchStatus(name_ + ".phIsoPh", _status);
-  if (branchIn(&sieie, _branches))
-    _tree.SetBranchStatus(name_ + ".sieie", _status);
-  if (branchIn(&hOverE, _branches))
-    _tree.SetBranchStatus(name_ + ".hOverE", _status);
-  if (branchIn(&matchHLT23Loose, _branches))
-    _tree.SetBranchStatus(name_ + ".matchHLT23Loose", _status);
-  if (branchIn(&matchHLT27Loose, _branches))
-    _tree.SetBranchStatus(name_ + ".matchHLT27Loose", _status);
+  flatutils::setStatus(_tree, name_, "chIsoPh", _status, _branches);
+  flatutils::setStatus(_tree, name_, "nhIsoPh", _status, _branches);
+  flatutils::setStatus(_tree, name_, "phIsoPh", _status, _branches);
+  flatutils::setStatus(_tree, name_, "sieie", _status, _branches);
+  flatutils::setStatus(_tree, name_, "hOverE", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchHLT23Loose", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchHLT27Loose", _status, _branches);
 }
 
 void
-simpletree::ElectronCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::ElectronCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   LeptonCollection::setAddress(_tree, _branches);
 
-  if (branchIn(&chIsoPh, _branches))
-    setStatusAndAddress(_tree, name_ + ".chIsoPh", chIsoPh);
-  if (branchIn(&nhIsoPh, _branches))
-    setStatusAndAddress(_tree, name_ + ".nhIsoPh", nhIsoPh);
-  if (branchIn(&phIsoPh, _branches))
-    setStatusAndAddress(_tree, name_ + ".phIsoPh", phIsoPh);
-  if (branchIn(&sieie, _branches))
-    setStatusAndAddress(_tree, name_ + ".sieie", sieie);
-  if (branchIn(&hOverE, _branches))
-    setStatusAndAddress(_tree, name_ + ".hOverE", hOverE);
-  if (branchIn(&matchHLT23Loose, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchHLT23Loose", matchHLT23Loose);
-  if (branchIn(&matchHLT27Loose, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchHLT27Loose", matchHLT27Loose);
+  flatutils::setStatusAndAddress(_tree, name_, "chIsoPh", chIsoPh, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "nhIsoPh", nhIsoPh, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "phIsoPh", phIsoPh, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "sieie", sieie, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "hOverE", hOverE, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT23Loose", matchHLT23Loose, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT27Loose", matchHLT27Loose, _branches);
 }
 
 void
-simpletree::ElectronCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::ElectronCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   LeptonCollection::book(_tree, _branches);
 
-  if (branchIn(&chIsoPh, _branches))
-    _tree.Branch(name_ + ".chIsoPh", chIsoPh, "chIsoPh[" + name_ + ".size]/F");
-  if (branchIn(&nhIsoPh, _branches))
-    _tree.Branch(name_ + ".nhIsoPh", nhIsoPh, "nhIsoPh[" + name_ + ".size]/F");
-  if (branchIn(&phIsoPh, _branches))
-    _tree.Branch(name_ + ".phIsoPh", phIsoPh, "phIsoPh[" + name_ + ".size]/F");
-  if (branchIn(&sieie, _branches))
-    _tree.Branch(name_ + ".sieie", sieie, "sieie[" + name_ + ".size]/F");
-  if (branchIn(&hOverE, _branches))
-    _tree.Branch(name_ + ".hOverE", hOverE, "hOverE[" + name_ + ".size]/F");
-  if (branchIn(&matchHLT23Loose, _branches))
-    _tree.Branch(name_ + ".matchHLT23Loose", matchHLT23Loose, "matchHLT23Loose[" + name_ + ".size]/O");
-  if (branchIn(&matchHLT27Loose, _branches))
-    _tree.Branch(name_ + ".matchHLT27Loose", matchHLT27Loose, "matchHLT27Loose[" + name_ + ".size]/O");
+  flatutils::book(_tree, name_, "chIsoPh", name_ + ".size", 'F', chIsoPh, _branches);
+  flatutils::book(_tree, name_, "nhIsoPh", name_ + ".size", 'F', nhIsoPh, _branches);
+  flatutils::book(_tree, name_, "phIsoPh", name_ + ".size", 'F', phIsoPh, _branches);
+  flatutils::book(_tree, name_, "sieie", name_ + ".size", 'F', sieie, _branches);
+  flatutils::book(_tree, name_, "hOverE", name_ + ".size", 'F', hOverE, _branches);
+  flatutils::book(_tree, name_, "matchHLT23Loose", name_ + ".size", 'O', matchHLT23Loose, _branches);
+  flatutils::book(_tree, name_, "matchHLT27Loose", name_ + ".size", 'O', matchHLT27Loose, _branches);
 }
 
 simpletree::MuonCollection::MuonCollection(TString const& _name) :
   LeptonCollection(_name, kFALSE)
 {
-  objSize_ = sizeof(Muon);
-  array_ = std::allocator<Muon>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Muon*>(p)) Muon(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -950,12 +853,12 @@ simpletree::MuonCollection::MuonCollection(TString const& _name) :
 simpletree::MuonCollection::MuonCollection(MuonCollection const& _src) :
   LeptonCollection(_src.name_, kFALSE)
 {
-  objSize_ = sizeof(Muon);
-  array_ = std::allocator<Muon>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<Muon*>(p)) Muon(*this, iP);
-    static_cast<Muon*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -969,18 +872,18 @@ simpletree::MuonCollection::MuonCollection(TString const& _name, Bool_t) :
 simpletree::MuonCollection::~MuonCollection()
 {
   if (array_) {
-    std::allocator<Muon>().deallocate(static_cast<Muon*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::MuonCollection&
-simpletree::MuonCollection::operator=(MuonCollection const& _rhs)
+simpletree::MuonCollection::operator=(self_type const& _rhs)
 {
   LeptonCollection::operator=(_rhs);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<Muon*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -989,25 +892,23 @@ simpletree::MuonCollection::operator=(MuonCollection const& _rhs)
 simpletree::MuonCollection::reference
 simpletree::MuonCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Muon*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("MuonCollection::at");
 
-  throw std::out_of_range("MuonCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::MuonCollection::const_reference
 simpletree::MuonCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<Muon const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("MuonCollection::at");
 
-  throw std::out_of_range("MuonCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::MuonCollection::reference
@@ -1015,7 +916,7 @@ simpletree::MuonCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Muon*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::MuonCollection::const_reference
@@ -1023,61 +924,56 @@ simpletree::MuonCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<Muon const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
 simpletree::MuonCollection::push_back(const_reference val)
 {
-  if (size == NMAX - 1)    throw std::length_error("MuonCollection::push_back");
+  if (size == NMAX)
+    throw std::length_error("MuonCollection::push_back");
 
   auto* p(array_);
   flatutils::shiftAddr(p, size * objSize_);
-  static_cast<Muon*>(p)->operator=(val);
+  static_cast<pointer>(p)->operator=(val);
   ++size;
 }
 
 void
-simpletree::MuonCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::MuonCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   LeptonCollection::setStatus(_tree, _status, _branches);
 
-  if (branchIn(&matchHLT24, _branches))
-    _tree.SetBranchStatus(name_ + ".matchHLT24", _status);
-  if (branchIn(&matchHLT27, _branches))
-    _tree.SetBranchStatus(name_ + ".matchHLT27", _status);
+  flatutils::setStatus(_tree, name_, "matchHLT24", _status, _branches);
+  flatutils::setStatus(_tree, name_, "matchHLT27", _status, _branches);
 }
 
 void
-simpletree::MuonCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::MuonCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   LeptonCollection::setAddress(_tree, _branches);
 
-  if (branchIn(&matchHLT24, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchHLT24", matchHLT24);
-  if (branchIn(&matchHLT27, _branches))
-    setStatusAndAddress(_tree, name_ + ".matchHLT27", matchHLT27);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT24", matchHLT24, _branches);
+  flatutils::setStatusAndAddress(_tree, name_, "matchHLT27", matchHLT27, _branches);
 }
 
 void
-simpletree::MuonCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::MuonCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
   LeptonCollection::book(_tree, _branches);
 
-  if (branchIn(&matchHLT24, _branches))
-    _tree.Branch(name_ + ".matchHLT24", matchHLT24, "matchHLT24[" + name_ + ".size]/O");
-  if (branchIn(&matchHLT27, _branches))
-    _tree.Branch(name_ + ".matchHLT27", matchHLT27, "matchHLT27[" + name_ + ".size]/O");
+  flatutils::book(_tree, name_, "matchHLT24", name_ + ".size", 'O', matchHLT24, _branches);
+  flatutils::book(_tree, name_, "matchHLT27", name_ + ".size", 'O', matchHLT27, _branches);
 }
 
 simpletree::HLTCollection::HLTCollection(TString const& _name) :
   name_(_name)
 {
-  objSize_ = sizeof(HLT);
-  array_ = std::allocator<HLT>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<HLT*>(p)) HLT(*this, iP);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -1085,12 +981,12 @@ simpletree::HLTCollection::HLTCollection(TString const& _name) :
 simpletree::HLTCollection::HLTCollection(HLTCollection const& _src) :
   name_(_src.name_)
 {
-  objSize_ = sizeof(HLT);
-  array_ = std::allocator<HLT>().allocate(NMAX);
+  objSize_ = sizeof(value_type);
+  array_ = std::allocator<value_type>().allocate(NMAX);
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    new (static_cast<HLT*>(p)) HLT(*this, iP);
-    static_cast<HLT*>(p)->operator=(_src[iP]);
+    new (static_cast<pointer>(p)) value_type(*this, iP);
+    static_cast<pointer>(p)->operator=(_src[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
 }
@@ -1104,18 +1000,18 @@ simpletree::HLTCollection::HLTCollection(TString const& _name, Bool_t) :
 simpletree::HLTCollection::~HLTCollection()
 {
   if (array_) {
-    std::allocator<HLT>().deallocate(static_cast<HLT*>(array_), NMAX);
+    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);
     array_ = 0;
   }
 }
 
 simpletree::HLTCollection&
-simpletree::HLTCollection::operator=(HLTCollection const& _rhs)
+simpletree::HLTCollection::operator=(self_type const& _rhs)
 {
   name_ = _rhs.name_;
   auto* p(array_);
   for (unsigned iP(0); iP != NMAX; ++iP) {
-    static_cast<HLT*>(p)->operator=(_rhs[iP]);
+    static_cast<pointer>(p)->operator=(_rhs[iP]);
     flatutils::shiftAddr(p, objSize_);
   }
   return *this;
@@ -1124,25 +1020,23 @@ simpletree::HLTCollection::operator=(HLTCollection const& _rhs)
 simpletree::HLTCollection::reference
 simpletree::HLTCollection::at(UInt_t _idx)
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<HLT*>(p);
-  }
+  if (_idx >= size)
+    throw std::out_of_range("HLTCollection::at");
 
-  throw std::out_of_range("HLTCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::HLTCollection::const_reference
 simpletree::HLTCollection::at(UInt_t _idx) const
 {
-  if (_idx < size) {
-    auto* p(array_);
-    flatutils::shiftAddr(p, _idx * objSize_);
-    return *static_cast<HLT const*>(p);
-  }
+  if (_idx < size)
+    throw std::out_of_range("HLTCollection::at");
 
-  throw std::out_of_range("HLTCollection::at");
+  auto* p(array_);
+  flatutils::shiftAddr(p, _idx * objSize_);
+  return *static_cast<const_pointer>(p);
 }
 
 simpletree::HLTCollection::reference
@@ -1150,7 +1044,7 @@ simpletree::HLTCollection::operator[](UInt_t _idx)
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<HLT*>(p);
+  return *static_cast<pointer>(p);
 }
 
 simpletree::HLTCollection::const_reference
@@ -1158,27 +1052,24 @@ simpletree::HLTCollection::operator[](UInt_t _idx) const
 {
   auto* p(array_);
   flatutils::shiftAddr(p, _idx * objSize_);
-  return *static_cast<HLT const*>(p);
+  return *static_cast<const_pointer>(p);
 }
 
 void
-simpletree::HLTCollection::setStatus(TTree& _tree, Bool_t _status, BranchList const& _branches/* = BranchList()*/)
+simpletree::HLTCollection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  if (branchIn(&pass, _branches))
-    _tree.SetBranchStatus(name_ + ".pass", _status);
+  flatutils::setStatus(_tree, name_, "pass", _status, _branches);
 }
 
 void
-simpletree::HLTCollection::setAddress(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::HLTCollection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  if (branchIn(&pass, _branches))
-    setStatusAndAddress(_tree, name_ + ".pass", pass);
+  flatutils::setStatusAndAddress(_tree, name_, "pass", pass, _branches);
 }
 
 void
-simpletree::HLTCollection::book(TTree& _tree, BranchList const& _branches/* = BranchList()*/)
+simpletree::HLTCollection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  if (branchIn(&pass, _branches))
-    _tree.Branch(name_ + ".pass", pass, "pass[" + TString::Format("%d", NMAX) + "]/O");
+  flatutils::book(_tree, name_, "pass", TString::Format("%d", NMAX), 'O', pass, _branches);
 }
 

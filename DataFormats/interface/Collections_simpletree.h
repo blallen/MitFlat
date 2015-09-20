@@ -10,33 +10,37 @@ namespace simpletree {
   class ParticleCollection {
   public:
     static UInt_t const NMAX = 256;
-    typedef simpletree::Particle value_type;
+    typedef ParticleCollection self_type;
+    typedef ParticleCollection container_type;
+    typedef Particle value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<Particle> iterator;
-    typedef flatutils::const_iterator<Particle> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     ParticleCollection(TString const& name = "particles");
     ParticleCollection(ParticleCollection const&);
     virtual ~ParticleCollection();
-    ParticleCollection& operator=(ParticleCollection const&);
+    ParticleCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<Particle*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<Particle*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Particle*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Particle*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
     void clear() { resize(0); }
     void resize(UInt_t size);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     ParticleCollection(TString const&, Bool_t);
@@ -53,31 +57,35 @@ namespace simpletree {
 
   class ParticleMCollection : public ParticleCollection {
   public:
-    typedef simpletree::ParticleM value_type;
+    typedef ParticleMCollection self_type;
+    typedef ParticleMCollection container_type;
+    typedef ParticleM value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<ParticleM> iterator;
-    typedef flatutils::const_iterator<ParticleM> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     ParticleMCollection(TString const& name = "particlems");
     ParticleMCollection(ParticleMCollection const&);
     virtual ~ParticleMCollection();
-    ParticleMCollection& operator=(ParticleMCollection const&);
+    ParticleMCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<ParticleM*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<ParticleM*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<ParticleM*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<ParticleM*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     ParticleMCollection(TString const&, Bool_t);
@@ -88,31 +96,35 @@ namespace simpletree {
 
   class JetCollection : public ParticleMCollection {
   public:
-    typedef simpletree::Jet value_type;
+    typedef JetCollection self_type;
+    typedef JetCollection container_type;
+    typedef Jet value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<Jet> iterator;
-    typedef flatutils::const_iterator<Jet> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     JetCollection(TString const& name = "jets");
     JetCollection(JetCollection const&);
     virtual ~JetCollection();
-    JetCollection& operator=(JetCollection const&);
+    JetCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<Jet*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<Jet*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Jet*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Jet*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     JetCollection(TString const&, Bool_t);
@@ -120,31 +132,35 @@ namespace simpletree {
 
   class PhotonCollection : public ParticleCollection {
   public:
-    typedef simpletree::Photon value_type;
+    typedef PhotonCollection self_type;
+    typedef PhotonCollection container_type;
+    typedef Photon value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<Photon> iterator;
-    typedef flatutils::const_iterator<Photon> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     PhotonCollection(TString const& name = "photons");
     PhotonCollection(PhotonCollection const&);
     virtual ~PhotonCollection();
-    PhotonCollection& operator=(PhotonCollection const&);
+    PhotonCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<Photon*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<Photon*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Photon*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Photon*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     PhotonCollection(TString const&, Bool_t);
@@ -162,37 +178,42 @@ namespace simpletree {
     Bool_t loose[NMAX]{};
     Bool_t medium[NMAX]{};
     Bool_t tight[NMAX]{};
+    Bool_t matchHLT120[NMAX]{};
     Bool_t matchHLT165HE10[NMAX]{};
     Bool_t matchHLT175[NMAX]{};
   };
 
   class LeptonCollection : public ParticleMCollection {
   public:
-    typedef simpletree::Lepton value_type;
+    typedef LeptonCollection self_type;
+    typedef LeptonCollection container_type;
+    typedef Lepton value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<Lepton> iterator;
-    typedef flatutils::const_iterator<Lepton> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     LeptonCollection(TString const& name = "leptons");
     LeptonCollection(LeptonCollection const&);
     virtual ~LeptonCollection();
-    LeptonCollection& operator=(LeptonCollection const&);
+    LeptonCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<Lepton*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<Lepton*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Lepton*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Lepton*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     LeptonCollection(TString const&, Bool_t);
@@ -208,31 +229,35 @@ namespace simpletree {
 
   class ElectronCollection : public LeptonCollection {
   public:
-    typedef simpletree::Electron value_type;
+    typedef ElectronCollection self_type;
+    typedef ElectronCollection container_type;
+    typedef Electron value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<Electron> iterator;
-    typedef flatutils::const_iterator<Electron> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     ElectronCollection(TString const& name = "electrons");
     ElectronCollection(ElectronCollection const&);
     virtual ~ElectronCollection();
-    ElectronCollection& operator=(ElectronCollection const&);
+    ElectronCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<Electron*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<Electron*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Electron*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Electron*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     ElectronCollection(TString const&, Bool_t);
@@ -249,31 +274,35 @@ namespace simpletree {
 
   class MuonCollection : public LeptonCollection {
   public:
-    typedef simpletree::Muon value_type;
+    typedef MuonCollection self_type;
+    typedef MuonCollection container_type;
+    typedef Muon value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<Muon> iterator;
-    typedef flatutils::const_iterator<Muon> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     MuonCollection(TString const& name = "muons");
     MuonCollection(MuonCollection const&);
     virtual ~MuonCollection();
-    MuonCollection& operator=(MuonCollection const&);
+    MuonCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<Muon*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<Muon*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<Muon*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<Muon*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
     void push_back(const_reference);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     MuonCollection(TString const&, Bool_t);
@@ -285,32 +314,36 @@ namespace simpletree {
 
   class HLTCollection {
   public:
-    static UInt_t const NMAX = 8;
+    static UInt_t const NMAX = 9;
     static UInt_t const size = NMAX;
-    typedef simpletree::HLT value_type;
+    typedef HLTCollection self_type;
+    typedef HLTCollection container_type;
+    typedef HLT value_type;
+    typedef value_type* pointer;
+    typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
-    typedef flatutils::iterator<HLT> iterator;
-    typedef flatutils::const_iterator<HLT> const_iterator;
+    typedef flatutils::iterator<container_type> iterator;
+    typedef flatutils::const_iterator<container_type> const_iterator;
 
     HLTCollection(TString const& name = "hlts");
     HLTCollection(HLTCollection const&);
     virtual ~HLTCollection();
-    HLTCollection& operator=(HLTCollection const&);
+    HLTCollection& operator=(self_type const&);
 
     reference at(UInt_t idx);
     const_reference at(UInt_t idx) const;
     reference operator[](UInt_t);
     const_reference operator[](UInt_t) const;
-    iterator begin() { return iterator(static_cast<HLT*>(array_), objSize_); }
-    const_iterator begin() const { return const_iterator(static_cast<HLT*>(array_), objSize_); }
-    iterator end() { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return iterator(static_cast<HLT*>(p), objSize_); }
-    const_iterator end() const { auto* p(array_); flatutils::shiftAddr(p, size * objSize_); return const_iterator(static_cast<HLT*>(p), objSize_); }
+    iterator begin() { return iterator(array_, objSize_); }
+    const_iterator begin() const { return const_iterator(array_, objSize_); }
+    iterator end() { return flatutils::end<container_type>(array_, objSize_, size); }
+    const_iterator end() const { return flatutils::cend<container_type>(array_, objSize_, size); }
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
   protected:
     HLTCollection(TString const&, Bool_t);

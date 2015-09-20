@@ -1,5 +1,6 @@
 #ifndef Objects_simpletree_h
 #define Objects_simpletree_h
+#include "Utils.h"
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
@@ -10,12 +11,9 @@ class TTree;
 namespace simpletree {
 
   typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
-  typedef std::vector<void*> BranchList;
-
-  Bool_t branchIn(void* bPtr, BranchList const&);
-  void setStatusAndAddress(TTree&, TString const& bName, void* bPtr);
 
   enum HLTPath {
+    kPhoton120,
     kPhoton165HE10,
     kPhoton175,
     kEle23Loose,
@@ -80,9 +78,9 @@ namespace simpletree {
     Met& operator=(Met const&);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, BranchList const& = BranchList());
-    virtual void setAddress(TTree&, BranchList const& = BranchList());
-    virtual void book(TTree&, BranchList const& = BranchList());
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
 
     TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
@@ -90,9 +88,9 @@ namespace simpletree {
     TString name_;
 
   public:
-    Float_t met;
-    Float_t phi;
-    Float_t sumEt;
+    Float_t met{};
+    Float_t phi{};
+    Float_t sumEt{};
   };
 
   class Photon : public Particle {
@@ -115,6 +113,7 @@ namespace simpletree {
     Bool_t& loose;
     Bool_t& medium;
     Bool_t& tight;
+    Bool_t& matchHLT120;
     Bool_t& matchHLT165HE10;
     Bool_t& matchHLT175;
   };
@@ -176,7 +175,6 @@ namespace simpletree {
   public:
     Bool_t& pass;
   };
-
 }
 
 #endif

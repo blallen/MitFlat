@@ -5,6 +5,7 @@
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
 enum HLTPath {
+  kPhoton120,
   kPhoton165HE10,
   kPhoton175,
   kEle23Loose,
@@ -47,6 +48,7 @@ csafeVeto/O
 loose/O
 medium/O
 tight/O
+matchHLT120/O
 matchHLT165HE10/O
 matchHLT175/O
 
