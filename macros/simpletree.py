@@ -16,6 +16,7 @@ from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
 # this has to be in the same order as the HLTPaths enum
 if analysis.isRealData:
     hltPaths = [
+        'Photon120',
         'Photon165_HE10',
         'Photon175',
         'Ele23_WPLoose_Gsf',
@@ -28,6 +29,7 @@ if analysis.isRealData:
 
 else: # translate to Spring15 menu
     hltPaths = [
+        'Photon120',
         'Photon165_HE10',
         'Photon175',
         'Ele23_CaloIdL_TrackIdL_IsoVL',

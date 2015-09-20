@@ -67,22 +67,6 @@ namespace flatutils {
 
 }
 
-template<class C>
-flatutils::iterator<C>
-flatutils::end(void* _ptr, UInt_t _objSize, UInt_t _colSize)
-{
-  shiftAddr(_ptr, _objSize * _colSize);
-  return iterator<C>(_ptr, _objSize);
-}
-
-template<class C>
-flatutils::const_iterator<C>
-flatutils::cend(void* _ptr, UInt_t _objSize, UInt_t _colSize)
-{
-  shiftAddr(_ptr, _objSize * _colSize);
-  return const_iterator<C>(_ptr, _objSize);
-}
-
 Bool_t
 flatutils::branchIn(TString const& _bName, BranchList const& _bList)
 {
@@ -175,6 +159,9 @@ flatutils::book(TTree& _tree, TString const& _objName, TString const& _bName, TS
   TString lExpr(_bName);
   if (_size.Length() != 0)
     lExpr += "[" + _size + "]";
+
+  lExpr += "/";
+  lExpr += _lType;
 
   _tree.Branch(bFullName, _bPtr, lExpr);
 

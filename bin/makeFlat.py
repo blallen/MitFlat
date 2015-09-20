@@ -218,7 +218,7 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
         header.write('\n  public:')
 
         if obj in singleObjs:
-            header.write('\n    ' + obj + '(TString const& name = "' + obj.lower() + '")')
+            header.write('\n    ' + obj + '(TString const& name)')
             if obj in inheritance:
                 header.write(' : ' + inheritance(obj) + '(name)')
             else:
@@ -227,19 +227,20 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
         else:
             header.write('\n    struct array_data')
             if obj in inheritance:
-                header.write(' : public typename ' + inheritance[obj] + '::array_data')
+                header.write(' : public ' + inheritance[obj] + '::array_data')
             header.write(' {')
             if obj not in inheritance:
-                header.write('\n    static UInt_t const NMAX{' + sizes[obj] + '};\n')
+                header.write('\n      static UInt_t const NMAX{' + str(sizes[obj]) + '};\n')
 
-            for brName, brType in defs[obj][0]:
-                header.write('\n    ' + branchType(brType) + ' ' + brName + '[NMAX];')
+            if len(defs[obj][0]) != 0:
+                for brName, brType in defs[obj][0]:
+                    header.write('\n      ' + branchType(brType) + ' ' + brName + '[NMAX]{};')
+                header.write('\n')
+                header.write('\n      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});')
+                header.write('\n      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});')
+                header.write('\n      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});')
 
-            header.write('\n')
-            header.write('\n    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});')
-            header.write('\n    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});')
-            header.write('\n    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});')
-            header.write('\n};')
+            header.write('\n    };\n')
 
             header.write('\n    ' + obj + '(array_data&, UInt_t idx);')
 
@@ -285,40 +286,42 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
     header.write('#include "' + PACKAGE + '/interface/Collection.h"\n')
     header.write('#include "' + PACKAGE + '/interface/Objects_' + namespace + '.h"\n')
 
-    header.write('namespace ' + namespace + ' {\n\n')
+    header.write('\nnamespace ' + namespace + ' {\n')
 
     if len(colObjs) != 0:
         for obj in colObjs:
             if obj in inheritance:
-                base = inheritance[obj]
+                base = inheritance[obj] + 'Collection'
             elif obj in fixedSize:
-                base = 'BaseCollection<kTRUE>'
+                base = 'flatutils::BaseCollection<kTRUE>'
             else:
-                base = 'BaseCollection<kFALSE>'
+                base = 'flatutils::BaseCollection<kFALSE>'
 
-            header.write('\n  typedef Collection<' + obj + ', ' + base + '> ' + obj + 'Collection;')
+            header.write('\n  typedef flatutils::Collection<' + obj + ', ' + base + '> ' + obj + 'Collection;')
 
         header.write('\n')
 
     for tree in trees:
-        header.write('  class ' + tree + ' {\n')
-        header.write('  public:\n')
-    
-        for func in treeDefs[tree][1]:
-            header.write('    ' + func + '\n')
-        
-        if len(treeDefs[tree][1]):
-            header.write('\n')
-    
-        for brName, brType in treeDefs[tree][0]:
-            if isSimple(brType):
-                header.write('    ' + branchType(brType) + ' ' + brName + '{};\n')
+        header.write('\n  class ' + tree + ' {')
+        header.write('\n  public:')
 
-        for brName, brType in treeDefs[tree][0]:
-            if not isSimple(brType):
-                header.write('    ' + branchType(brType) + ' ' + brName + ' = ' + branchType(brType) + '("' + brName + '");\n')
+        if len(treeDefs[tree][1]) != 0:    
+          for func in treeDefs[tree][1]:
+              header.write('\n    ' + func)
+
+          header.write('\n')
+
+        if len(treeDefs[tree][0]) != 0:
+            for brName, brType in treeDefs[tree][0]:
+                if isSimple(brType):
+                    header.write('\n    ' + branchType(brType) + ' ' + brName + '{};')
     
-        header.write('\n')
+            for brName, brType in treeDefs[tree][0]:
+                if not isSimple(brType):
+                    header.write('\n    ' + branchType(brType) + ' ' + brName + ' = ' + branchType(brType) + '("' + brName + '");')
+    
+            header.write('\n')
+
         header.write('    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});\n')
         header.write('    void setAddress(TTree&, flatutils::BranchList const& = {"*"});\n')
         header.write('    void book(TTree&, flatutils::BranchList const& = {"*"});\n')
@@ -335,6 +338,8 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
     for obj in objs:
         if obj in singleObjs:
+            # single objects
+
             src.write(namespace + '::' + obj + '::' + obj + '(' + obj + ' const& _src) :\n')
             if obj in inheritance:
                 src.write('  ' + inheritance(obj) + '(_src)')
@@ -380,35 +385,38 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
             src.write('}\n\n')
 
         else:
-            src.write('void\n')
-            src.write(namespace + '::' + obj + '::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
-            src.write('{\n')
-            if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::array_data::setStatus(_tree, _name, _status, _branches);\n\n')
+            # collection elements
 
-            for brName, brType in defs[obj][0]:
-                src.write('  flatutils::setStatus(_tree, _name, "' + brName + '", _status, _branches);\n')
-            src.write('}\n\n') 
-
-            src.write('void\n')
-            src.write(namespace + '::' + obj + '::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
-            src.write('{\n')
-            if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::array_data::setAddress(_tree, _name, _branches);\n\n')
-
-            for brName, brType in defs[obj][0]:
-                src.write('  flatutils::setStatusAndAddress(_tree, _name, "' + brName + '", ' + brName + ', _branches);\n')
-            src.write('}\n\n')
+            if len(defs[obj][0]) != 0:
+                src.write('void\n')
+                src.write(namespace + '::' + obj + '::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+                src.write('{\n')
+                if obj in inheritance:
+                    src.write('  ' + inheritance[obj] + '::array_data::setStatus(_tree, _name, _status, _branches);\n\n')
     
-            src.write('void\n')
-            src.write(namespace + '::' + obj + '::array_data::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
-            src.write('{\n')
-            if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::array_data::book(_tree, _branches);\n\n')
-
-            for brName, brType in defs[obj][0]:
-                src.write('  flatutils::book(_tree, _name, "' + brName + '", "", \'' + brType + '\', ' + brName + ', _branches);\n')
-            src.write('}\n\n')
+                for brName, brType in defs[obj][0]:
+                    src.write('  flatutils::setStatus(_tree, _name, "' + brName + '", _status, _branches);\n')
+                src.write('}\n\n') 
+    
+                src.write('void\n')
+                src.write(namespace + '::' + obj + '::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+                src.write('{\n')
+                if obj in inheritance:
+                    src.write('  ' + inheritance[obj] + '::array_data::setAddress(_tree, _name, _branches);\n\n')
+    
+                for brName, brType in defs[obj][0]:
+                    src.write('  flatutils::setStatusAndAddress(_tree, _name, "' + brName + '", ' + brName + ', _branches);\n')
+                src.write('}\n\n')
+        
+                src.write('void\n')
+                src.write(namespace + '::' + obj + '::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+                src.write('{\n')
+                if obj in inheritance:
+                    src.write('  ' + inheritance[obj] + '::array_data::book(_tree, _name, _branches);\n\n')
+    
+                for brName, brType in defs[obj][0]:
+                    src.write('  flatutils::book(_tree, _name, "' + brName + '", "", \'' + brType + '\', ' + brName + ', _branches);\n')
+                src.write('}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(array_data& _data, UInt_t _idx) :')
             if obj in inheritance:
@@ -416,7 +424,7 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 if len(defs[obj][0]) != 0:
                     src.write(',')
             for brName, brType in defs[obj][0]:
-                src.write('\n  ' + brName + '(_data.' + brName + '[idx])')
+                src.write('\n  ' + brName + '(_data.' + brName + '[_idx])')
                 if brName != defs[obj][0][-1][0]:
                     src.write(',')
             src.write('\n{\n}\n\n')
@@ -441,178 +449,6 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
             src.write('\n  ' + brName + ' = _rhs.' + brName + ';')
         src.write('\n')
         src.write('  return *this;\n')
-        src.write('}\n\n')
-
-
-# Collection source
-with open(FULLPATH + '/src/Collections_' + namespace + '.cc', 'w') as src:
-    src.write('#include "' + PACKAGE + '/interface/Collections_' + namespace + '.h"\n')
-    src.write('#include "TTree.h"\n')
-    src.write('#include <stdexcept>\n')
-    src.write('#include <memory>\n\n')
-
-    for obj in colObjs:
-        src.write(namespace + '::' + obj + 'Collection::' + obj + 'Collection(TString const& _name) :\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection(_name, kFALSE)\n')
-        else:
-            src.write('  name_(_name)\n')
-        src.write('{\n')
-        src.write('  objSize_ = sizeof(value_type);\n')
-        src.write('  array_ = std::allocator<value_type>().allocate(NMAX);\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  for (unsigned iP(0); iP != NMAX; ++iP) {\n')
-        src.write('    new (static_cast<pointer>(p)) value_type(*this, iP);\n')
-        src.write('    flatutils::shiftAddr(p, objSize_);\n')
-        src.write('  }\n')
-        src.write('}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection::' + obj + 'Collection(' + obj + 'Collection const& _src) :\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection(_src.name_, kFALSE)\n')
-        else:
-            src.write('  name_(_src.name_)\n')
-        src.write('{\n')
-        src.write('  objSize_ = sizeof(value_type);\n')
-        src.write('  array_ = std::allocator<value_type>().allocate(NMAX);\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  for (unsigned iP(0); iP != NMAX; ++iP) {\n')
-        src.write('    new (static_cast<pointer>(p)) value_type(*this, iP);\n')
-        src.write('    static_cast<pointer>(p)->operator=(_src[iP]);\n')
-        src.write('    flatutils::shiftAddr(p, objSize_);\n')
-        src.write('  }\n')
-        src.write('}\n\n')
-
-        src.write('//protected\n')
-        src.write(namespace + '::' + obj + 'Collection::' + obj + 'Collection(TString const& _name, Bool_t) :\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection(_name, kFALSE)\n')
-        else:
-            src.write('  name_(_name)\n')
-        src.write('{\n}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection::~' + obj + 'Collection()\n')
-        src.write('{\n')
-        src.write('  if (array_) {\n')
-        src.write('    std::allocator<value_type>().deallocate(static_cast<pointer>(array_), NMAX);\n')
-        src.write('    array_ = 0;\n')
-        src.write('  }\n')
-        src.write('}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection&\n')
-        src.write(namespace + '::' + obj + 'Collection::operator=(self_type const& _rhs)\n')
-        src.write('{\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection::operator=(_rhs);\n')
-        else:
-            src.write('  name_ = _rhs.name_;\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  for (unsigned iP(0); iP != NMAX; ++iP) {\n')
-        src.write('    static_cast<pointer>(p)->operator=(_rhs[iP]);\n')
-        src.write('    flatutils::shiftAddr(p, objSize_);\n')
-        src.write('  }\n')
-        src.write('  return *this;\n')
-        src.write('}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection::reference\n')
-        src.write(namespace + '::' + obj + 'Collection::at(UInt_t _idx)\n')
-        src.write('{\n')
-        src.write('  if (_idx >= size)\n')
-        src.write('    throw std::out_of_range("' + obj + 'Collection::at");\n\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  flatutils::shiftAddr(p, _idx * objSize_);\n')
-        src.write('  return *static_cast<pointer>(p);\n')
-        src.write('}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection::const_reference\n')
-        src.write(namespace + '::' + obj + 'Collection::at(UInt_t _idx) const\n')
-        src.write('{\n')
-        src.write('  if (_idx < size)\n')
-        src.write('    throw std::out_of_range("' + obj + 'Collection::at");\n\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  flatutils::shiftAddr(p, _idx * objSize_);\n')
-        src.write('  return *static_cast<const_pointer>(p);\n')
-        src.write('}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection::reference\n')
-        src.write(namespace + '::' + obj + 'Collection::operator[](UInt_t _idx)\n')
-        src.write('{\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  flatutils::shiftAddr(p, _idx * objSize_);\n')
-        src.write('  return *static_cast<pointer>(p);\n')
-        src.write('}\n\n')
-
-        src.write(namespace + '::' + obj + 'Collection::const_reference\n')
-        src.write(namespace + '::' + obj + 'Collection::operator[](UInt_t _idx) const\n')
-        src.write('{\n')
-        src.write('  auto* p(array_);\n')
-        src.write('  flatutils::shiftAddr(p, _idx * objSize_);\n')
-        src.write('  return *static_cast<const_pointer>(p);\n')
-        src.write('}\n\n')
-
-        if obj not in fixedSize:
-            src.write('void\n')
-            src.write(namespace + '::' + obj + 'Collection::push_back(const_reference val)\n')
-            src.write('{\n')
-            src.write('  if (size == NMAX)\n')
-            src.write('    throw std::length_error("' + obj + 'Collection::push_back");\n\n')
-            src.write('  auto* p(array_);\n')
-            src.write('  flatutils::shiftAddr(p, size * objSize_);\n')
-            src.write('  static_cast<pointer>(p)->operator=(val);\n')
-            src.write('  ++size;\n')
-            src.write('}\n\n')
-
-        if obj not in inheritance and obj not in fixedSize:
-            src.write('void\n')
-            src.write(namespace + '::' + obj + 'Collection::resize(UInt_t _size)\n')
-            src.write('{\n')
-            src.write('  if (_size > NMAX)\n')
-            src.write('    throw std::length_error("' + obj + 'Collection::resize");\n\n')
-            src.write('  size = _size;\n')
-            src.write('}\n\n')
-
-        src.write('void\n')
-        src.write(namespace + '::' + obj + 'Collection::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
-        src.write('{\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection::setStatus(_tree, _status, _branches);\n\n')
-        elif obj not in fixedSize:
-            src.write('  if (_status || flatutils::branchIn("size", _branches))\n') # always set size branch status to true if any of the branches is going to be
-            src.write('    _tree.SetBranchStatus(name_ + ".size", _status);\n')
-
-        for brName, brType in defs[obj][0]:
-            src.write('  flatutils::setStatus(_tree, name_, "' + brName + '", _status, _branches);\n')
-
-        src.write('}\n\n')
-
-        src.write('void\n')
-        src.write(namespace + '::' + obj + 'Collection::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
-        src.write('{\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection::setAddress(_tree, _branches);\n\n')
-        elif obj not in fixedSize:
-            src.write('  flatutils::setStatusAndAddress(_tree, name_, "size", &size, {"size"});\n')
-
-        for brName, brType in defs[obj][0]:
-            src.write('  flatutils::setStatusAndAddress(_tree, name_, "' + brName + '", ' + brName + ', _branches);\n')
-        src.write('}\n\n')
-
-        src.write('void\n')
-        src.write(namespace + '::' + obj + 'Collection::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
-        src.write('{\n')
-        if obj in inheritance:
-            src.write('  ' + inheritance[obj] + 'Collection::book(_tree, _branches);\n\n')
-        elif obj not in fixedSize:
-            src.write('  _tree.Branch(name_ + ".size", &size, "size/i");\n')
-
-        for brName, brType in defs[obj][0]:
-            if obj in fixedSize:
-                sizeExpr = 'TString::Format("%d", NMAX)'
-            else:
-                sizeExpr = 'name_ + ".size"'
-
-            src.write('  flatutils::book(_tree, name_, "' + brName + '", ' + sizeExpr + ', \'' + brType + '\', ' + brName + ', _branches);\n')
-
         src.write('}\n\n')
 
 # Tree source

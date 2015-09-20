@@ -10,20 +10,6 @@ class TTree;
 
 namespace flatutils {
 
-  template<class T>
-  void
-  shiftAddr(T*& addr, Int_t shift)
-  {
-    reinterpret_cast<char*&>(addr) += shift;
-  }
-
-  template<class T>
-  void
-  shiftAddr(T const*& addr, Int_t shift)
-  {
-    reinterpret_cast<char const*&>(addr) += shift;
-  }
-
   template<class C>
   class const_iterator;
 
@@ -82,12 +68,6 @@ namespace flatutils {
     pointer ptr{0};
     UInt_t const size{0}; // needed to properly iterate over derived-class array using base-class iterator
   };
-
-  template<class C>
-  iterator<C> end(void*, UInt_t, UInt_t);
-
-  template<class C>
-  const_iterator<C> cend(void*, UInt_t, UInt_t);
 
   typedef std::vector<TString> BranchList;
 

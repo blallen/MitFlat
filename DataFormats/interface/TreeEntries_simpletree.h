@@ -1,8 +1,18 @@
 #ifndef TreeEntries_simpletree_h
 #define TreeEntries_simpletree_h
-#include "MitFlat/DataFormats/interface/Collections_simpletree.h"
+#include "MitFlat/DataFormats/interface/Collection.h"
+#include "MitFlat/DataFormats/interface/Objects_simpletree.h"
 
 namespace simpletree {
+
+  typedef flatutils::Collection<Particle, flatutils::BaseCollection<kFALSE>> ParticleCollection;
+  typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
+  typedef flatutils::Collection<Jet, ParticleMCollection> JetCollection;
+  typedef flatutils::Collection<Photon, ParticleCollection> PhotonCollection;
+  typedef flatutils::Collection<Lepton, ParticleMCollection> LeptonCollection;
+  typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
+  typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
+  typedef flatutils::Collection<HLT, flatutils::BaseCollection<kTRUE>> HLTCollection;
 
   class Event {
   public:
@@ -33,11 +43,11 @@ namespace simpletree {
     Met nhGt30Met = Met("nhGt30Met");
     Met neGt30Met = Met("neGt30Met");
     HLTCollection hlt = HLTCollection("hlt");
-
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
     void setAddress(TTree&, flatutils::BranchList const& = {"*"});
     void book(TTree&, flatutils::BranchList const& = {"*"});
   };
+
 
   class Weight {
   public:
@@ -46,7 +56,6 @@ namespace simpletree {
     UInt_t event{};
     Double_t weight{};
     Double_t rho{};
-
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
     void setAddress(TTree&, flatutils::BranchList const& = {"*"});
     void book(TTree&, flatutils::BranchList const& = {"*"});

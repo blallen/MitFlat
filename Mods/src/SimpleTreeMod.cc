@@ -185,10 +185,12 @@ mithep::SimpleTreeMod::Process()
       auto&& caloPos(inPhoton.CaloPos());
 
       bool* hltMatch[] = {
+        &outPhoton.matchHLT120,
         &outPhoton.matchHLT165HE10,
         &outPhoton.matchHLT175
       };
       mithep::TriggerObjectCol* objCol[] = {
+        triggerObjects[simpletree::kPhoton120],
         triggerObjects[simpletree::kPhoton165HE10],
         triggerObjects[simpletree::kPhoton175]
       };
@@ -263,12 +265,12 @@ mithep::SimpleTreeMod::Process()
 
   bool* hltMatch[2][2] = {
     {
-      fEvent.electrons.matchHLT23Loose,
-      fEvent.electrons.matchHLT27Loose
+      fEvent.electrons.data.matchHLT23Loose,
+      fEvent.electrons.data.matchHLT27Loose
     },
     {
-      fEvent.muons.matchHLT24,
-      fEvent.muons.matchHLT27
+      fEvent.muons.data.matchHLT24,
+      fEvent.muons.data.matchHLT27
     }
   };
 
