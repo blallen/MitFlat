@@ -1,5 +1,7 @@
 #include "MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
 #include "TTree.h"
+#include "TFile.h"
+#include "TDirectory.h"
 
 void
 simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
@@ -131,5 +133,35 @@ simpletree::Weight::book(TTree& _tree, flatutils::BranchList const& _branches/* 
   flatutils::book(_tree, "", "weight", "", 'D', &weight, _branches);
   flatutils::book(_tree, "", "rho", "", 'D', &rho, _branches);
 
+}
+
+TTree*
+simpletree::makeHLTPathTree()
+{
+  auto* tree(new TTree("HLTPath", "HLTPath"));
+  TString* name(new TString);
+  tree->Branch("name", "TString", &name);
+
+  TString names[] = {
+    "kPhoton120",
+    "kPhoton165HE10",
+    "kPhoton175",
+    "kEle23Loose",
+    "kEle27Loose",
+    "kMu24",
+    "kMu27",
+    "kMETNoMu90MHTNoMu90",
+    "kMETNoMu120MHTNoMu120",
+    "nHLTPaths"
+  };
+
+  for (auto&& n : names) {
+    *name = n;
+    tree->Fill();
+  }
+
+  tree->ResetBranchAddresses();
+  delete name;
+  return tree;
 }
 

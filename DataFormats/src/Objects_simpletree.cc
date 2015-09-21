@@ -20,9 +20,9 @@ simpletree::Particle::array_data::setAddress(TTree& _tree, TString const& _name,
 void
 simpletree::Particle::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  flatutils::book(_tree, _name, "pt", "", 'F', pt, _branches);
-  flatutils::book(_tree, _name, "eta", "", 'F', eta, _branches);
-  flatutils::book(_tree, _name, "phi", "", 'F', phi, _branches);
+  flatutils::book(_tree, _name, "pt", _name + ".size", 'F', pt, _branches);
+  flatutils::book(_tree, _name, "eta", _name + ".size", 'F', eta, _branches);
+  flatutils::book(_tree, _name, "phi", _name + ".size", 'F', phi, _branches);
 }
 
 simpletree::Particle::Particle(array_data& _data, UInt_t _idx) :
@@ -69,7 +69,7 @@ simpletree::ParticleM::array_data::book(TTree& _tree, TString const& _name, flat
 {
   Particle::array_data::book(_tree, _name, _branches);
 
-  flatutils::book(_tree, _name, "mass", "", 'F', mass, _branches);
+  flatutils::book(_tree, _name, "mass", _name + ".size", 'F', mass, _branches);
 }
 
 simpletree::ParticleM::ParticleM(array_data& _data, UInt_t _idx) :
@@ -201,21 +201,21 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   Particle::array_data::book(_tree, _name, _branches);
 
-  flatutils::book(_tree, _name, "chIso", "", 'F', chIso, _branches);
-  flatutils::book(_tree, _name, "nhIso", "", 'F', nhIso, _branches);
-  flatutils::book(_tree, _name, "phIso", "", 'F', phIso, _branches);
-  flatutils::book(_tree, _name, "sieie", "", 'F', sieie, _branches);
-  flatutils::book(_tree, _name, "hOverE", "", 'F', hOverE, _branches);
-  flatutils::book(_tree, _name, "matchedGen", "", 'I', matchedGen, _branches);
-  flatutils::book(_tree, _name, "hadDecay", "", 'O', hadDecay, _branches);
-  flatutils::book(_tree, _name, "pixelVeto", "", 'O', pixelVeto, _branches);
-  flatutils::book(_tree, _name, "csafeVeto", "", 'O', csafeVeto, _branches);
-  flatutils::book(_tree, _name, "loose", "", 'O', loose, _branches);
-  flatutils::book(_tree, _name, "medium", "", 'O', medium, _branches);
-  flatutils::book(_tree, _name, "tight", "", 'O', tight, _branches);
-  flatutils::book(_tree, _name, "matchHLT120", "", 'O', matchHLT120, _branches);
-  flatutils::book(_tree, _name, "matchHLT165HE10", "", 'O', matchHLT165HE10, _branches);
-  flatutils::book(_tree, _name, "matchHLT175", "", 'O', matchHLT175, _branches);
+  flatutils::book(_tree, _name, "chIso", _name + ".size", 'F', chIso, _branches);
+  flatutils::book(_tree, _name, "nhIso", _name + ".size", 'F', nhIso, _branches);
+  flatutils::book(_tree, _name, "phIso", _name + ".size", 'F', phIso, _branches);
+  flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches);
+  flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches);
+  flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches);
+  flatutils::book(_tree, _name, "hadDecay", _name + ".size", 'O', hadDecay, _branches);
+  flatutils::book(_tree, _name, "pixelVeto", _name + ".size", 'O', pixelVeto, _branches);
+  flatutils::book(_tree, _name, "csafeVeto", _name + ".size", 'O', csafeVeto, _branches);
+  flatutils::book(_tree, _name, "loose", _name + ".size", 'O', loose, _branches);
+  flatutils::book(_tree, _name, "medium", _name + ".size", 'O', medium, _branches);
+  flatutils::book(_tree, _name, "tight", _name + ".size", 'O', tight, _branches);
+  flatutils::book(_tree, _name, "matchHLT120", _name + ".size", 'O', matchHLT120, _branches);
+  flatutils::book(_tree, _name, "matchHLT165HE10", _name + ".size", 'O', matchHLT165HE10, _branches);
+  flatutils::book(_tree, _name, "matchHLT175", _name + ".size", 'O', matchHLT175, _branches);
 }
 
 simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
@@ -312,12 +312,12 @@ simpletree::Lepton::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   ParticleM::array_data::book(_tree, _name, _branches);
 
-  flatutils::book(_tree, _name, "matchedGen", "", 'I', matchedGen, _branches);
-  flatutils::book(_tree, _name, "tauDecay", "", 'O', tauDecay, _branches);
-  flatutils::book(_tree, _name, "hadDecay", "", 'O', hadDecay, _branches);
-  flatutils::book(_tree, _name, "positive", "", 'O', positive, _branches);
-  flatutils::book(_tree, _name, "loose", "", 'O', loose, _branches);
-  flatutils::book(_tree, _name, "tight", "", 'O', tight, _branches);
+  flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches);
+  flatutils::book(_tree, _name, "tauDecay", _name + ".size", 'O', tauDecay, _branches);
+  flatutils::book(_tree, _name, "hadDecay", _name + ".size", 'O', hadDecay, _branches);
+  flatutils::book(_tree, _name, "positive", _name + ".size", 'O', positive, _branches);
+  flatutils::book(_tree, _name, "loose", _name + ".size", 'O', loose, _branches);
+  flatutils::book(_tree, _name, "tight", _name + ".size", 'O', tight, _branches);
 }
 
 simpletree::Lepton::Lepton(array_data& _data, UInt_t _idx) :
@@ -389,13 +389,13 @@ simpletree::Electron::array_data::book(TTree& _tree, TString const& _name, flatu
 {
   Lepton::array_data::book(_tree, _name, _branches);
 
-  flatutils::book(_tree, _name, "chIsoPh", "", 'F', chIsoPh, _branches);
-  flatutils::book(_tree, _name, "nhIsoPh", "", 'F', nhIsoPh, _branches);
-  flatutils::book(_tree, _name, "phIsoPh", "", 'F', phIsoPh, _branches);
-  flatutils::book(_tree, _name, "sieie", "", 'F', sieie, _branches);
-  flatutils::book(_tree, _name, "hOverE", "", 'F', hOverE, _branches);
-  flatutils::book(_tree, _name, "matchHLT23Loose", "", 'O', matchHLT23Loose, _branches);
-  flatutils::book(_tree, _name, "matchHLT27Loose", "", 'O', matchHLT27Loose, _branches);
+  flatutils::book(_tree, _name, "chIsoPh", _name + ".size", 'F', chIsoPh, _branches);
+  flatutils::book(_tree, _name, "nhIsoPh", _name + ".size", 'F', nhIsoPh, _branches);
+  flatutils::book(_tree, _name, "phIsoPh", _name + ".size", 'F', phIsoPh, _branches);
+  flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches);
+  flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches);
+  flatutils::book(_tree, _name, "matchHLT23Loose", _name + ".size", 'O', matchHLT23Loose, _branches);
+  flatutils::book(_tree, _name, "matchHLT27Loose", _name + ".size", 'O', matchHLT27Loose, _branches);
 }
 
 simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
@@ -460,8 +460,8 @@ simpletree::Muon::array_data::book(TTree& _tree, TString const& _name, flatutils
 {
   Lepton::array_data::book(_tree, _name, _branches);
 
-  flatutils::book(_tree, _name, "matchHLT24", "", 'O', matchHLT24, _branches);
-  flatutils::book(_tree, _name, "matchHLT27", "", 'O', matchHLT27, _branches);
+  flatutils::book(_tree, _name, "matchHLT24", _name + ".size", 'O', matchHLT24, _branches);
+  flatutils::book(_tree, _name, "matchHLT27", _name + ".size", 'O', matchHLT27, _branches);
 }
 
 simpletree::Muon::Muon(array_data& _data, UInt_t _idx) :
@@ -503,7 +503,7 @@ simpletree::HLT::array_data::setAddress(TTree& _tree, TString const& _name, flat
 void
 simpletree::HLT::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  flatutils::book(_tree, _name, "pass", "", 'O', pass, _branches);
+  flatutils::book(_tree, _name, "pass", _name + ".size", 'O', pass, _branches);
 }
 
 simpletree::HLT::HLT(array_data& _data, UInt_t _idx) :

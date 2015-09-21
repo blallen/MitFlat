@@ -202,11 +202,11 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
         header.write('\n')
 
     if len(enums) != 0:
-        for name, enum in enums:
+        for name, items in enums:
             header.write('\n  enum ' + name + ' {')
-            for item in enum:
+            for item in items:
                 header.write('\n    ' + item)
-                if item != enum[-1]:
+                if item != items[-1]:
                     header.write(',')
             header.write('\n  };\n')
 
@@ -306,10 +306,10 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
         header.write('\n  public:')
 
         if len(treeDefs[tree][1]) != 0:    
-          for func in treeDefs[tree][1]:
-              header.write('\n    ' + func)
-
-          header.write('\n')
+            for func in treeDefs[tree][1]:
+                header.write('\n    ' + func)
+  
+            header.write('\n')
 
         if len(treeDefs[tree][0]) != 0:
             for brName, brType in treeDefs[tree][0]:
@@ -322,13 +322,19 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
     
             header.write('\n')
 
-        header.write('    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});\n')
-        header.write('    void setAddress(TTree&, flatutils::BranchList const& = {"*"});\n')
-        header.write('    void book(TTree&, flatutils::BranchList const& = {"*"});\n')
-        header.write('  };\n\n')
+        header.write('\n    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});')
+        header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"});')
+        header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"});')
+        header.write('\n  };\n')
 
-    header.write('}\n\n')
-    header.write('#endif\n')
+    if len(enums) != 0:
+        for name, items in enums:
+            header.write('\n  TTree* make' + name + 'Tree();')
+
+        header.write('\n')
+
+    header.write('\n}\n')
+    header.write('\n#endif\n')
 
 # Objects source
 with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
@@ -415,7 +421,7 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
                     src.write('  ' + inheritance[obj] + '::array_data::book(_tree, _name, _branches);\n\n')
     
                 for brName, brType in defs[obj][0]:
-                    src.write('  flatutils::book(_tree, _name, "' + brName + '", "", \'' + brType + '\', ' + brName + ', _branches);\n')
+                    src.write('  flatutils::book(_tree, _name, "' + brName + '", _name + ".size", \'' + brType + '\', ' + brName + ', _branches);\n')
                 src.write('}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(array_data& _data, UInt_t _idx) :')
@@ -454,7 +460,9 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
 # Tree source
 with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
     src.write('#include "' + PACKAGE + '/interface/TreeEntries_' + namespace + '.h"\n')
-    src.write('#include "TTree.h"\n\n')
+    src.write('#include "TTree.h"\n')
+    src.write('#include "TFile.h"\n')
+    src.write('#include "TDirectory.h"\n\n')
 
     for tree in trees:
         src.write('void\n')
@@ -500,4 +508,27 @@ with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
             if not isSimple(brType):
                 src.write('  ' + brName + '.book(_tree, flatutils::subBranchList(_branches, "' + brName + '"));\n')
     
+        src.write('}\n\n')
+
+    for name, items in enums:
+        src.write('TTree*\n')
+        src.write(namespace + '::make' + name + 'Tree()\n')
+        src.write('{\n')
+        src.write('  auto* tree(new TTree("' + name + '", "' + name + '"));\n')
+        src.write('  TString* name(new TString);\n')
+        src.write('  tree->Branch("name", "TString", &name);\n\n')
+        src.write('  TString names[] = {\n')
+        for item in items:
+            src.write('    "' + item + '"')
+            if item != items[-1]:
+                src.write(',')
+            src.write('\n')
+        src.write('  };\n\n')
+        src.write('  for (auto&& n : names) {\n')
+        src.write('    *name = n;\n')
+        src.write('    tree->Fill();\n')
+        src.write('  }\n\n')
+        src.write('  tree->ResetBranchAddresses();\n')
+        src.write('  delete name;\n')
+        src.write('  return tree;\n')
         src.write('}\n\n')

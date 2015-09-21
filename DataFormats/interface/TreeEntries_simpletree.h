@@ -43,11 +43,11 @@ namespace simpletree {
     Met nhGt30Met = Met("nhGt30Met");
     Met neGt30Met = Met("neGt30Met");
     HLTCollection hlt = HLTCollection("hlt");
+
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
     void setAddress(TTree&, flatutils::BranchList const& = {"*"});
     void book(TTree&, flatutils::BranchList const& = {"*"});
   };
-
 
   class Weight {
   public:
@@ -56,10 +56,13 @@ namespace simpletree {
     UInt_t event{};
     Double_t weight{};
     Double_t rho{};
+
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
     void setAddress(TTree&, flatutils::BranchList const& = {"*"});
     void book(TTree&, flatutils::BranchList const& = {"*"});
   };
+
+  TTree* makeHLTPathTree();
 
 }
 

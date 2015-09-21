@@ -90,6 +90,9 @@ namespace flatutils {
       new (reinterpret_cast<pointer>(p)) value_type(data, iP);
       p += this->base_type::objSize_;
     }
+
+    if (FIXED)
+      this->base_type::size_ = data.NMAX;
   }
 
   template<class T, class B>
@@ -104,6 +107,9 @@ namespace flatutils {
       reinterpret_cast<pointer>(p)->operator=(_src[iP]);
       p += this->base_type::objSize_;
     }
+
+    if (FIXED)
+      this->base_type::size_ = data.NMAX;
   }
 
   //protected

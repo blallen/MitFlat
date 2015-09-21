@@ -195,7 +195,7 @@ mithep::SimpleTreeMod::Process()
         triggerObjects[simpletree::kPhoton175]
       };
 
-      for (unsigned iT(0); iT != 2; ++iT) {
+      for (unsigned iT(0); iT != sizeof(hltMatch) / sizeof(bool*); ++iT) {
         if (!objCol[iT]) {
           *hltMatch[iT] = false;
           continue;
@@ -415,6 +415,7 @@ mithep::SimpleTreeMod::SlaveBegin()
 
   AddOutput(fEventTree);
   AddOutput(fAllEventTree);
+  AddOutput(simpletree::makeHLTPathTree());
 }
 
 void
