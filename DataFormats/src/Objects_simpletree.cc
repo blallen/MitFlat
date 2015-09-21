@@ -503,7 +503,7 @@ simpletree::HLT::array_data::setAddress(TTree& _tree, TString const& _name, flat
 void
 simpletree::HLT::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)
 {
-  flatutils::book(_tree, _name, "pass", _name + ".size", 'O', pass, _branches);
+  flatutils::book(_tree, _name, "pass", TString::Format("%d", 9), 'O', pass, _branches);
 }
 
 simpletree::HLT::HLT(array_data& _data, UInt_t _idx) :

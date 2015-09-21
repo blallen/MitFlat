@@ -420,8 +420,12 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 if obj in inheritance:
                     src.write('  ' + inheritance[obj] + '::array_data::book(_tree, _name, _branches);\n\n')
     
-                for brName, brType in defs[obj][0]:
-                    src.write('  flatutils::book(_tree, _name, "' + brName + '", _name + ".size", \'' + brType + '\', ' + brName + ', _branches);\n')
+                if obj in fixedSize:
+                    for brName, brType in defs[obj][0]:
+                        src.write('  flatutils::book(_tree, _name, "' + brName + '", TString::Format("%d", ' + str(sizes[obj]) + '), \'' + brType + '\', ' + brName + ', _branches);\n')
+                else:
+                    for brName, brType in defs[obj][0]:
+                        src.write('  flatutils::book(_tree, _name, "' + brName + '", _name + ".size", \'' + brType + '\', ' + brName + ', _branches);\n')
                 src.write('}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(array_data& _data, UInt_t _idx) :')
