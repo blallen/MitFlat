@@ -111,14 +111,23 @@ flatutils::subBranchList(BranchList const& _bList, TString const& _objName)
 }
 
 Int_t
-flatutils::setStatus(TTree& _tree, TString const& _objName, TString const& _bName, Bool_t _status, BranchList const& _bList)
+flatutils::setStatus(TTree& _tree, TString const& _objName, TString const& _bName, Bool_t _status, BranchList const& _bList, Bool_t _whitelist/* = kTRUE*/)
 {
   TString bFullName(_bName);
   if (_objName.Length() != 0)
     bFullName.Prepend(_objName + ".");
 
-  if (!_tree.GetBranch(bFullName) || !branchIn(_bName, _bList))
+  if (!_tree.GetBranch(bFullName))
     return -1;
+
+  if (_whitelist) {
+    if (!branchIn(_bName, _bList))
+      return -1;
+  }
+  else {
+    if (branchIn(_bName, _bList))
+      return -1;
+  }
 
   if (_tree.GetBranchStatus(bFullName) == _status)
     return 0;
@@ -128,9 +137,9 @@ flatutils::setStatus(TTree& _tree, TString const& _objName, TString const& _bNam
 }
 
 Int_t
-flatutils::setStatusAndAddress(TTree& _tree, TString const& _objName, TString const& _bName, void* _bPtr, BranchList const& _bList)
+flatutils::setStatusAndAddress(TTree& _tree, TString const& _objName, TString const& _bName, void* _bPtr, BranchList const& _bList, Bool_t _whitelist/* = kTRUE*/)
 {
-  if (setStatus(_tree, _objName, _bName, true, _bList) == -1)
+  if (setStatus(_tree, _objName, _bName, true, _bList, _whitelist) == -1)
     return -1;
 
   TString bFullName(_bName);
@@ -143,14 +152,20 @@ flatutils::setStatusAndAddress(TTree& _tree, TString const& _objName, TString co
 }
 
 Int_t 
-flatutils::book(TTree& _tree, TString const& _objName, TString const& _bName, TString const& _size, char _lType, void* _bPtr, BranchList const& _bList)
+flatutils::book(TTree& _tree, TString const& _objName, TString const& _bName, TString const& _size, char _lType, void* _bPtr, BranchList const& _bList, Bool_t _whitelist/* = kTRUE*/)
 {
   // bName: electrons.pt
   // size: electrons.size
   // lType: F
 
-  if (!branchIn(_bName, _bList))
-    return -1;
+  if (_whitelist) {
+    if (!branchIn(_bName, _bList))
+      return -1;
+  }
+  else {
+    if (branchIn(_bName, _bList))
+      return -1;
+  }
 
   TString bFullName(_bName);
   if (_objName.Length() != 0)

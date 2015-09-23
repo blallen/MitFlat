@@ -34,9 +34,9 @@ namespace simpletree {
       Float_t eta[NMAX]{};
       Float_t phi[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     Particle(array_data&, UInt_t idx);
@@ -57,9 +57,9 @@ namespace simpletree {
     struct array_data : public Particle::array_data {
       Float_t mass[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     ParticleM(array_data&, UInt_t idx);
@@ -92,9 +92,9 @@ namespace simpletree {
     Met& operator=(Met const&);
 
     void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
-    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
-    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
 
     TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
@@ -126,9 +126,9 @@ namespace simpletree {
       Bool_t matchHLT165HE10[NMAX]{};
       Bool_t matchHLT175[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     Photon(array_data&, UInt_t idx);
@@ -164,9 +164,9 @@ namespace simpletree {
       Bool_t loose[NMAX]{};
       Bool_t tight[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     Lepton(array_data&, UInt_t idx);
@@ -196,9 +196,9 @@ namespace simpletree {
       Bool_t matchHLT23Loose[NMAX]{};
       Bool_t matchHLT27Loose[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     Electron(array_data&, UInt_t idx);
@@ -222,9 +222,9 @@ namespace simpletree {
       Bool_t matchHLT24[NMAX]{};
       Bool_t matchHLT27[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     Muon(array_data&, UInt_t idx);
@@ -244,9 +244,9 @@ namespace simpletree {
 
       Bool_t pass[NMAX]{};
 
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     HLT(array_data&, UInt_t idx);

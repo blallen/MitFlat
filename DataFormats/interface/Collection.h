@@ -69,9 +69,9 @@ namespace flatutils {
     void resize(UInt_t size);
     void clear();
 
-    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
-    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});
-    virtual void book(TTree&, flatutils::BranchList const& = {"*"});
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
 
     typename value_type::array_data data{};
 
@@ -228,34 +228,34 @@ namespace flatutils {
 
   template<class T, class B>
   void
-  Collection<T, B>::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)
+  Collection<T, B>::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
   {
     if (!FIXED) {
-      if (_status || flatutils::branchIn("size", _branches))
+      if (_status || (_whitelist && flatutils::branchIn("size", _branches)))
         _tree.SetBranchStatus(this->base_type::name_ + ".size", _status);
     }
 
-    data.setStatus(_tree, this->base_type::name_, _status, _branches);
+    data.setStatus(_tree, this->base_type::name_, _status, _branches, _whitelist);
   }
 
   template<class T, class B>
   void
-  Collection<T, B>::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
+  Collection<T, B>::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
   {
     if (!FIXED)
-      flatutils::setStatusAndAddress(_tree, this->base_type::name_, "size", &this->base_type::size_, {"size"});
+      flatutils::setStatusAndAddress(_tree, this->base_type::name_, "size", &this->base_type::size_, {"size"}, true);
   
-    data.setAddress(_tree, this->base_type::name_, _branches);
+    data.setAddress(_tree, this->base_type::name_, _branches, _whitelist);
   }
 
   template<class T, class B>
   void
-  Collection<T, B>::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)
+  Collection<T, B>::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
   {
     if (!FIXED)
       _tree.Branch(this->base_type::name_ + ".size", &this->base_type::size_, "size/i");
 
-    data.book(_tree, this->base_type::name_, _branches);
+    data.book(_tree, this->base_type::name_, _branches, _whitelist);
   }
 
 }

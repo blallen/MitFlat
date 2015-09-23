@@ -74,9 +74,9 @@ namespace flatutils {
   Bool_t branchIn(TString const& bName, BranchList const&);
   BranchList subBranchList(BranchList const&, TString const& objName);
 
-  Int_t setStatus(TTree&, TString const& objName, TString const& bName, Bool_t status, BranchList const&);
-  Int_t setStatusAndAddress(TTree&, TString const& objName, TString const& bName, void* bPtr, BranchList const&);
-  Int_t book(TTree&, TString const& objName, TString const& bName, TString const& size, char lType, void* bPtr, BranchList const&);
+  Int_t setStatus(TTree&, TString const& objName, TString const& bName, Bool_t status, BranchList const&, Bool_t whitelist = kTRUE);
+  Int_t setStatusAndAddress(TTree&, TString const& objName, TString const& bName, void* bPtr, BranchList const&, Bool_t whitelist = kTRUE);
+  Int_t book(TTree&, TString const& objName, TString const& bName, TString const& size, char lType, void* bPtr, BranchList const&, Bool_t whitelist = kTRUE);
 }
 
 #endif

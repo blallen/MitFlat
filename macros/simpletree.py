@@ -88,32 +88,62 @@ jetCorrection = mithep.JetCorrectionMod(
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll
 )
 
-if analysis.isRealData:
-    jecSources = [
-        "Summer15_25nsV2_DATA_L1FastJet_AK4PFchs.txt",
-        "Summer15_25nsV2_DATA_L2Relative_AK4PFchs.txt",
-        "Summer15_25nsV2_DATA_L3Absolute_AK4PFchs.txt",
-        "Summer15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt"
-    ]
-    
-    jecSourcesNoCHS = [
-        "Summer15_25nsV2_DATA_L1FastJet_AK4PF.txt",
-        "Summer15_25nsV2_DATA_L2Relative_AK4PF.txt",
-        "Summer15_25nsV2_DATA_L3Absolute_AK4PF.txt",
-        "Summer15_25nsV2_DATA_L2L3Residual_AK4PF.txt"
-    ]
+if analysis.custom['bx'] == '25ns':
+    if analysis.isRealData:
+        jecSources = [
+            "Summer15_25nsV2_DATA_L1FastJet_AK4PFchs.txt",
+            "Summer15_25nsV2_DATA_L2Relative_AK4PFchs.txt",
+            "Summer15_25nsV2_DATA_L3Absolute_AK4PFchs.txt",
+            "Summer15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt"
+        ]
+        
+        jecSourcesNoCHS = [
+            "Summer15_25nsV2_DATA_L1FastJet_AK4PF.txt",
+            "Summer15_25nsV2_DATA_L2Relative_AK4PF.txt",
+            "Summer15_25nsV2_DATA_L3Absolute_AK4PF.txt",
+            "Summer15_25nsV2_DATA_L2L3Residual_AK4PF.txt"
+        ]
+    else:
+        jecSources = [
+            "Summer15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
+            "Summer15_25nsV2_MC_L2Relative_AK4PFchs.txt",
+            "Summer15_25nsV2_MC_L3Absolute_AK4PFchs.txt"
+        ]
+        
+        jecSourcesNoCHS = [
+            "Summer15_25nsV2_MC_L1FastJet_AK4PF.txt",
+            "Summer15_25nsV2_MC_L2Relative_AK4PF.txt",
+            "Summer15_25nsV2_MC_L3Absolute_AK4PF.txt"
+        ]
+
 else:
-    jecSources = [
-        "Summer15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
-        "Summer15_25nsV2_MC_L2Relative_AK4PFchs.txt",
-        "Summer15_25nsV2_MC_L3Absolute_AK4PFchs.txt"
-    ]
-    
-    jecSourcesNoCHS = [
-        "Summer15_25nsV2_MC_L1FastJet_AK4PF.txt",
-        "Summer15_25nsV2_MC_L2Relative_AK4PF.txt",
-        "Summer15_25nsV2_MC_L3Absolute_AK4PF.txt"
-    ]
+    if analysis.isRealData:
+        jecSources = [
+            "Summer15_50nsV5_DATA_L1FastJet_AK4PFchs.txt",
+            "Summer15_50nsV5_DATA_L2Relative_AK4PFchs.txt",
+            "Summer15_50nsV5_DATA_L3Absolute_AK4PFchs.txt",
+            "Summer15_50nsV5_DATA_L2L3Residual_AK4PFchs.txt"
+        ]
+        
+        jecSourcesNoCHS = [
+            "Summer15_50nsV2_MC_L1FastJet_AK4PF.txt",
+            "Summer15_50nsV5_DATA_L2Relative_AK4PF.txt",
+            "Summer15_50nsV5_DATA_L3Absolute_AK4PF.txt",
+            "Summer15_50nsV5_DATA_L2L3Residual_AK4PF.txt"
+        ]
+    else:
+        jecSources = [
+            "Summer15_50nsV5_MC_L1FastJet_AK4PFchs.txt",
+            "Summer15_50nsV5_MC_L2Relative_AK4PFchs.txt",
+            "Summer15_50nsV5_MC_L3Absolute_AK4PFchs.txt"
+        ]
+        
+        jecSourcesNoCHS = [
+            "Summer15_50nsV5_MC_L1FastJet_AK4PF.txt",
+            "Summer15_50nsV5_MC_L2Relative_AK4PF.txt",
+            "Summer15_50nsV5_MC_L3Absolute_AK4PF.txt"
+        ]
+
 
 jecDir = mitdata + '/JEC/'
 

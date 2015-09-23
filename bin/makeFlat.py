@@ -236,9 +236,9 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
                 for brName, brType in defs[obj][0]:
                     header.write('\n      ' + branchType(brType) + ' ' + brName + '[NMAX]{};')
                 header.write('\n')
-                header.write('\n      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"});')
-                header.write('\n      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"});')
-                header.write('\n      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"});')
+                header.write('\n      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
 
             header.write('\n    };\n')
 
@@ -250,9 +250,9 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
 
         if obj in singleObjs:
             header.write('\n\n    void setName(TString const& name) { name_ = name; }')
-            header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});')
-            header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"});')
-            header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"});')
+            header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+            header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+            header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
         
         if len(defs[obj][1]) != 0:
             header.write('\n')
@@ -322,9 +322,9 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
     
             header.write('\n')
 
-        header.write('\n    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});')
-        header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"});')
-        header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"});')
+        header.write('\n    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+        header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+        header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
         header.write('\n  };\n')
 
     if len(enums) != 0:
@@ -360,34 +360,34 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
             src.write('\n{\n}\n\n')
 
             src.write('void\n')
-            src.write(namespace + '::' + obj + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+            src.write(namespace + '::' + obj + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
             src.write('{\n')
             if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::setStatus(_tree, _status, _branches);\n\n')
+                src.write('  ' + inheritance[obj] + '::setStatus(_tree, _status, _branches, _whitelist);\n\n')
 
             for brName, brType in defs[obj][0]:
-                src.write('  flatutils::setStatus(_tree, name_, "' + brName + '", _status, _branches);\n')
+                src.write('  flatutils::setStatus(_tree, name_, "' + brName + '", _status, _branches, _whitelist);\n')
 
             src.write('}\n\n')
 
             src.write('void\n')
-            src.write(namespace + '::' + obj + '::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+            src.write(namespace + '::' + obj + '::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
             src.write('{\n')
             if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::setAddress(_tree, _branches);\n\n')
+                src.write('  ' + inheritance[obj] + '::setAddress(_tree, _branches, _whitelist);\n\n')
 
             for brName, brType in defs[obj][0]:
-                src.write('  flatutils::setStatusAndAddress(_tree, name_, "' + brName + '", &' + brName + ', _branches);\n')
+                src.write('  flatutils::setStatusAndAddress(_tree, name_, "' + brName + '", &' + brName + ', _branches, _whitelist);\n')
             src.write('}\n\n')
     
             src.write('void\n')
-            src.write(namespace + '::' + obj + '::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+            src.write(namespace + '::' + obj + '::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)\n')
             src.write('{\n')
             if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::book(_tree, _branches);\n\n')
+                src.write('  ' + inheritance[obj] + '::book(_tree, _branches, _whitelist);\n\n')
 
             for brName, brType in defs[obj][0]:
-                src.write('  flatutils::book(_tree, name_, "' + brName + '", "", \'' + brType + '\', &' + brName + ', _branches);\n')
+                src.write('  flatutils::book(_tree, name_, "' + brName + '", "", \'' + brType + '\', &' + brName + ', _branches, _whitelist);\n')
             src.write('}\n\n')
 
         else:
@@ -395,37 +395,37 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
             if len(defs[obj][0]) != 0:
                 src.write('void\n')
-                src.write(namespace + '::' + obj + '::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+                src.write(namespace + '::' + obj + '::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
                 src.write('{\n')
                 if obj in inheritance:
-                    src.write('  ' + inheritance[obj] + '::array_data::setStatus(_tree, _name, _status, _branches);\n\n')
+                    src.write('  ' + inheritance[obj] + '::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);\n\n')
     
                 for brName, brType in defs[obj][0]:
-                    src.write('  flatutils::setStatus(_tree, _name, "' + brName + '", _status, _branches);\n')
+                    src.write('  flatutils::setStatus(_tree, _name, "' + brName + '", _status, _branches, _whitelist);\n')
                 src.write('}\n\n') 
     
                 src.write('void\n')
-                src.write(namespace + '::' + obj + '::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+                src.write(namespace + '::' + obj + '::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
                 src.write('{\n')
                 if obj in inheritance:
-                    src.write('  ' + inheritance[obj] + '::array_data::setAddress(_tree, _name, _branches);\n\n')
+                    src.write('  ' + inheritance[obj] + '::array_data::setAddress(_tree, _name, _branches, _whitelist);\n\n')
     
                 for brName, brType in defs[obj][0]:
-                    src.write('  flatutils::setStatusAndAddress(_tree, _name, "' + brName + '", ' + brName + ', _branches);\n')
+                    src.write('  flatutils::setStatusAndAddress(_tree, _name, "' + brName + '", ' + brName + ', _branches, _whitelist);\n')
                 src.write('}\n\n')
         
                 src.write('void\n')
-                src.write(namespace + '::' + obj + '::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+                src.write(namespace + '::' + obj + '::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
                 src.write('{\n')
                 if obj in inheritance:
-                    src.write('  ' + inheritance[obj] + '::array_data::book(_tree, _name, _branches);\n\n')
+                    src.write('  ' + inheritance[obj] + '::array_data::book(_tree, _name, _branches, _whitelist);\n\n')
     
                 if obj in fixedSize:
                     for brName, brType in defs[obj][0]:
-                        src.write('  flatutils::book(_tree, _name, "' + brName + '", TString::Format("%d", ' + str(sizes[obj]) + '), \'' + brType + '\', ' + brName + ', _branches);\n')
+                        src.write('  flatutils::book(_tree, _name, "' + brName + '", TString::Format("%d", ' + str(sizes[obj]) + '), \'' + brType + '\', ' + brName + ', _branches, _whitelist);\n')
                 else:
                     for brName, brType in defs[obj][0]:
-                        src.write('  flatutils::book(_tree, _name, "' + brName + '", _name + ".size", \'' + brType + '\', ' + brName + ', _branches);\n')
+                        src.write('  flatutils::book(_tree, _name, "' + brName + '", _name + ".size", \'' + brType + '\', ' + brName + ', _branches, _whitelist);\n')
                 src.write('}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(array_data& _data, UInt_t _idx) :')
@@ -470,47 +470,47 @@ with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
 
     for tree in trees:
         src.write('void\n')
-        src.write(namespace + '::' + tree + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+        src.write(namespace + '::' + tree + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
         for brName, brType in treeDefs[tree][0]:
             if isSimple(brType):
-                src.write('  flatutils::setStatus(_tree, "", "' + brName + '", _status, _branches);\n')
+                src.write('  flatutils::setStatus(_tree, "", "' + brName + '", _status, _branches, _whitelist);\n')
     
         src.write('\n')
     
         for brName, brType in treeDefs[tree][0]:
             if not isSimple(brType):
-                src.write('  ' + brName + '.setStatus(_tree, _status, flatutils::subBranchList(_branches, "' + brName + '"));\n')
+                src.write('  ' + brName + '.setStatus(_tree, _status, flatutils::subBranchList(_branches, "' + brName + '"), _whitelist);\n')
     
         src.write('}\n\n')
 
         src.write('void\n')
-        src.write(namespace + '::' + tree + '::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+        src.write(namespace + '::' + tree + '::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
         for brName, brType in treeDefs[tree][0]:
             if isSimple(brType):
-                src.write('  flatutils::setStatusAndAddress(_tree, "", "' + brName + '", &' + brName + ', _branches);\n')
+                src.write('  flatutils::setStatusAndAddress(_tree, "", "' + brName + '", &' + brName + ', _branches, _whitelist);\n')
     
         src.write('\n')
     
         for brName, brType in treeDefs[tree][0]:
             if not isSimple(brType):
-                src.write('  ' + brName + '.setAddress(_tree, flatutils::subBranchList(_branches, "' + brName + '"));\n')
+                src.write('  ' + brName + '.setAddress(_tree, flatutils::subBranchList(_branches, "' + brName + '"), _whitelist);\n')
     
         src.write('}\n\n')
     
         src.write('void\n')
-        src.write(namespace + '::' + tree + '::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/)\n')
+        src.write(namespace + '::' + tree + '::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
         for brName, brType in treeDefs[tree][0]:
             if isSimple(brType):
-                src.write('  flatutils::book(_tree, "", "' + brName + '", "", \'' + brType + '\', &' + brName + ', _branches);\n')
+                src.write('  flatutils::book(_tree, "", "' + brName + '", "", \'' + brType + '\', &' + brName + ', _branches, _whitelist);\n')
     
         src.write('\n')
         
         for brName, brType in treeDefs[tree][0]:
             if not isSimple(brType):
-                src.write('  ' + brName + '.book(_tree, flatutils::subBranchList(_branches, "' + brName + '"));\n')
+                src.write('  ' + brName + '.book(_tree, flatutils::subBranchList(_branches, "' + brName + '"), _whitelist);\n')
     
         src.write('}\n\n')
 

@@ -44,9 +44,9 @@ namespace simpletree {
     Met neGt30Met = Met("neGt30Met");
     HLTCollection hlt = HLTCollection("hlt");
 
-    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
-    void setAddress(TTree&, flatutils::BranchList const& = {"*"});
-    void book(TTree&, flatutils::BranchList const& = {"*"});
+    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
   };
 
   class Weight {
@@ -57,9 +57,9 @@ namespace simpletree {
     Double_t weight{};
     Double_t rho{};
 
-    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"});
-    void setAddress(TTree&, flatutils::BranchList const& = {"*"});
-    void book(TTree&, flatutils::BranchList const& = {"*"});
+    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
   };
 
   TTree* makeHLTPathTree();
