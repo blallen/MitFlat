@@ -65,6 +65,10 @@ namespace flatutils {
     const_iterator begin() const { return const_iterator(this->base_type::array_, this->base_type::objSize_); }
     iterator end() { return iterator(this->base_type::array_ + this->base_type::objSize_ * this->base_type::size_, this->base_type::objSize_); }
     const_iterator end() const { return const_iterator(this->base_type::array_ + this->base_type::objSize_ * this->base_type::size_, this->base_type::objSize_); }
+    reference front() { return operator[](0); }
+    const_reference front() const { return operator[](0); }
+    reference back() { return operator[](this->base_type::size_ - 1); }
+    const_reference back() const { return operator[](this->base_type::size_ - 1); }
     void push_back(const_reference);
     void resize(UInt_t size);
     void clear();
