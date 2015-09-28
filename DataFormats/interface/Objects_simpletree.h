@@ -213,6 +213,7 @@ namespace simpletree {
       Float_t phIsoPh[NMAX]{};
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
+      Bool_t isEB[NMAX]{};
       Bool_t matchHLT23Loose[NMAX]{};
       Bool_t matchHLT27Loose[NMAX]{};
 
@@ -226,12 +227,11 @@ namespace simpletree {
     virtual ~Electron() {}
     Electron& operator=(Electron const&);
 
-    bool isEB() const { return std::abs(eta) < 1.5; }
-    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < (isEB() ? Photon::chIsoCuts[0][wp] : Photon::chIsoCuts[1][wp]); }
-    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < (isEB() ? Photon::nhIsoCuts[0][wp] : Photon::nhIsoCuts[1][wp]); }
-    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < (isEB() ? Photon::phIsoCuts[0][wp] : Photon::phIsoCuts[1][wp]); }
-    bool passSieiePh(UInt_t wp) const { return sieie < (isEB() ? Photon::sieieCuts[0][wp] : Photon::sieieCuts[1][wp]); }
-    bool passHOverEPh(UInt_t wp) const { return hOverE < (isEB() ? Photon::hOverECuts[0][wp] : Photon::hOverECuts[1][wp]); }
+    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < (isEB ? Photon::chIsoCuts[0][wp] : Photon::chIsoCuts[1][wp]); }
+    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < (isEB ? Photon::nhIsoCuts[0][wp] : Photon::nhIsoCuts[1][wp]); }
+    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < (isEB ? Photon::phIsoCuts[0][wp] : Photon::phIsoCuts[1][wp]); }
+    bool passSieiePh(UInt_t wp) const { return sieie < (isEB ? Photon::sieieCuts[0][wp] : Photon::sieieCuts[1][wp]); }
+    bool passHOverEPh(UInt_t wp) const { return hOverE < (isEB ? Photon::hOverECuts[0][wp] : Photon::hOverECuts[1][wp]); }
 
   public:
     Float_t& chIsoPh;
@@ -239,6 +239,7 @@ namespace simpletree {
     Float_t& phIsoPh;
     Float_t& sieie;
     Float_t& hOverE;
+    Bool_t& isEB;
     Bool_t& matchHLT23Loose;
     Bool_t& matchHLT27Loose;
   };

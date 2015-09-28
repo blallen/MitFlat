@@ -384,6 +384,7 @@ simpletree::Electron::array_data::setStatus(TTree& _tree, TString const& _name, 
   flatutils::setStatus(_tree, _name, "phIsoPh", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hOverE", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchHLT23Loose", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchHLT27Loose", _status, _branches, _whitelist);
 }
@@ -398,6 +399,7 @@ simpletree::Electron::array_data::setAddress(TTree& _tree, TString const& _name,
   flatutils::setStatusAndAddress(_tree, _name, "phIsoPh", phIsoPh, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hOverE", hOverE, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchHLT23Loose", matchHLT23Loose, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchHLT27Loose", matchHLT27Loose, _branches, _whitelist);
 }
@@ -412,6 +414,7 @@ simpletree::Electron::array_data::book(TTree& _tree, TString const& _name, flatu
   flatutils::book(_tree, _name, "phIsoPh", _name + ".size", 'F', phIsoPh, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
   flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches, _whitelist);
+  flatutils::book(_tree, _name, "isEB", _name + ".size", 'O', isEB, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT23Loose", _name + ".size", 'O', matchHLT23Loose, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT27Loose", _name + ".size", 'O', matchHLT27Loose, _branches, _whitelist);
 }
@@ -423,6 +426,7 @@ simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
   phIsoPh(_data.phIsoPh[_idx]),
   sieie(_data.sieie[_idx]),
   hOverE(_data.hOverE[_idx]),
+  isEB(_data.isEB[_idx]),
   matchHLT23Loose(_data.matchHLT23Loose[_idx]),
   matchHLT27Loose(_data.matchHLT27Loose[_idx])
 {
@@ -435,6 +439,7 @@ simpletree::Electron::Electron(Electron const& _src) :
   phIsoPh(_src.phIsoPh),
   sieie(_src.sieie),
   hOverE(_src.hOverE),
+  isEB(_src.isEB),
   matchHLT23Loose(_src.matchHLT23Loose),
   matchHLT27Loose(_src.matchHLT27Loose)
 {
@@ -450,6 +455,7 @@ simpletree::Electron::operator=(Electron const& _rhs)
   phIsoPh = _rhs.phIsoPh;
   sieie = _rhs.sieie;
   hOverE = _rhs.hOverE;
+  isEB = _rhs.isEB;
   matchHLT23Loose = _rhs.matchHLT23Loose;
   matchHLT27Loose = _rhs.matchHLT27Loose;
   return *this;

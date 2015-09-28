@@ -375,10 +375,12 @@ mithep::SimpleTreeMod::Process()
           auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
 
           outElectron.loose = looseMask->At(iL);
-          
+
           double chIso, nhIso, phIso;
           IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
           double scEta(inElectron.SCluster()->AbsEta());
+
+          outElectron.isEB = (scEta < mithep::gkPhoEBEtaMax);
 
           outElectron.chIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
           outElectron.nhIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
