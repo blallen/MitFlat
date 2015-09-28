@@ -43,7 +43,7 @@ namespace mithep {
     void SetCHGt30MetName(char const* n) { fCHGt30MetName = n; }
     void SetNHGt30MetName(char const* n) { fNHGt30MetName = n; }
     void SetNEGt30MetName(char const* n) { fNEGt30MetName = n; }
-    void SetTriggerObjectsName(UInt_t p, char const* n) { fTriggerObjectsName[p] = n; }
+    void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
     void SetIsMC(Bool_t k) { fIsMC = k; }
 
@@ -90,8 +90,8 @@ namespace mithep {
     TString fCHGt30MetName{""};
     TString fNHGt30MetName{""};
     TString fNEGt30MetName{""};
-    TString fTriggerObjectsName[simpletree::nHLTPaths] = {};
-    TString fTriggerPathName[simpletree::nHLTPaths] = {};
+    std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};
+    TString fTriggerPathName[simpletree::nHLTPaths]{};
 
     Bool_t fIsMC{kTRUE};
 

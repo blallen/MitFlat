@@ -162,7 +162,9 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "phIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hOverE", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "drParton", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hadDecay", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "pixelVeto", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "csafeVeto", _status, _branches, _whitelist);
@@ -170,6 +172,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "medium", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "tight", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchHLT120", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchHLT135MET100", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchHLT165HE10", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchHLT175", _status, _branches, _whitelist);
 }
@@ -184,7 +187,9 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "phIso", phIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hOverE", hOverE, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "drParton", drParton, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hadDecay", hadDecay, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "pixelVeto", pixelVeto, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "csafeVeto", csafeVeto, _branches, _whitelist);
@@ -192,6 +197,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "medium", medium, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "tight", tight, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchHLT120", matchHLT120, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchHLT135MET100", matchHLT135MET100, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchHLT165HE10", matchHLT165HE10, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchHLT175", matchHLT175, _branches, _whitelist);
 }
@@ -206,7 +212,9 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "phIso", _name + ".size", 'F', phIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
   flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches, _whitelist);
+  flatutils::book(_tree, _name, "drParton", _name + ".size", 'F', drParton, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches, _whitelist);
+  flatutils::book(_tree, _name, "isEB", _name + ".size", 'O', isEB, _branches, _whitelist);
   flatutils::book(_tree, _name, "hadDecay", _name + ".size", 'O', hadDecay, _branches, _whitelist);
   flatutils::book(_tree, _name, "pixelVeto", _name + ".size", 'O', pixelVeto, _branches, _whitelist);
   flatutils::book(_tree, _name, "csafeVeto", _name + ".size", 'O', csafeVeto, _branches, _whitelist);
@@ -214,6 +222,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "medium", _name + ".size", 'O', medium, _branches, _whitelist);
   flatutils::book(_tree, _name, "tight", _name + ".size", 'O', tight, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT120", _name + ".size", 'O', matchHLT120, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchHLT135MET100", _name + ".size", 'O', matchHLT135MET100, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT165HE10", _name + ".size", 'O', matchHLT165HE10, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT175", _name + ".size", 'O', matchHLT175, _branches, _whitelist);
 }
@@ -225,7 +234,9 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   phIso(_data.phIso[_idx]),
   sieie(_data.sieie[_idx]),
   hOverE(_data.hOverE[_idx]),
+  drParton(_data.drParton[_idx]),
   matchedGen(_data.matchedGen[_idx]),
+  isEB(_data.isEB[_idx]),
   hadDecay(_data.hadDecay[_idx]),
   pixelVeto(_data.pixelVeto[_idx]),
   csafeVeto(_data.csafeVeto[_idx]),
@@ -233,6 +244,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   medium(_data.medium[_idx]),
   tight(_data.tight[_idx]),
   matchHLT120(_data.matchHLT120[_idx]),
+  matchHLT135MET100(_data.matchHLT135MET100[_idx]),
   matchHLT165HE10(_data.matchHLT165HE10[_idx]),
   matchHLT175(_data.matchHLT175[_idx])
 {
@@ -245,7 +257,9 @@ simpletree::Photon::Photon(Photon const& _src) :
   phIso(_src.phIso),
   sieie(_src.sieie),
   hOverE(_src.hOverE),
+  drParton(_src.drParton),
   matchedGen(_src.matchedGen),
+  isEB(_src.isEB),
   hadDecay(_src.hadDecay),
   pixelVeto(_src.pixelVeto),
   csafeVeto(_src.csafeVeto),
@@ -253,6 +267,7 @@ simpletree::Photon::Photon(Photon const& _src) :
   medium(_src.medium),
   tight(_src.tight),
   matchHLT120(_src.matchHLT120),
+  matchHLT135MET100(_src.matchHLT135MET100),
   matchHLT165HE10(_src.matchHLT165HE10),
   matchHLT175(_src.matchHLT175)
 {
@@ -268,7 +283,9 @@ simpletree::Photon::operator=(Photon const& _rhs)
   phIso = _rhs.phIso;
   sieie = _rhs.sieie;
   hOverE = _rhs.hOverE;
+  drParton = _rhs.drParton;
   matchedGen = _rhs.matchedGen;
+  isEB = _rhs.isEB;
   hadDecay = _rhs.hadDecay;
   pixelVeto = _rhs.pixelVeto;
   csafeVeto = _rhs.csafeVeto;
@@ -276,6 +293,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
   medium = _rhs.medium;
   tight = _rhs.tight;
   matchHLT120 = _rhs.matchHLT120;
+  matchHLT135MET100 = _rhs.matchHLT135MET100;
   matchHLT165HE10 = _rhs.matchHLT165HE10;
   matchHLT175 = _rhs.matchHLT175;
   return *this;
@@ -503,7 +521,7 @@ simpletree::HLT::array_data::setAddress(TTree& _tree, TString const& _name, flat
 void
 simpletree::HLT::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::book(_tree, _name, "pass", TString::Format("%d", 9), 'O', pass, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pass", TString::Format("%d", 11), 'O', pass, _branches, _whitelist);
 }
 
 simpletree::HLT::HLT(array_data& _data, UInt_t _idx) :

@@ -13,7 +13,21 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   flatutils::setStatus(_tree, "", "rho", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "npv", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "genHt", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, "", "genZpt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genBoson", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genBosonPt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genBosonEta", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genBosonPhi", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genBosonM", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton1", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton1Pt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton1Eta", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton1Phi", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton1M", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton2", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton2Pt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton2Eta", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton2Phi", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "genLepton2M", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "ntau", _status, _branches, _whitelist);
 
   jets.setStatus(_tree, _status, flatutils::subBranchList(_branches, "jets"), _whitelist);
@@ -23,16 +37,10 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   rawMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   t1NoCHSMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "t1NoCHSMet"), _whitelist);
-  eta30Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "eta30Met"), _whitelist);
-  eta30T1Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "eta30T1Met"), _whitelist);
-  eta30T1NoCHSMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "eta30T1NoCHSMet"), _whitelist);
   nhScaledMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "nhScaledMet"), _whitelist);
   chMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "chMet"), _whitelist);
   nhMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "nhMet"), _whitelist);
   neMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "neMet"), _whitelist);
-  chGt30Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "chGt30Met"), _whitelist);
-  nhGt30Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "nhGt30Met"), _whitelist);
-  neGt30Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "neGt30Met"), _whitelist);
   hlt.setStatus(_tree, _status, flatutils::subBranchList(_branches, "hlt"), _whitelist);
 }
 
@@ -46,7 +54,21 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   flatutils::setStatusAndAddress(_tree, "", "rho", &rho, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "npv", &npv, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "genHt", &genHt, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, "", "genZpt", &genZpt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genBoson", &genBoson, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genBosonPt", &genBosonPt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genBosonEta", &genBosonEta, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genBosonPhi", &genBosonPhi, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genBosonM", &genBosonM, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton1", &genLepton1, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton1Pt", &genLepton1Pt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton1Eta", &genLepton1Eta, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton1Phi", &genLepton1Phi, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton1M", &genLepton1M, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton2", &genLepton2, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton2Pt", &genLepton2Pt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton2Eta", &genLepton2Eta, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton2Phi", &genLepton2Phi, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "genLepton2M", &genLepton2M, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "ntau", &ntau, _branches, _whitelist);
 
   jets.setAddress(_tree, flatutils::subBranchList(_branches, "jets"), _whitelist);
@@ -56,16 +78,10 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   rawMet.setAddress(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setAddress(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   t1NoCHSMet.setAddress(_tree, flatutils::subBranchList(_branches, "t1NoCHSMet"), _whitelist);
-  eta30Met.setAddress(_tree, flatutils::subBranchList(_branches, "eta30Met"), _whitelist);
-  eta30T1Met.setAddress(_tree, flatutils::subBranchList(_branches, "eta30T1Met"), _whitelist);
-  eta30T1NoCHSMet.setAddress(_tree, flatutils::subBranchList(_branches, "eta30T1NoCHSMet"), _whitelist);
   nhScaledMet.setAddress(_tree, flatutils::subBranchList(_branches, "nhScaledMet"), _whitelist);
   chMet.setAddress(_tree, flatutils::subBranchList(_branches, "chMet"), _whitelist);
   nhMet.setAddress(_tree, flatutils::subBranchList(_branches, "nhMet"), _whitelist);
   neMet.setAddress(_tree, flatutils::subBranchList(_branches, "neMet"), _whitelist);
-  chGt30Met.setAddress(_tree, flatutils::subBranchList(_branches, "chGt30Met"), _whitelist);
-  nhGt30Met.setAddress(_tree, flatutils::subBranchList(_branches, "nhGt30Met"), _whitelist);
-  neGt30Met.setAddress(_tree, flatutils::subBranchList(_branches, "neGt30Met"), _whitelist);
   hlt.setAddress(_tree, flatutils::subBranchList(_branches, "hlt"), _whitelist);
 }
 
@@ -79,7 +95,21 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   flatutils::book(_tree, "", "rho", "", 'D', &rho, _branches, _whitelist);
   flatutils::book(_tree, "", "npv", "", 's', &npv, _branches, _whitelist);
   flatutils::book(_tree, "", "genHt", "", 'F', &genHt, _branches, _whitelist);
-  flatutils::book(_tree, "", "genZpt", "", 'F', &genZpt, _branches, _whitelist);
+  flatutils::book(_tree, "", "genBoson", "", 'S', &genBoson, _branches, _whitelist);
+  flatutils::book(_tree, "", "genBosonPt", "", 'F', &genBosonPt, _branches, _whitelist);
+  flatutils::book(_tree, "", "genBosonEta", "", 'F', &genBosonEta, _branches, _whitelist);
+  flatutils::book(_tree, "", "genBosonPhi", "", 'F', &genBosonPhi, _branches, _whitelist);
+  flatutils::book(_tree, "", "genBosonM", "", 'F', &genBosonM, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton1", "", 'S', &genLepton1, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton1Pt", "", 'F', &genLepton1Pt, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton1Eta", "", 'F', &genLepton1Eta, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton1Phi", "", 'F', &genLepton1Phi, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton1M", "", 'F', &genLepton1M, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton2", "", 'S', &genLepton2, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton2Pt", "", 'F', &genLepton2Pt, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton2Eta", "", 'F', &genLepton2Eta, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton2Phi", "", 'F', &genLepton2Phi, _branches, _whitelist);
+  flatutils::book(_tree, "", "genLepton2M", "", 'F', &genLepton2M, _branches, _whitelist);
   flatutils::book(_tree, "", "ntau", "", 'i', &ntau, _branches, _whitelist);
 
   jets.book(_tree, flatutils::subBranchList(_branches, "jets"), _whitelist);
@@ -89,16 +119,10 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   rawMet.book(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.book(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   t1NoCHSMet.book(_tree, flatutils::subBranchList(_branches, "t1NoCHSMet"), _whitelist);
-  eta30Met.book(_tree, flatutils::subBranchList(_branches, "eta30Met"), _whitelist);
-  eta30T1Met.book(_tree, flatutils::subBranchList(_branches, "eta30T1Met"), _whitelist);
-  eta30T1NoCHSMet.book(_tree, flatutils::subBranchList(_branches, "eta30T1NoCHSMet"), _whitelist);
   nhScaledMet.book(_tree, flatutils::subBranchList(_branches, "nhScaledMet"), _whitelist);
   chMet.book(_tree, flatutils::subBranchList(_branches, "chMet"), _whitelist);
   nhMet.book(_tree, flatutils::subBranchList(_branches, "nhMet"), _whitelist);
   neMet.book(_tree, flatutils::subBranchList(_branches, "neMet"), _whitelist);
-  chGt30Met.book(_tree, flatutils::subBranchList(_branches, "chGt30Met"), _whitelist);
-  nhGt30Met.book(_tree, flatutils::subBranchList(_branches, "nhGt30Met"), _whitelist);
-  neGt30Met.book(_tree, flatutils::subBranchList(_branches, "neGt30Met"), _whitelist);
   hlt.book(_tree, flatutils::subBranchList(_branches, "hlt"), _whitelist);
 }
 
@@ -144,12 +168,14 @@ simpletree::makeHLTPathTree()
 
   TString names[] = {
     "kPhoton120",
+    "kPhoton135MET100",
     "kPhoton165HE10",
     "kPhoton175",
     "kEle23Loose",
     "kEle27Loose",
     "kMu24",
     "kMu27",
+    "kMET170",
     "kMETNoMu90MHTNoMu90",
     "kMETNoMu120MHTNoMu120",
     "nHLTPaths"

@@ -14,42 +14,25 @@ from MitPhysics.Mods.PhotonIdMod import photonIdMod
 from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
 
 # this has to be in the same order as the HLTPaths enum
-if analysis.isRealData:
-    hltPaths = [
-        'Photon120',
-        'Photon165_HE10',
-        'Photon175',
-        'Ele23_WPLoose_Gsf',
-        'Ele27_eta2p1_WPLoose_Gsf',
-        'IsoMu24_eta2p1',
-        'IsoMu27',
-        'PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight',
-        'PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight'
-    ]
+hltPaths = [
+    ('Photon120', ['hltEG120HEFilter']),
+    ('Photon135_PFMET100_JetIdCleaned', ['hltEG135HEFilter']),
+    ('Photon165_HE10', ['hltEG165HE10Filter']),
+    ('Photon175', ['hltEG175HEFilter']),
+    ('Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele23_CaloIdL_TrackIdL_IsoVL', ['hltEle23WPLooseGsfTrackIsoFilter']),
+    ('Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf', ['hltEle27WPLooseGsfTrackIsoFilter']), # filter only matches data
+    ('IsoMu24_eta2p1', ['hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09']),
+    ('IsoMu27', ['hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09']),
+    ('PFMET170_NoiseCleaned', []),
+    ('PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight', []),
+    ('PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight', [])
+]
 
-else: # translate to Spring15 menu
-    hltPaths = [
-        'Photon120',
-        'Photon165_HE10',
-        'Photon175',
-        'Ele23_CaloIdL_TrackIdL_IsoVL',
-        'Ele27_eta2p1_WP75_Gsf',
-        'IsoMu24_eta2p1',
-        'IsoMu27',
-        'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight',
-        'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight'
-    ]
-
-
-hltMods = []
-for path in hltPaths:
-    hltMod = mithep.HLTMod(path + 'Mod',
-        AbortIfNotAccepted = False,
-    )
+hltMod = mithep.HLTMod(
+    AbortIfNotAccepted = analysis.isRealData,
+)
+for path, filters in hltPaths:
     hltMod.AddTrigger('HLT_' + path + '_v*')
-    hltMods.append(hltMod)
-
-hltModsSequence = Chain(hltMods)
 
 exoticMets = mithep.ExoticMetsMod()
 
@@ -68,17 +51,6 @@ metCorrection.IsData(analysis.isRealData)
 
 metCorrectionNoCHS = metCorrection.clone('MetCorrectionNoCHS',
     OutputName = 'PFType1MetNoCHS',
-    JetsName = 'AKt4PFJets'
-)
-
-met30Correction = metCorrection.clone('Met30Correction',
-    InputName = 'Eta30Met',
-    OutputName = 'PFType1Eta30Met',
-    MaxJetEta = 3.
-)
-
-met30CorrectionNoCHS = met30Correction.clone('Met30CorrectionNoCHS',
-    OutputName = 'PFType1Eta30MetNoCHS',
     JetsName = 'AKt4PFJets'
 )
 
@@ -149,12 +121,10 @@ jecDir = mitdata + '/JEC/'
 
 for jec in jecSources:
     metCorrection.AddJetCorrectionFromFile(jecDir + jec)
-    met30Correction.AddJetCorrectionFromFile(jecDir + jec)
     jetCorrection.AddCorrectionFromFile(jecDir + jec)
 
 for jec in jecSourcesNoCHS:
     metCorrectionNoCHS.AddJetCorrectionFromFile(jecDir + jec)
-    met30CorrectionNoCHS.AddJetCorrectionFromFile(jecDir + jec)
 
 looseElectronMask = electronIdMod.clone('ElectronLooseId',
     InputName = 'Electrons',
@@ -267,25 +237,21 @@ ntuples = mithep.SimpleTreeMod(
     RawMetName = 'PFMet',
     T1MetName = metCorrection.GetOutputName(),
     T1NoCHSMetName = metCorrectionNoCHS.GetOutputName(),
-    Eta30MetName = exoticMets.GetEta30MetName(),
-    Eta30T1MetName = met30Correction.GetOutputName(),
-    Eta30T1NoCHSMetName = met30CorrectionNoCHS.GetOutputName(),
     NHScaledMetName = exoticMets.GetNHScaledMetName(),
     CHMetName = exoticMets.GetCHMetName(),
     NHMetName = exoticMets.GetNHMetName(),
     NEMetName = exoticMets.GetNEMetName(),
-    CHGt30MetName = exoticMets.GetCHGt30MetName(),
-    NHGt30MetName = exoticMets.GetNHGt30MetName(),
-    NEGt30MetName = exoticMets.GetNEGt30MetName(),
     IsMC = not analysis.isRealData,
     Condition = jetCleaning
 )
 
-for iP in range(len(hltPaths)):
-    ntuples.SetTriggerObjectsName(iP, hltMods[iP].GetOutputName())
-    ntuples.SetTriggerPathName(iP, hltPaths[iP])
+for iP, (path, filters) in enumerate(hltPaths):
+    for f in filters:
+        ntuples.AddTriggerFilterName(iP, f)
+    ntuples.SetTriggerPathName(iP, path)
 
 analysis.setSequence(
+    hltMod *
     badEventsFilterMod *
     goodPVFilterMod *
     separatePileUpMod *
@@ -300,8 +266,6 @@ analysis.setSequence(
     exoticMets *
     metCorrection *
     metCorrectionNoCHS *
-    met30Correction *
-    met30CorrectionNoCHS *
     loosePhotons *
     photonLooseId *
     photonMediumId *
@@ -309,6 +273,5 @@ analysis.setSequence(
     jetCorrection *
     jetId *
     jetCleaning *
-    hltModsSequence +
     ntuples
 )

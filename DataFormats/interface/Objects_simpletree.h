@@ -14,12 +14,14 @@ namespace simpletree {
 
   enum HLTPath {
     kPhoton120,
+    kPhoton135MET100,
     kPhoton165HE10,
     kPhoton175,
     kEle23Loose,
     kEle27Loose,
     kMu24,
     kMu27,
+    kMET170,
     kMETNoMu90MHTNoMu90,
     kMETNoMu120MHTNoMu120,
     nHLTPaths
@@ -109,13 +111,21 @@ namespace simpletree {
 
   class Photon : public Particle {
   public:
+    constexpr static double const chIsoCuts[2][3]{{2.67, 1.79, 1.66}, {1.79, 1.09, 1.04}};
+    constexpr static double const nhIsoCuts[2][3]{{7.23, 0.16, 0.14}, {8.89, 4.31, 3.89}};
+    constexpr static double const phIsoCuts[2][3]{{2.11, 1.9, 1.4}, {3.09, 1.9, 1.4}};
+    constexpr static double const sieieCuts[2][3]{{0.0107, 0.01, 0.01}, {0.0272, 0.0267, 0.0265}};
+    constexpr static double const hOverECuts[2][3]{{0.028, 0.012, 0.01}, {0.093, 0.023, 0.015}};
+
     struct array_data : public Particle::array_data {
       Float_t chIso[NMAX]{};
       Float_t nhIso[NMAX]{};
       Float_t phIso[NMAX]{};
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
+      Float_t drParton[NMAX]{};
       Int_t matchedGen[NMAX]{};
+      Bool_t isEB[NMAX]{};
       Bool_t hadDecay[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
@@ -123,6 +133,7 @@ namespace simpletree {
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
       Bool_t matchHLT120[NMAX]{};
+      Bool_t matchHLT135MET100[NMAX]{};
       Bool_t matchHLT165HE10[NMAX]{};
       Bool_t matchHLT175[NMAX]{};
 
@@ -136,13 +147,21 @@ namespace simpletree {
     virtual ~Photon() {}
     Photon& operator=(Photon const&);
 
+    bool passCHIso(UInt_t wp) const { return chIso < (isEB ? chIsoCuts[0][wp] : chIsoCuts[1][wp]); }
+    bool passNHIso(UInt_t wp) const { return nhIso < (isEB ? nhIsoCuts[0][wp] : nhIsoCuts[1][wp]); }
+    bool passPhIso(UInt_t wp) const { return phIso < (isEB ? phIsoCuts[0][wp] : phIsoCuts[1][wp]); }
+    bool passSieie(UInt_t wp) const { return sieie < (isEB ? sieieCuts[0][wp] : sieieCuts[1][wp]); }
+    bool passHOverE(UInt_t wp) const { return hOverE < (isEB ? hOverECuts[0][wp] : hOverECuts[1][wp]); }
+
   public:
     Float_t& chIso;
     Float_t& nhIso;
     Float_t& phIso;
     Float_t& sieie;
     Float_t& hOverE;
+    Float_t& drParton;
     Int_t& matchedGen;
+    Bool_t& isEB;
     Bool_t& hadDecay;
     Bool_t& pixelVeto;
     Bool_t& csafeVeto;
@@ -150,6 +169,7 @@ namespace simpletree {
     Bool_t& medium;
     Bool_t& tight;
     Bool_t& matchHLT120;
+    Bool_t& matchHLT135MET100;
     Bool_t& matchHLT165HE10;
     Bool_t& matchHLT175;
   };
@@ -240,7 +260,7 @@ namespace simpletree {
   class HLT {
   public:
     struct array_data {
-      static UInt_t const NMAX{9};
+      static UInt_t const NMAX{11};
 
       Bool_t pass[NMAX]{};
 
