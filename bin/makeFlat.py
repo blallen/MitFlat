@@ -3,7 +3,9 @@
 from argparse import ArgumentParser
 import re
 import os
+import sys
 import collections
+import subprocess
 
 def isSimple(code):
     return len(code) == 1 and code in 'CBbSsIiLlFDO'
@@ -48,14 +50,15 @@ args = argParser.parse_args()
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
 brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)/(.+)$')
 fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\}$')
-statPat = re.compile('^static .+$')
+statPat = re.compile('^static +(.+) +([^ \{]+)(\{.*\});$')
 incPat = re.compile('#include [^ ]+$')
-typedefPat = re.compile('typedef [^ ]+ [^ ]+$')
+typedefPat = re.compile('typedef [^ ]+ [^ ]+;$')
 enumPat = re.compile('enum *([^ ]+) *\\{')
 treePat = re.compile('^\\{([^\\}]+)\\}$')
 
 ObjDef = collections.namedtuple('ObjDef', ['branches', 'functions', 'statics'])
 BranchDef = collections.namedtuple('BranchDef', ['name', 'type'])
+StaticDef = collections.namedtuple('StaticDef', ['type', 'name', 'init'])
 
 includes = []
 typedefs = []
@@ -141,10 +144,14 @@ with open(args.config) as configFile:
                 raise RuntimeError('Function given with no context')
 
         elif statPat.match(line):
+            matches = statPat.match(line)
+            t = matches.group(1)
+            n = matches.group(2)
+            i = matches.group(3)
             if currentObj:
-                defs[currentObj].statics.append(line)
+                defs[currentObj].statics.append(StaticDef(t, n, i))
             elif currentTree:
-                treeDefs[currentTree].statics.append(line)
+                treeDefs[currentTree].statics.append(StaticDef(t, n, i))
             else:
                 raise RuntimeError('Static given with no context')
 
@@ -209,8 +216,6 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
     # typedefs
     if len(typedefs) != 0:
         for typedef in typedefs:
-            if not typedef.endswith(';'):
-                typedef += ';'
             header.write('\n  ' + typedef)
 
         header.write('\n')
@@ -235,9 +240,7 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
 
         if len(defs[obj].statics) != 0:
             for st in defs[obj].statics:
-                if not st.endswith(';'):
-                    st += ';'
-                header.write('\n    constexpr ' + st)
+                header.write('\n    static ' + st.type + ' ' + st.name + ';')
 
             header.write('\n')
 
@@ -360,11 +363,55 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
     header.write('\n}\n')
     header.write('\n#endif\n')
 
+# linkdef
+with open(FULLPATH + '/interface/' + namespace + '_LinkDef.h', 'w') as linkdef:
+    linkdef.write('#include "' + PACKAGE + '/interface/Objects_' + namespace + '.h"\n\n')
+    linkdef.write('#include "' + PACKAGE + '/interface/TreeEntries_' + namespace + '.h"\n\n')
+    linkdef.write('#ifdef __CLING__\n')
+    linkdef.write('#pragma link off all globals;\n')
+    linkdef.write('#pragma link off all classes;\n')
+    linkdef.write('#pragma link off all functions;\n')
+    linkdef.write('#pragma link C++ nestedclass;\n')
+    linkdef.write('#pragma link C++ nestedtypedef;\n')
+    linkdef.write('#pragma link C++ namespace ' + namespace + ';\n\n')
+
+    for name, items in enums:
+        linkdef.write('#pragma link C++ enum ' + namespace + '::' + name + ';\n')
+    for obj in objs:
+        linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
+    for obj in objs:
+        if obj not in singleObjs:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + 'Collection;\n')
+    for tree in trees:
+        linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
+
+    linkdef.write('#endif\n')
+
+proc = subprocess.Popen(['rootcling', '-f', FULLPATH + '/src/' + namespace + '_Dict.cc', '-I' + os.environ['CMSSW_BASE'] + '/src', PACKAGE + '/interface/Objects_' + namespace + '.h', PACKAGE + '/interface/TreeEntries_' + namespace + '.h', FULLPATH + '/interface/' + namespace + '_LinkDef.h'], stdout = subprocess.PIPE, stderr = subprocess.PIPE, cwd = os.environ['CMSSW_BASE'] + '/src')
+
+out, err = proc.communicate()
+if out:
+    print out
+if err:
+    print err
+
+if proc.returncode != 0:
+    sys.exit(1)
+
+os.rename(FULLPATH + '/src/' + namespace + '_Dict_rdict.pcm', os.environ['CMSSW_BASE'] + '/lib/' + os.environ['SCRAM_ARCH'] + '/' + namespace + '_Dict_rdict.pcm')
+
 # Objects source
 with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
     src.write('#include "' + PACKAGE + '/interface/Objects_' + namespace + '.h"\n')
 
     src.write('#include "TTree.h"\n\n')
+
+    for obj in objs:
+        if len(defs[obj].statics) != 0:
+            for st in defs[obj].statics:
+                src.write(st.type + ' ' + namespace + '::' + obj + '::' + st.name + st.init + ';\n')
+
+            src.write('\n')
 
     for obj in objs:
         if obj in singleObjs:
