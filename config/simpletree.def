@@ -27,7 +27,7 @@ virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 
 [ParticleM:Particle]
 mass/F
-LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
 [Jet:ParticleM]
 
@@ -37,21 +37,23 @@ phi/F
 sumEt/F
 TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
-[Photon:Particle]
+[Isolatable:Particle]
 chIso/F
 nhIso/F
 phIso/F
-sieie/F
-hOverE/F
-drParton/F
 matchedGen/I
-isEB/O
 hadDecay/O
-pixelVeto/O
-csafeVeto/O
 loose/O
 medium/O
 tight/O
+
+[Photon:Isolatable]
+sieie/F
+hOverE/F
+drParton/F
+isEB/O
+pixelVeto/O
+csafeVeto/O
 matchHLT120/O
 matchHLT135MET100/O
 matchHLT165HE10/O
@@ -67,24 +69,23 @@ static double const phIsoCuts[2][3]{{2.11, 1.9, 1.4}, {3.09, 1.9, 1.4}};
 static double const sieieCuts[2][3]{{0.0107, 0.01, 0.01}, {0.0272, 0.0267, 0.0265}};
 static double const hOverECuts[2][3]{{0.028, 0.012, 0.01}, {0.093, 0.023, 0.015}};
 
-[Lepton:ParticleM]
-int charge() const { return positive ? 1 : -1; }
-matchedGen/I
+[Lepton:Isolatable]
+puIso/F
+combRelIso/F
 tauDecay/O
-hadDecay/O
 positive/O
-loose/O
-tight/O
+int charge() const { return positive ? 1 : -1; }
 
 [Electron:Lepton]
+sieie/F
+hOverE/F
 chIsoPh/F
 nhIsoPh/F
 phIsoPh/F
-sieie/F
-hOverE/F
 isEB/O
 matchHLT23Loose/O
 matchHLT27Loose/O
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.510998928e-3); }
 bool passCHIsoPh(UInt_t wp) const { return chIsoPh < (isEB ? Photon::chIsoCuts[0][wp] : Photon::chIsoCuts[1][wp]); }
 bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < (isEB ? Photon::nhIsoCuts[0][wp] : Photon::nhIsoCuts[1][wp]); }
 bool passPhIsoPh(UInt_t wp) const { return phIsoPh < (isEB ? Photon::phIsoCuts[0][wp] : Photon::phIsoCuts[1][wp]); }
@@ -94,6 +95,7 @@ bool passHOverEPh(UInt_t wp) const { return hOverE < (isEB ? Photon::hOverECuts[
 [Muon:Lepton]
 matchHLT24/O
 matchHLT27/O
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 105.6583715e-3); }
 
 [HLT:SIZE=nHLTPaths]
 pass/O

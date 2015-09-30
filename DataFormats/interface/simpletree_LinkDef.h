@@ -15,6 +15,7 @@
 #pragma link C++ class simpletree::ParticleM;
 #pragma link C++ class simpletree::Jet;
 #pragma link C++ class simpletree::Met;
+#pragma link C++ class simpletree::Isolatable;
 #pragma link C++ class simpletree::Photon;
 #pragma link C++ class simpletree::Lepton;
 #pragma link C++ class simpletree::Electron;
@@ -23,6 +24,7 @@
 #pragma link C++ class simpletree::ParticleCollection;
 #pragma link C++ class simpletree::ParticleMCollection;
 #pragma link C++ class simpletree::JetCollection;
+#pragma link C++ class simpletree::IsolatableCollection;
 #pragma link C++ class simpletree::PhotonCollection;
 #pragma link C++ class simpletree::LeptonCollection;
 #pragma link C++ class simpletree::ElectronCollection;

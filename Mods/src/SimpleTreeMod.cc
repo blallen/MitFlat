@@ -314,6 +314,16 @@ mithep::SimpleTreeMod::Process()
     &fMuonsName
   };
 
+  TString* looseMaskName[2] = {
+    &fLooseElectronsName,
+    &fLooseMuonsName
+  };
+
+  TString* mediumMaskName[2] = {
+    &fMediumElectronsName,
+    &fMediumMuonsName
+  };
+
   TString* tightMaskName[2] = {
     &fTightElectronsName,
     &fTightMuonsName
@@ -346,6 +356,9 @@ mithep::SimpleTreeMod::Process()
     }
   };
 
+  auto* puPF = GetObject<mithep::PFCandidateCol>(fPUPFCandidatesName);
+  auto* pvPF = GetObject<mithep::PFCandidateCol>(fPVPFCandidatesName);
+
   for (unsigned iC(0); iC != 2; ++iC) {
     if (inputLeptonName[iC]->Length() != 0) {
       auto* leptons = GetObject<mithep::ParticleCol>(*inputLeptonName[iC]);
@@ -354,10 +367,9 @@ mithep::SimpleTreeMod::Process()
         return;
       }
 
-      mithep::NFArrBool* looseMask = 0;
+      auto* looseMask = GetObject<mithep::NFArrBool>(*looseMaskName[iC]);
+      auto* mediumMask = GetObject<mithep::NFArrBool>(*mediumMaskName[iC]);
       auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
-      if (iC == 0)
-        looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
 
       outputCollection[iC]->resize(leptons->GetEntries());
       for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
@@ -366,21 +378,27 @@ mithep::SimpleTreeMod::Process()
         outLepton.pt = inLepton.Pt();
         outLepton.eta = inLepton.Eta();
         outLepton.phi = inLepton.Phi();
-        outLepton.mass = inLepton.Mass();
         outLepton.positive = inLepton.Charge() > 0.;
+        outLepton.loose = looseMask->At(iL);
+        outLepton.medium = mediumMask->At(iL);
         outLepton.tight = tightMask->At(iL);
 
         if (iC == 0) {
           auto& inElectron(static_cast<mithep::Electron&>(inLepton));
           auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
 
-          outElectron.loose = looseMask->At(iL);
-
-          double chIso, nhIso, phIso;
-          IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
           double scEta(inElectron.SCluster()->AbsEta());
 
           outElectron.isEB = (scEta < mithep::gkPhoEBEtaMax);
+
+          outElectron.chIso = inElectron.PFChargedHadronIso();
+          outElectron.nhIso = inElectron.PFNeutralHadronIso();
+          outElectron.phIso = inElectron.PFPhotonIso();
+          outElectron.puIso = IsolationTools::PFElectronIsolation(&inElectron, puPF, vertices->At(0), 10000., 0., 0.3, 0., mithep::PFCandidate::eHadron);
+          outElectron.combRelIso = IsolationTools::PFEleCombinedIsolationRhoCorr(&inElectron, fEvent.rho, ElectronTools::kEleEASummer15) / inElectron.Pt();
+
+          double chIso, nhIso, phIso;
+          IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
 
           outElectron.chIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
           outElectron.nhIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
@@ -390,7 +408,17 @@ mithep::SimpleTreeMod::Process()
           outElectron.hOverE = inElectron.HadOverEmTow();
         }
         else {
-          outLepton.loose = true;
+          auto& inMuon(static_cast<mithep::Muon&>(inLepton));
+          auto& outMuon(static_cast<simpletree::Muon&>(outLepton));
+
+          double isoArr[4];
+          double combIso(IsolationTools::BetaMwithPUCorrection(pvPF, puPF, &inMuon, 0.4, isoArr));
+
+          outMuon.chIso = isoArr[0];
+          outMuon.nhIso = isoArr[1];
+          outMuon.phIso = isoArr[2];
+          outMuon.puIso = isoArr[3];
+          outMuon.combRelIso = combIso / inMuon.Pt();
         }
 
         for (unsigned iT(0); iT != 2; ++iT) {

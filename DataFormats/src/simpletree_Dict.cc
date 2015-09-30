@@ -235,6 +235,47 @@ namespace ROOT {
 } // end of namespace ROOT
 
 namespace ROOT {
+   static TClass *simpletreecLcLIsolatable_Dictionary();
+   static void simpletreecLcLIsolatable_TClassManip(TClass*);
+   static void delete_simpletreecLcLIsolatable(void *p);
+   static void deleteArray_simpletreecLcLIsolatable(void *p);
+   static void destruct_simpletreecLcLIsolatable(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::simpletree::Isolatable*)
+   {
+      ::simpletree::Isolatable *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Isolatable));
+      static ::ROOT::TGenericClassInfo 
+         instance("simpletree::Isolatable", "MitFlat/DataFormats/interface/Objects_simpletree.h", 112,
+                  typeid(::simpletree::Isolatable), DefineBehavior(ptr, ptr),
+                  &simpletreecLcLIsolatable_Dictionary, isa_proxy, 0,
+                  sizeof(::simpletree::Isolatable) );
+      instance.SetDelete(&delete_simpletreecLcLIsolatable);
+      instance.SetDeleteArray(&deleteArray_simpletreecLcLIsolatable);
+      instance.SetDestructor(&destruct_simpletreecLcLIsolatable);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::simpletree::Isolatable*)
+   {
+      return GenerateInitInstanceLocal((::simpletree::Isolatable*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::simpletree::Isolatable*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *simpletreecLcLIsolatable_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::simpletree::Isolatable*)0x0)->GetClass();
+      simpletreecLcLIsolatable_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void simpletreecLcLIsolatable_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
    static TClass *simpletreecLcLPhoton_Dictionary();
    static void simpletreecLcLPhoton_TClassManip(TClass*);
    static void delete_simpletreecLcLPhoton(void *p);
@@ -247,7 +288,7 @@ namespace ROOT {
       ::simpletree::Photon *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Photon));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::Photon", "MitFlat/DataFormats/interface/Objects_simpletree.h", 112,
+         instance("simpletree::Photon", "MitFlat/DataFormats/interface/Objects_simpletree.h", 145,
                   typeid(::simpletree::Photon), DefineBehavior(ptr, ptr),
                   &simpletreecLcLPhoton_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::Photon) );
@@ -288,7 +329,7 @@ namespace ROOT {
       ::simpletree::Lepton *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Lepton));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::Lepton", "MitFlat/DataFormats/interface/Objects_simpletree.h", 177,
+         instance("simpletree::Lepton", "MitFlat/DataFormats/interface/Objects_simpletree.h", 194,
                   typeid(::simpletree::Lepton), DefineBehavior(ptr, ptr),
                   &simpletreecLcLLepton_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::Lepton) );
@@ -329,7 +370,7 @@ namespace ROOT {
       ::simpletree::Electron *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Electron));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::Electron", "MitFlat/DataFormats/interface/Objects_simpletree.h", 208,
+         instance("simpletree::Electron", "MitFlat/DataFormats/interface/Objects_simpletree.h", 221,
                   typeid(::simpletree::Electron), DefineBehavior(ptr, ptr),
                   &simpletreecLcLElectron_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::Electron) );
@@ -370,7 +411,7 @@ namespace ROOT {
       ::simpletree::Muon *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Muon));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::Muon", "MitFlat/DataFormats/interface/Objects_simpletree.h", 247,
+         instance("simpletree::Muon", "MitFlat/DataFormats/interface/Objects_simpletree.h", 261,
                   typeid(::simpletree::Muon), DefineBehavior(ptr, ptr),
                   &simpletreecLcLMuon_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::Muon) );
@@ -411,7 +452,7 @@ namespace ROOT {
       ::simpletree::HLT *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::HLT));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::HLT", "MitFlat/DataFormats/interface/Objects_simpletree.h", 268,
+         instance("simpletree::HLT", "MitFlat/DataFormats/interface/Objects_simpletree.h", 284,
                   typeid(::simpletree::HLT), DefineBehavior(ptr, ptr),
                   &simpletreecLcLHLT_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::HLT) );
@@ -581,189 +622,236 @@ namespace ROOT {
 } // end of namespace ROOT
 
 namespace ROOT {
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_Dictionary();
-   static void flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_TClassManip(TClass*);
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p = 0);
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(Long_t size, void *p);
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p);
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p);
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_Dictionary();
+   static void flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_TClassManip(TClass*);
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p = 0);
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(Long_t size, void *p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p);
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p);
 
    // Function generating the singleton type initializer
-   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)
    {
-      ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >));
+      ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >));
       static ::ROOT::TGenericClassInfo 
-         instance("flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >", "MitFlat/DataFormats/interface/Collection.h", 40,
-                  typeid(::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >), DefineBehavior(ptr, ptr),
-                  &flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_Dictionary, isa_proxy, 0,
-                  sizeof(::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >) );
-      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
-      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
-      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
-      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
-      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
+         instance("flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >", "MitFlat/DataFormats/interface/Collection.h", 40,
+                  typeid(::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >), DefineBehavior(ptr, ptr),
+                  &flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_Dictionary, isa_proxy, 0,
+                  sizeof(::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >) );
+      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
+      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
+      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
+      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
+      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR);
 
-      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >","simpletree::PhotonCollection");
+      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >","simpletree::IsolatableCollection");
       return &instance;
    }
-   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)
+   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)
    {
-      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)0);
+      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)0);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)0x0)->GetClass();
-      flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_TClassManip(theClass);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)0x0)->GetClass();
+      flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_TClassManip(theClass);
    return theClass;
    }
 
-   static void flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_TClassManip(TClass* ){
+   static void flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR_TClassManip(TClass* ){
    }
 
 } // end of namespace ROOT
 
 namespace ROOT {
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary();
-   static void flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(TClass*);
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p = 0);
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(Long_t size, void *p);
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary();
+   static void flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(TClass*);
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p = 0);
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(Long_t size, void *p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
 
    // Function generating the singleton type initializer
-   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)
    {
-      ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >));
+      ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >));
       static ::ROOT::TGenericClassInfo 
-         instance("flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
-                  typeid(::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >), DefineBehavior(ptr, ptr),
-                  &flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
-                  sizeof(::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >) );
-      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
-      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
-      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
-      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
-      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+         instance("flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
+                  typeid(::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >), DefineBehavior(ptr, ptr),
+                  &flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
+                  sizeof(::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >) );
+      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
 
-      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >","simpletree::LeptonCollection");
+      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >","simpletree::PhotonCollection");
       return &instance;
    }
-   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)
+   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)
    {
-      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0);
+      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0x0)->GetClass();
-      flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(theClass);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0x0)->GetClass();
+      flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(theClass);
    return theClass;
    }
 
-   static void flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(TClass* ){
+   static void flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(TClass* ){
    }
 
 } // end of namespace ROOT
 
 namespace ROOT {
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary();
-   static void flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass*);
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p = 0);
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t size, void *p);
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary();
+   static void flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(TClass*);
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p = 0);
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(Long_t size, void *p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p);
 
    // Function generating the singleton type initializer
-   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)
    {
-      ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >));
+      ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >));
       static ::ROOT::TGenericClassInfo 
-         instance("flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
-                  typeid(::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >), DefineBehavior(ptr, ptr),
-                  &flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
-                  sizeof(::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >) );
-      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+         instance("flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
+                  typeid(::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >), DefineBehavior(ptr, ptr),
+                  &flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
+                  sizeof(::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >) );
+      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
+      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR);
 
-      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >","simpletree::ElectronCollection");
+      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >","simpletree::LeptonCollection");
       return &instance;
    }
-   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
+   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)
    {
-      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0);
+      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0)->GetClass();
-      flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(theClass);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)0x0)->GetClass();
+      flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(theClass);
    return theClass;
    }
 
-   static void flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass* ){
+   static void flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR_TClassManip(TClass* ){
    }
 
 } // end of namespace ROOT
 
 namespace ROOT {
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary();
-   static void flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass*);
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p = 0);
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t size, void *p);
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary();
+   static void flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass*);
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p = 0);
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t size, void *p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
 
    // Function generating the singleton type initializer
-   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
    {
-      ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >));
+      ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >));
       static ::ROOT::TGenericClassInfo 
-         instance("flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
-                  typeid(::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >), DefineBehavior(ptr, ptr),
-                  &flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
-                  sizeof(::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >) );
-      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
-      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+         instance("flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
+                  typeid(::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >), DefineBehavior(ptr, ptr),
+                  &flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
+                  sizeof(::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >) );
+      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
 
-      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >","simpletree::MuonCollection");
+      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >","simpletree::ElectronCollection");
       return &instance;
    }
-   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
+   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
    {
-      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0);
+      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static TClass *flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0)->GetClass();
-      flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(theClass);
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0)->GetClass();
+      flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(theClass);
    return theClass;
    }
 
-   static void flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass* ){
+   static void flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary();
+   static void flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass*);
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p = 0);
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t size, void *p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
+   {
+      ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >));
+      static ::ROOT::TGenericClassInfo 
+         instance("flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", "MitFlat/DataFormats/interface/Collection.h", 40,
+                  typeid(::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >), DefineBehavior(ptr, ptr),
+                  &flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary, isa_proxy, 0,
+                  sizeof(::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >) );
+      instance.SetNew(&new_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetNewArray(&newArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetDelete(&delete_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetDeleteArray(&deleteArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+      instance.SetDestructor(&destruct_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR);
+
+      ROOT::AddClassAlternate("flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >","simpletree::MuonCollection");
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)
+   {
+      return GenerateInitInstanceLocal((::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)0x0)->GetClass();
+      flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR_TClassManip(TClass* ){
    }
 
 } // end of namespace ROOT
@@ -830,7 +918,7 @@ namespace ROOT {
       ::simpletree::Event *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Event));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::Event", "MitFlat/DataFormats/interface/TreeEntries_simpletree.h", 17,
+         instance("simpletree::Event", "MitFlat/DataFormats/interface/TreeEntries_simpletree.h", 18,
                   typeid(::simpletree::Event), DefineBehavior(ptr, ptr),
                   &simpletreecLcLEvent_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::Event) );
@@ -875,7 +963,7 @@ namespace ROOT {
       ::simpletree::Weight *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::simpletree::Weight));
       static ::ROOT::TGenericClassInfo 
-         instance("simpletree::Weight", "MitFlat/DataFormats/interface/TreeEntries_simpletree.h", 60,
+         instance("simpletree::Weight", "MitFlat/DataFormats/interface/TreeEntries_simpletree.h", 61,
                   typeid(::simpletree::Weight), DefineBehavior(ptr, ptr),
                   &simpletreecLcLWeight_Dictionary, isa_proxy, 0,
                   sizeof(::simpletree::Weight) );
@@ -960,6 +1048,20 @@ namespace ROOT {
       ((current_t*)p)->~current_t();
    }
 } // end of namespace ROOT for class ::simpletree::Met
+
+namespace ROOT {
+   // Wrapper around operator delete
+   static void delete_simpletreecLcLIsolatable(void *p) {
+      delete ((::simpletree::Isolatable*)p);
+   }
+   static void deleteArray_simpletreecLcLIsolatable(void *p) {
+      delete [] ((::simpletree::Isolatable*)p);
+   }
+   static void destruct_simpletreecLcLIsolatable(void *p) {
+      typedef ::simpletree::Isolatable current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::simpletree::Isolatable
 
 namespace ROOT {
    // Wrapper around operator delete
@@ -1096,87 +1198,108 @@ namespace ROOT {
 
 namespace ROOT {
    // Wrappers around operator new
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
-      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > : new ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >;
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > : new ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >;
    }
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >[nElements] : new ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >[nElements];
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >[nElements] : new ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >[nElements];
    }
    // Wrapper around operator delete
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
-      delete ((::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
+      delete ((::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)p);
    }
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
-      delete [] ((::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
+      delete [] ((::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >*)p);
    }
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
-      typedef ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > current_t;
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgR(void *p) {
+      typedef ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > current_t;
       ((current_t*)p)->~current_t();
    }
-} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >
+} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >
 
 namespace ROOT {
    // Wrappers around operator new
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
-      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > : new ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >;
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > : new ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >;
    }
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >[nElements] : new ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >[nElements];
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >[nElements] : new ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >[nElements];
    }
    // Wrapper around operator delete
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
-      delete ((::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      delete ((::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)p);
    }
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
-      delete [] ((::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      delete [] ((::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)p);
    }
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
-      typedef ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > current_t;
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLPhotoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      typedef ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > current_t;
       ((current_t*)p)->~current_t();
    }
-} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >
+} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >
 
 namespace ROOT {
    // Wrappers around operator new
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > : new ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >;
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > : new ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >;
    }
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements] : new ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements];
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >[nElements] : new ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >[nElements];
    }
    // Wrapper around operator delete
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      delete ((::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      delete ((::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)p);
    }
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      delete [] ((::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      delete [] ((::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >*)p);
    }
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      typedef ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > current_t;
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgR(void *p) {
+      typedef ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > current_t;
       ((current_t*)p)->~current_t();
    }
-} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >
+} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >
 
 namespace ROOT {
    // Wrappers around operator new
-   static void *new_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > : new ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >;
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > : new ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >;
    }
-   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements] : new ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements];
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements] : new ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements];
    }
    // Wrapper around operator delete
-   static void delete_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      delete ((::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      delete ((::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
    }
-   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      delete [] ((::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      delete [] ((::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
    }
-   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLParticleMcOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
-      typedef ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > current_t;
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLElectroncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      typedef ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > current_t;
       ((current_t*)p)->~current_t();
    }
-} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >
+} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > : new ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >;
+   }
+   static void *newArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements] : new ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      delete ((::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
+   }
+   static void deleteArray_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      delete [] ((::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >*)p);
+   }
+   static void destruct_flatutilscLcLCollectionlEsimpletreecLcLMuoncOflatutilscLcLCollectionlEsimpletreecLcLLeptoncOflatutilscLcLCollectionlEsimpletreecLcLIsolatablecOflatutilscLcLCollectionlEsimpletreecLcLParticlecOflatutilscLcLBaseCollectionlEfalsegRsPgRsPgRsPgRsPgR(void *p) {
+      typedef ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > > current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >
 
 namespace ROOT {
    // Wrappers around operator new
@@ -1264,6 +1387,7 @@ namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyam
 namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  ParticleM;}
 namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  Jet;}
 namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  Met;}
+namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  Isolatable;}
 namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  Photon;}
 namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  Lepton;}
 namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyama/cmssw/042/CMSSW_7_4_6/src/MitFlat/DataFormats/interface/simpletree_LinkDef.h")))  Electron;}
@@ -1289,20 +1413,23 @@ namespace simpletree{class __attribute__((annotate("$clingAutoload$/local/yiiyam
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";
     static const char* classesHeaders[]={
-"flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", payloadCode, "@",
+"flatutils::Collection<simpletree::Electron,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", payloadCode, "@",
 "flatutils::Collection<simpletree::HLT,flatutils::BaseCollection<true> >", payloadCode, "@",
+"flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >", payloadCode, "@",
 "flatutils::Collection<simpletree::Jet,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", payloadCode, "@",
-"flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", payloadCode, "@",
-"flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", payloadCode, "@",
+"flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", payloadCode, "@",
+"flatutils::Collection<simpletree::Muon,flatutils::Collection<simpletree::Lepton,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > > >", payloadCode, "@",
 "flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> >", payloadCode, "@",
 "flatutils::Collection<simpletree::ParticleM,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >", payloadCode, "@",
-"flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > >", payloadCode, "@",
+"flatutils::Collection<simpletree::Photon,flatutils::Collection<simpletree::Isolatable,flatutils::Collection<simpletree::Particle,flatutils::BaseCollection<false> > > >", payloadCode, "@",
 "simpletree::Electron", payloadCode, "@",
 "simpletree::ElectronCollection", payloadCode, "@",
 "simpletree::Event", payloadCode, "@",
 "simpletree::HLT", payloadCode, "@",
 "simpletree::HLTCollection", payloadCode, "@",
 "simpletree::HLTPath", payloadCode, "@",
+"simpletree::Isolatable", payloadCode, "@",
+"simpletree::IsolatableCollection", payloadCode, "@",
 "simpletree::Jet", payloadCode, "@",
 "simpletree::JetCollection", payloadCode, "@",
 "simpletree::Lepton", payloadCode, "@",

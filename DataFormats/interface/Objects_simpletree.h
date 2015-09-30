@@ -69,7 +69,7 @@ namespace simpletree {
     virtual ~ParticleM() {}
     ParticleM& operator=(ParticleM const&);
 
-    LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
   public:
     Float_t& mass;
@@ -109,7 +109,40 @@ namespace simpletree {
     Float_t sumEt{};
   };
 
-  class Photon : public Particle {
+  class Isolatable : public Particle {
+  public:
+    struct array_data : public Particle::array_data {
+      Float_t chIso[NMAX]{};
+      Float_t nhIso[NMAX]{};
+      Float_t phIso[NMAX]{};
+      Int_t matchedGen[NMAX]{};
+      Bool_t hadDecay[NMAX]{};
+      Bool_t loose[NMAX]{};
+      Bool_t medium[NMAX]{};
+      Bool_t tight[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Isolatable(array_data&, UInt_t idx);
+    Isolatable(Isolatable const&);
+    virtual ~Isolatable() {}
+    Isolatable& operator=(Isolatable const&);
+
+  public:
+    Float_t& chIso;
+    Float_t& nhIso;
+    Float_t& phIso;
+    Int_t& matchedGen;
+    Bool_t& hadDecay;
+    Bool_t& loose;
+    Bool_t& medium;
+    Bool_t& tight;
+  };
+
+  class Photon : public Isolatable {
   public:
     static double const chIsoCuts[2][3];
     static double const nhIsoCuts[2][3];
@@ -117,21 +150,13 @@ namespace simpletree {
     static double const sieieCuts[2][3];
     static double const hOverECuts[2][3];
 
-    struct array_data : public Particle::array_data {
-      Float_t chIso[NMAX]{};
-      Float_t nhIso[NMAX]{};
-      Float_t phIso[NMAX]{};
+    struct array_data : public Isolatable::array_data {
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
       Float_t drParton[NMAX]{};
-      Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
-      Bool_t hadDecay[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t medium[NMAX]{};
-      Bool_t tight[NMAX]{};
       Bool_t matchHLT120[NMAX]{};
       Bool_t matchHLT135MET100[NMAX]{};
       Bool_t matchHLT165HE10[NMAX]{};
@@ -154,35 +179,25 @@ namespace simpletree {
     bool passHOverE(UInt_t wp) const { return hOverE < (isEB ? hOverECuts[0][wp] : hOverECuts[1][wp]); }
 
   public:
-    Float_t& chIso;
-    Float_t& nhIso;
-    Float_t& phIso;
     Float_t& sieie;
     Float_t& hOverE;
     Float_t& drParton;
-    Int_t& matchedGen;
     Bool_t& isEB;
-    Bool_t& hadDecay;
     Bool_t& pixelVeto;
     Bool_t& csafeVeto;
-    Bool_t& loose;
-    Bool_t& medium;
-    Bool_t& tight;
     Bool_t& matchHLT120;
     Bool_t& matchHLT135MET100;
     Bool_t& matchHLT165HE10;
     Bool_t& matchHLT175;
   };
 
-  class Lepton : public ParticleM {
+  class Lepton : public Isolatable {
   public:
-    struct array_data : public ParticleM::array_data {
-      Int_t matchedGen[NMAX]{};
+    struct array_data : public Isolatable::array_data {
+      Float_t puIso[NMAX]{};
+      Float_t combRelIso[NMAX]{};
       Bool_t tauDecay[NMAX]{};
-      Bool_t hadDecay[NMAX]{};
       Bool_t positive[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t tight[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -197,22 +212,20 @@ namespace simpletree {
     int charge() const { return positive ? 1 : -1; }
 
   public:
-    Int_t& matchedGen;
+    Float_t& puIso;
+    Float_t& combRelIso;
     Bool_t& tauDecay;
-    Bool_t& hadDecay;
     Bool_t& positive;
-    Bool_t& loose;
-    Bool_t& tight;
   };
 
   class Electron : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
+      Float_t sieie[NMAX]{};
+      Float_t hOverE[NMAX]{};
       Float_t chIsoPh[NMAX]{};
       Float_t nhIsoPh[NMAX]{};
       Float_t phIsoPh[NMAX]{};
-      Float_t sieie[NMAX]{};
-      Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t matchHLT23Loose[NMAX]{};
       Bool_t matchHLT27Loose[NMAX]{};
@@ -227,6 +240,7 @@ namespace simpletree {
     virtual ~Electron() {}
     Electron& operator=(Electron const&);
 
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.510998928e-3); }
     bool passCHIsoPh(UInt_t wp) const { return chIsoPh < (isEB ? Photon::chIsoCuts[0][wp] : Photon::chIsoCuts[1][wp]); }
     bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < (isEB ? Photon::nhIsoCuts[0][wp] : Photon::nhIsoCuts[1][wp]); }
     bool passPhIsoPh(UInt_t wp) const { return phIsoPh < (isEB ? Photon::phIsoCuts[0][wp] : Photon::phIsoCuts[1][wp]); }
@@ -234,11 +248,11 @@ namespace simpletree {
     bool passHOverEPh(UInt_t wp) const { return hOverE < (isEB ? Photon::hOverECuts[0][wp] : Photon::hOverECuts[1][wp]); }
 
   public:
+    Float_t& sieie;
+    Float_t& hOverE;
     Float_t& chIsoPh;
     Float_t& nhIsoPh;
     Float_t& phIsoPh;
-    Float_t& sieie;
-    Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& matchHLT23Loose;
     Bool_t& matchHLT27Loose;
@@ -259,6 +273,8 @@ namespace simpletree {
     Muon(Muon const&);
     virtual ~Muon() {}
     Muon& operator=(Muon const&);
+
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 105.6583715e-3); }
 
   public:
     Bool_t& matchHLT24;

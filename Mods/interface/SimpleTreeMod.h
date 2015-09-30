@@ -21,8 +21,11 @@ namespace mithep {
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
     void SetLooseElectronsName(char const* n) { fLooseElectronsName = n; }
+    void SetMediumElectronsName(char const* n) { fMediumElectronsName = n; }
     void SetTightElectronsName(char const* n) { fTightElectronsName = n; }
     void SetMuonsName(char const* n) { fMuonsName = n; }
+    void SetLooseMuonsName(char const* n) { fLooseMuonsName = n; }
+    void SetMediumMuonsName(char const* n) { fMediumMuonsName = n; }
     void SetTightMuonsName(char const* n) { fTightMuonsName = n; }
     void SetTausName(char const* n) { fTausName = n; }
     void SetConversionsName(char const* n) { fConversionsName = n; }
@@ -30,19 +33,15 @@ namespace mithep {
     void SetLoosePhotonName(char const* n) { fLoosePhotonName = n; }
     void SetMediumPhotonName(char const* n) { fMediumPhotonName = n; }
     void SetTightPhotonName(char const* n) { fTightPhotonName = n; }
+    void SetPUPFCandidatesName(char const* n) { fPUPFCandidatesName = n; }
+    void SetPVPFCandidatesName(char const* n) { fPVPFCandidatesName = n; }
     void SetRawMetName(char const* n) { fRawMetName = n; }
     void SetT1MetName(char const* n) { fT1MetName = n; }
     void SetT1NoCHSMetName(char const* n) { fT1NoCHSMetName = n; }
-    void SetEta30MetName(char const* n) { fEta30MetName = n; }
-    void SetEta30T1MetName(char const* n) { fEta30T1MetName = n; }
-    void SetEta30T1NoCHSMetName(char const* n) { fEta30T1NoCHSMetName = n; }
     void SetNHScaledMetName(char const* n) { fNHScaledMetName = n; }
     void SetCHMetName(char const* n) { fCHMetName = n; }
     void SetNHMetName(char const* n) { fNHMetName = n; }
     void SetNEMetName(char const* n) { fNEMetName = n; }
-    void SetCHGt30MetName(char const* n) { fCHGt30MetName = n; }
-    void SetNHGt30MetName(char const* n) { fNHGt30MetName = n; }
-    void SetNEGt30MetName(char const* n) { fNEGt30MetName = n; }
     void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
     void SetIsMC(Bool_t k) { fIsMC = k; }
@@ -69,27 +68,26 @@ namespace mithep {
     TString fPhotonsName{"Photons"};
     TString fElectronsName{"Electrons"};
     TString fLooseElectronsName{"LooseElectrons"};
+    TString fMediumElectronsName{"MediumElectrons"};
     TString fTightElectronsName{"TightElectrons"};
     TString fMuonsName{"Muons"};
+    TString fLooseMuonsName{"LooseMuons"};
+    TString fMediumMuonsName{"MediumMuons"};
     TString fTightMuonsName{"TightMuons"};
     TString fTausName{"HPSTaus"};
     TString fConversionsName{"Conversions"};
     TString fLoosePhotonName{"LoosePhotons"};
     TString fMediumPhotonName{"MediumPhotons"};
     TString fTightPhotonName{"TightPhotons"};
+    TString fPUPFCandidatesName{"pfPU"};
+    TString fPVPFCandidatesName{"pfNoPU"};
     TString fRawMetName{"PFMet"};
     TString fT1MetName{""};
     TString fT1NoCHSMetName{""};
-    TString fEta30MetName{""};
-    TString fEta30T1MetName{""};
-    TString fEta30T1NoCHSMetName{""};
     TString fNHScaledMetName{""};
     TString fCHMetName{""};
     TString fNHMetName{""};
     TString fNEMetName{""};
-    TString fCHGt30MetName{""};
-    TString fNHGt30MetName{""};
-    TString fNEGt30MetName{""};
     std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};
     TString fTriggerPathName[simpletree::nHLTPaths]{};
 

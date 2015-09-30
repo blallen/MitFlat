@@ -8,8 +8,9 @@ namespace simpletree {
   typedef flatutils::Collection<Particle, flatutils::BaseCollection<kFALSE>> ParticleCollection;
   typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
   typedef flatutils::Collection<Jet, ParticleMCollection> JetCollection;
-  typedef flatutils::Collection<Photon, ParticleCollection> PhotonCollection;
-  typedef flatutils::Collection<Lepton, ParticleMCollection> LeptonCollection;
+  typedef flatutils::Collection<Isolatable, ParticleCollection> IsolatableCollection;
+  typedef flatutils::Collection<Photon, IsolatableCollection> PhotonCollection;
+  typedef flatutils::Collection<Lepton, IsolatableCollection> LeptonCollection;
   typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
   typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
   typedef flatutils::Collection<HLT, flatutils::BaseCollection<kTRUE>> HLTCollection;

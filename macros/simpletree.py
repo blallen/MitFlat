@@ -6,12 +6,8 @@ mitdata = os.environ['MIT_DATA']
 
 from MitPhysics.SelMods.BadEventsFilterMod import badEventsFilterMod
 from MitPhysics.Mods.GoodPVFilterMod import goodPVFilterMod
-from MitPhysics.Mods.JetIdMod import jetIdMod
-from MitPhysics.Mods.ElectronIdMod import electronIdMod
-from MitPhysics.Mods.MuonIdMod import muonIdMod
-from MitPhysics.Mods.PFTauIdMod import pfTauIdMod
-from MitPhysics.Mods.PhotonIdMod import photonIdMod
 from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
+from MitPhysics.Mods.JetIdMod import jetIdMod
 
 # this has to be in the same order as the HLTPaths enum
 hltPaths = [
@@ -126,45 +122,86 @@ for jec in jecSources:
 for jec in jecSourcesNoCHS:
     metCorrectionNoCHS.AddJetCorrectionFromFile(jecDir + jec)
 
-looseElectronMask = electronIdMod.clone('ElectronLooseId',
+baselineElectrons = mithep.ElectronIdMod('BaselineElectrons',
     InputName = 'Electrons',
+    OutputName = 'BaselineElectrons',
+    IdType = mithep.ElectronTools.kNoId,
+    IsoType = mithep.ElectronTools.kNoIso,
+    ApplyEcalFiducial = True,
+    ApplyD0Cut = False,
+    ApplyDZCut = False,
+    PtMin = 10.,
+    EtaMax = 2.5
+)
+
+looseElectronMask = baselineElectrons.clone('ElectronLooseId',
+    InputName = baselineElectrons.GetOutputName(),
     OutputName = 'LooseElectronMask',
     IsFilterMode = False,
+    ApplyD0Cut = True,
+    ApplyDZCut = True,
     IdType = mithep.ElectronTools.kSummer15Veto,
     IsoType = mithep.ElectronTools.kSummer15VetoIso
 )
 
-tightElectronMask = electronIdMod.clone('ElectronTightId',
-    InputName = 'Electrons',
+mediumElectronMask = looseElectronMask.clone('ElectronMediumId',
+    OutputName = 'MediumElectronMask',
+    IdType = mithep.ElectronTools.kSummer15Medium,
+    IsoType = mithep.ElectronTools.kSummer15MediumIso
+)
+
+tightElectronMask = looseElectronMask.clone('ElectronTightId',
     OutputName = 'TightElectronMask',
-    IsFilterMode = False,
     IdType = mithep.ElectronTools.kSummer15Tight,
     IsoType = mithep.ElectronTools.kSummer15TightIso
 )
 
 tightElectrons = mithep.MaskCollectionMod('TightElectrons',
-    InputName = 'Electrons',
+    InputName = baselineElectrons.GetOutputName(),
     MaskName = tightElectronMask.GetOutputName(),
     OutputName = 'TightElectrons'
 )
 
-looseMuons = muonIdMod.clone('LooseMuons',
+baselineMuons = mithep.MuonIdMod('BaseLineMuons',
     InputName = 'Muons',
-    OutputName = 'LooseMuons',
-    IdType = mithep.MuonTools.kLoose,
-    IsoType = mithep.MuonTools.kNoIso
+    OutputName = 'BaselineMuons',
+    MuonClassType = mithep.MuonTools.kPFGlobalorTracker,
+    IdType = mithep.MuonTools.kNoId,
+    IsoType = mithep.MuonTools.kNoIso,
+    ApplyD0Cut = False,
+    ApplyDZCut = False
 )
 
-tightMuonMask = muonIdMod.clone('MuonTightId',
-    InputName = looseMuons.GetOutputName(),
-    OutputName = 'TightMuonMask',
+looseMuonMask = baselineMuons.clone('MuonLooseId',
     IsFilterMode = False,
+    InputName = baselineMuons.GetOutputName(),
+    OutputName = 'LooseMuonMask',
+    IdType = mithep.MuonTools.kLoose,
+    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedLoose,
+    PFNoPileupCandidatesName = 'pfNoPU',
+    PFPileupCandidatesName = 'pfPU',
+    ApplyD0Cut = False,
+    ApplyDZCut = False
+)
+
+mediumMuonMask = looseMuonMask.clone('MuonMediumId',
+    OutputName = 'MediumMuonMask',
+    IdType = mithep.MuonTools.kMedium,
+    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedLoose,
+    ApplyD0Cut = True,
+    ApplyDZCut = True
+)
+
+tightMuonMask = looseMuonMask.clone('MuonTightId',
+    OutputName = 'TightMuonMask',
     IdType = mithep.MuonTools.kTight,
-    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight
+    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight,
+    ApplyD0Cut = True,
+    ApplyDZCut = True
 )
 
 tightMuons = mithep.MaskCollectionMod('TightMuons',
-    InputName = looseMuons.GetOutputName(),
+    InputName = baselineMuons.GetOutputName(),
     MaskName = tightMuonMask.GetOutputName(),
     OutputName = 'TightMuons'
 )
@@ -185,19 +222,32 @@ tightTaus = mithep.PFTauIdMod('TightTauId',
 )
 tightTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByTightCombinedIsolationDBSumPtCorr3Hits)
 
-loosePhotons = photonIdMod.clone('LoosePhotons',
-    OutputName = 'LoosePhotons'
+baselinePhotons = mithep.PhotonIdMod('BaselinePhotons',
+    OutputName = 'BaselinePhotons',
+    IdType = mithep.PhotonTools.kNoId,
+    IsoType = mithep.PhotonTools.kNoIso,
+    PtMin = 15.,
+    EtaMax = 2.5
 )
 
-photonLooseId = photonIdMod.clone('PhotonLooseId',
+photonLooseId = baselinePhotons.clone('PhotonLooseId',
     IsFilterMode = False,
-    OutputName = 'PhotonLooseId'
+    InputName = baselinePhotons.GetOutputName(),
+    OutputName = 'PhotonLooseId',
+    IdType = mithep.PhotonTools.kSummer15Loose,
+    IsoType = mithep.PhotonTools.kSummer15LooseIso
 )
 
 photonMediumId = photonLooseId.clone('PhotonMediumId',
     OutputName = 'PhotonMediumId',
     IdType = mithep.PhotonTools.kSummer15Medium,
     IsoType = mithep.PhotonTools.kSummer15MediumIso
+)
+
+mediumPhotons = mithep.MaskCollectionMod('MediumPhotons',
+    InputName = baselinePhotons.GetOutputName(),
+    MaskName = photonMediumId.GetOutputName(),
+    OutputName = 'MediumPhotons'
 )
 
 photonTightId = photonMediumId.clone('PhotonTightId',
@@ -211,7 +261,7 @@ jetId = jetIdMod.clone()
 jetCleaning = mithep.JetCleaningMod('JetCleaning',
     CleanJetsName = 'CleanJets',
     CleanMuonsName = tightMuons.GetOutputName(),
-    CleanPhotonsName = loosePhotons.GetOutputName(),
+    CleanPhotonsName = mediumPhotons.GetOutputName(),
     GoodJetsName = jetId.GetOutputName(),
     CleanElectronsName = tightElectrons.GetOutputName(),
     CleanTausName = tightTaus.GetOutputName()
@@ -222,11 +272,14 @@ ntuples = mithep.SimpleTreeMod(
     AllEventTreeName = 'allevents',
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
     JetsName = jetCleaning.GetOutputName(),
-    PhotonsName = 'Photons',
-    ElectronsName = 'Electrons',
+    PhotonsName = baselinePhotons.GetOutputName(),
+    ElectronsName = baselineElectrons.GetOutputName(),
     LooseElectronsName = looseElectronMask.GetOutputName(),
+    MediumElectronsName = mediumElectronMask.GetOutputName(),
     TightElectronsName = tightElectronMask.GetOutputName(),
-    MuonsName = looseMuons.GetOutputName(),
+    MuonsName = baselineMuons.GetOutputName(),
+    LooseMuonsName = looseMuonMask.GetOutputName(),
+    MediumMuonsName = mediumMuonMask.GetOutputName(),
     TightMuonsName = tightMuonMask.GetOutputName(),
     TausName = vetoTaus.GetOutputName(),
     ConversionsName = mithep.Names.gkMvfConversionBrn,
@@ -234,6 +287,8 @@ ntuples = mithep.SimpleTreeMod(
     LoosePhotonName = photonLooseId.GetOutputName(),
     MediumPhotonName = photonMediumId.GetOutputName(),
     TightPhotonName = photonTightId.GetOutputName(),
+    PUPFCandidatesName = separatePileUpMod.GetPFPileUpName(),
+    PVPFCandidatesName = separatePileUpMod.GetPFNoPileUpName(),
     RawMetName = 'PFMet',
     T1MetName = metCorrection.GetOutputName(),
     T1NoCHSMetName = metCorrectionNoCHS.GetOutputName(),
@@ -255,10 +310,14 @@ analysis.setSequence(
     badEventsFilterMod *
     goodPVFilterMod *
     separatePileUpMod *
+    baselineElectrons *
     looseElectronMask *
+    mediumElectronMask *
     tightElectronMask *
     tightElectrons *
-    looseMuons *
+    baselineMuons *
+    looseMuonMask *
+    mediumMuonMask *
     tightMuonMask *
     tightMuons *
     vetoTaus *
@@ -266,12 +325,13 @@ analysis.setSequence(
     exoticMets *
     metCorrection *
     metCorrectionNoCHS *
-    loosePhotons *
+    baselinePhotons *
     photonLooseId *
     photonMediumId *
     photonTightId *
+    mediumPhotons *
     jetCorrection *
     jetId *
-    jetCleaning *
+    jetCleaning +
     ntuples
 )
