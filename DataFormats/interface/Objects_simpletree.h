@@ -1,6 +1,6 @@
 #ifndef Objects_simpletree_h
 #define Objects_simpletree_h
-#include "Utils.h"
+#include "MitFlat/DataFormats/interface/Utils.h"
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
@@ -69,7 +69,7 @@ namespace simpletree {
     virtual ~ParticleM() {}
     ParticleM& operator=(ParticleM const&);
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
+    LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
 
   public:
     Float_t& mass;
@@ -109,54 +109,28 @@ namespace simpletree {
     Float_t sumEt{};
   };
 
-  class Isolatable : public Particle {
+  class Photon : public Particle {
   public:
+    constexpr static double const chIsoCuts[2][3]{{2.67, 1.79, 1.66}, {1.79, 1.09, 1.04}};
+    constexpr static double const nhIsoCuts[2][3]{{7.23, 0.16, 0.14}, {8.89, 4.31, 3.89}};
+    constexpr static double const phIsoCuts[2][3]{{2.11, 1.9, 1.4}, {3.09, 1.9, 1.4}};
+    constexpr static double const sieieCuts[2][3]{{0.0107, 0.01, 0.01}, {0.0272, 0.0267, 0.0265}};
+    constexpr static double const hOverECuts[2][3]{{0.028, 0.012, 0.01}, {0.093, 0.023, 0.015}};
+
     struct array_data : public Particle::array_data {
       Float_t chIso[NMAX]{};
       Float_t nhIso[NMAX]{};
       Float_t phIso[NMAX]{};
-      Int_t matchedGen[NMAX]{};
-      Bool_t hadDecay[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t medium[NMAX]{};
-      Bool_t tight[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    Isolatable(array_data&, UInt_t idx);
-    Isolatable(Isolatable const&);
-    virtual ~Isolatable() {}
-    Isolatable& operator=(Isolatable const&);
-
-  public:
-    Float_t& chIso;
-    Float_t& nhIso;
-    Float_t& phIso;
-    Int_t& matchedGen;
-    Bool_t& hadDecay;
-    Bool_t& loose;
-    Bool_t& medium;
-    Bool_t& tight;
-  };
-
-  class Photon : public Isolatable {
-  public:
-    static double const chIsoCuts[2][3];
-    static double const nhIsoCuts[2][3];
-    static double const phIsoCuts[2][3];
-    static double const sieieCuts[2][3];
-    static double const hOverECuts[2][3];
-
-    struct array_data : public Isolatable::array_data {
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
-      Float_t drParton[NMAX]{};
+      Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
+      Bool_t loose[NMAX]{};
+      Bool_t medium[NMAX]{};
+      Bool_t tight[NMAX]{};
+      Bool_t highpt[NMAX]{};
       Bool_t matchHLT120[NMAX]{};
       Bool_t matchHLT135MET100[NMAX]{};
       Bool_t matchHLT165HE10[NMAX]{};
@@ -172,32 +146,41 @@ namespace simpletree {
     virtual ~Photon() {}
     Photon& operator=(Photon const&);
 
-    bool passCHIso(UInt_t wp) const { return chIso < (isEB ? chIsoCuts[0][wp] : chIsoCuts[1][wp]); }
-    bool passNHIso(UInt_t wp) const { return nhIso < (isEB ? nhIsoCuts[0][wp] : nhIsoCuts[1][wp]); }
-    bool passPhIso(UInt_t wp) const { return phIso < (isEB ? phIsoCuts[0][wp] : phIsoCuts[1][wp]); }
-    bool passSieie(UInt_t wp) const { return sieie < (isEB ? sieieCuts[0][wp] : sieieCuts[1][wp]); }
-    bool passHOverE(UInt_t wp) const { return hOverE < (isEB ? hOverECuts[0][wp] : hOverECuts[1][wp]); }
+    bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passSieie(UInt_t wp) const { return sieie < sieieCuts[isEB ? 0 : 1][wp]; }
+    bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
 
   public:
+    Float_t& chIso;
+    Float_t& nhIso;
+    Float_t& phIso;
     Float_t& sieie;
     Float_t& hOverE;
-    Float_t& drParton;
+    Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;
     Bool_t& csafeVeto;
+    Bool_t& loose;
+    Bool_t& medium;
+    Bool_t& tight;
+    Bool_t& highpt;
     Bool_t& matchHLT120;
     Bool_t& matchHLT135MET100;
     Bool_t& matchHLT165HE10;
     Bool_t& matchHLT175;
   };
 
-  class Lepton : public Isolatable {
+  class Lepton : public ParticleM {
   public:
-    struct array_data : public Isolatable::array_data {
-      Float_t puIso[NMAX]{};
-      Float_t combRelIso[NMAX]{};
+    struct array_data : public ParticleM::array_data {
+      Int_t matchedGen[NMAX]{};
       Bool_t tauDecay[NMAX]{};
+      Bool_t hadDecay[NMAX]{};
       Bool_t positive[NMAX]{};
+      Bool_t loose[NMAX]{};
+      Bool_t tight[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -212,23 +195,29 @@ namespace simpletree {
     int charge() const { return positive ? 1 : -1; }
 
   public:
-    Float_t& puIso;
-    Float_t& combRelIso;
+    Int_t& matchedGen;
     Bool_t& tauDecay;
+    Bool_t& hadDecay;
     Bool_t& positive;
+    Bool_t& loose;
+    Bool_t& tight;
   };
 
   class Electron : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
-      Float_t sieie[NMAX]{};
-      Float_t hOverE[NMAX]{};
       Float_t chIsoPh[NMAX]{};
       Float_t nhIsoPh[NMAX]{};
       Float_t phIsoPh[NMAX]{};
+      Float_t sieie[NMAX]{};
+      Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t matchHLT23Loose[NMAX]{};
       Bool_t matchHLT27Loose[NMAX]{};
+      Bool_t matchHLT120Ph[NMAX]{};
+      Bool_t matchHLT135MET100Ph[NMAX]{};
+      Bool_t matchHLT165HE10Ph[NMAX]{};
+      Bool_t matchHLT175Ph[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -240,22 +229,25 @@ namespace simpletree {
     virtual ~Electron() {}
     Electron& operator=(Electron const&);
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.510998928e-3); }
-    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < (isEB ? Photon::chIsoCuts[0][wp] : Photon::chIsoCuts[1][wp]); }
-    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < (isEB ? Photon::nhIsoCuts[0][wp] : Photon::nhIsoCuts[1][wp]); }
-    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < (isEB ? Photon::phIsoCuts[0][wp] : Photon::phIsoCuts[1][wp]); }
-    bool passSieiePh(UInt_t wp) const { return sieie < (isEB ? Photon::sieieCuts[0][wp] : Photon::sieieCuts[1][wp]); }
-    bool passHOverEPh(UInt_t wp) const { return hOverE < (isEB ? Photon::hOverECuts[0][wp] : Photon::hOverECuts[1][wp]); }
+    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 1][wp]; }
+    bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
   public:
-    Float_t& sieie;
-    Float_t& hOverE;
     Float_t& chIsoPh;
     Float_t& nhIsoPh;
     Float_t& phIsoPh;
+    Float_t& sieie;
+    Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& matchHLT23Loose;
     Bool_t& matchHLT27Loose;
+    Bool_t& matchHLT120Ph;
+    Bool_t& matchHLT135MET100Ph;
+    Bool_t& matchHLT165HE10Ph;
+    Bool_t& matchHLT175Ph;
   };
 
   class Muon : public Lepton {
@@ -274,11 +266,83 @@ namespace simpletree {
     virtual ~Muon() {}
     Muon& operator=(Muon const&);
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 105.6583715e-3); }
-
   public:
     Bool_t& matchHLT24;
     Bool_t& matchHLT27;
+  };
+
+  class Tau : public ParticleM {
+  public:
+    struct array_data : public ParticleM::array_data {
+      Bool_t decayMode[NMAX]{};
+      Float_t combIso[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Tau(array_data&, UInt_t idx);
+    Tau(Tau const&);
+    virtual ~Tau() {}
+    Tau& operator=(Tau const&);
+
+  public:
+    Bool_t& decayMode;
+    Float_t& combIso;
+  };
+
+  class Parton : public ParticleM {
+  public:
+    struct array_data : public ParticleM::array_data {
+      Int_t pid[NMAX]{};
+      Bool_t frixIso[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Parton(array_data&, UInt_t idx);
+    Parton(Parton const&);
+    virtual ~Parton() {}
+    Parton& operator=(Parton const&);
+
+  public:
+    Int_t& pid;
+    Bool_t& frixIso;
+  };
+
+  class MCParticle : public ParticleM {
+  public:
+    struct array_data : public ParticleM::array_data {
+      Int_t pid[NMAX]{};
+      UShort_t ancestor[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    MCParticle(array_data&, UInt_t idx);
+    MCParticle(MCParticle const&);
+    virtual ~MCParticle() {}
+    MCParticle& operator=(MCParticle const&);
+
+  public:
+    Int_t& pid;
+    UShort_t& ancestor;
+  };
+
+  class GenJet : public Jet {
+  public:
+    struct array_data : public Jet::array_data {
+    };
+
+    GenJet(array_data&, UInt_t idx);
+    GenJet(GenJet const&);
+    virtual ~GenJet() {}
+    GenJet& operator=(GenJet const&);
   };
 
   class HLT {
@@ -300,6 +364,27 @@ namespace simpletree {
 
   public:
     Bool_t& pass;
+  };
+
+  class ReweightScale {
+  public:
+    struct array_data {
+      static UInt_t const NMAX{256};
+
+      Float_t scale[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    ReweightScale(array_data&, UInt_t idx);
+    ReweightScale(ReweightScale const&);
+    virtual ~ReweightScale() {}
+    ReweightScale& operator=(ReweightScale const&);
+
+  public:
+    Float_t& scale;
   };
 }
 

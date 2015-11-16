@@ -8,12 +8,16 @@ namespace simpletree {
   typedef flatutils::Collection<Particle, flatutils::BaseCollection<kFALSE>> ParticleCollection;
   typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
   typedef flatutils::Collection<Jet, ParticleMCollection> JetCollection;
-  typedef flatutils::Collection<Isolatable, ParticleCollection> IsolatableCollection;
-  typedef flatutils::Collection<Photon, IsolatableCollection> PhotonCollection;
-  typedef flatutils::Collection<Lepton, IsolatableCollection> LeptonCollection;
+  typedef flatutils::Collection<Photon, ParticleCollection> PhotonCollection;
+  typedef flatutils::Collection<Lepton, ParticleMCollection> LeptonCollection;
   typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
   typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
+  typedef flatutils::Collection<Tau, ParticleMCollection> TauCollection;
+  typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
+  typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
+  typedef flatutils::Collection<GenJet, JetCollection> GenJetCollection;
   typedef flatutils::Collection<HLT, flatutils::BaseCollection<kTRUE>> HLTCollection;
+  typedef flatutils::Collection<ReweightScale, flatutils::BaseCollection<kFALSE>> ReweightScaleCollection;
 
   class Event {
   public:
@@ -23,35 +27,19 @@ namespace simpletree {
     Double_t weight{};
     Double_t rho{};
     UShort_t npv{};
-    Float_t genHt{};
-    Short_t genBoson{};
-    Float_t genBosonPt{};
-    Float_t genBosonEta{};
-    Float_t genBosonPhi{};
-    Float_t genBosonM{};
-    Short_t genLepton1{};
-    Float_t genLepton1Pt{};
-    Float_t genLepton1Eta{};
-    Float_t genLepton1Phi{};
-    Float_t genLepton1M{};
-    Short_t genLepton2{};
-    Float_t genLepton2Pt{};
-    Float_t genLepton2Eta{};
-    Float_t genLepton2Phi{};
-    Float_t genLepton2M{};
-    UInt_t ntau{};
+    PartonCollection partons = PartonCollection("partons");
+    MCParticleCollection partonFinalStates = MCParticleCollection("partonFinalStates");
     JetCollection jets = JetCollection("jets");
+    GenJetCollection genJets = GenJetCollection("genJets");
     PhotonCollection photons = PhotonCollection("photons");
     ElectronCollection electrons = ElectronCollection("electrons");
     MuonCollection muons = MuonCollection("muons");
+    TauCollection taus = TauCollection("taus");
     Met rawMet = Met("rawMet");
     Met t1Met = Met("t1Met");
-    Met t1NoCHSMet = Met("t1NoCHSMet");
-    Met nhScaledMet = Met("nhScaledMet");
-    Met chMet = Met("chMet");
-    Met nhMet = Met("nhMet");
-    Met neMet = Met("neMet");
+    Met genMet = Met("genMet");
     HLTCollection hlt = HLTCollection("hlt");
+    ReweightScaleCollection reweight = ReweightScaleCollection("reweight");
 
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);

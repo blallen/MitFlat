@@ -1,6 +1,7 @@
 #include "MitFlat/Mods/interface/SimpleTreeMod.h"
 #include "MitAna/DataTree/interface/EventHeader.h"
 #include "MitAna/DataTree/interface/MCEventInfo.h"
+#include "MitAna/DataTree/interface/MCRunInfo.h"
 #include "MitAna/DataTree/interface/ParticleCol.h"
 #include "MitAna/DataTree/interface/MetCol.h"
 #include "MitAna/DataTree/interface/JetCol.h"
@@ -12,6 +13,7 @@
 #include "MitAna/DataTree/interface/VertexCol.h"
 #include "MitAna/DataTree/interface/PileupEnergyDensityCol.h"
 #include "MitAna/DataTree/interface/MCParticleCol.h"
+#include "MitAna/DataTree/interface/GenJetCol.h"
 #include "MitAna/DataTree/interface/TriggerMask.h"
 #include "MitAna/DataTree/interface/TriggerTable.h"
 #include "MitAna/DataTree/interface/TriggerObjectsTable.h"
@@ -19,6 +21,7 @@
 #include "MitAna/DataTree/interface/Names.h"
 #include "MitAna/DataCont/interface/Types.h"
 #include "MitCommon/MathTools/interface/MathUtils.h"
+#include "MitCommon/DataFormats/interface/Types.h"
 
 #include "MitPhysics/Utils/interface/PhotonTools.h"
 #include "MitPhysics/Utils/interface/IsolationTools.h"
@@ -29,12 +32,42 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 ClassImp(mithep::SimpleTreeMod)
 
 void
+fillP4_(simpletree::Particle& _out, mithep::Particle const& _in)
+{
+  _out.pt = _in.Pt();
+  _out.eta = _in.Eta();
+  _out.phi = _in.Phi();
+}
+
+void
+fillP4_(simpletree::ParticleM& _out, mithep::Particle const& _in)
+{
+  _out.pt = _in.Pt();
+  _out.eta = _in.Eta();
+  _out.phi = _in.Phi();
+  _out.mass = _in.Mass();
+}
+
+void
+fillP4_(simpletree::ParticleM& _out, mithep::FourVector const& _in)
+{
+  _out.pt = _in.Pt();
+  _out.eta = _in.Eta();
+  _out.phi = _in.Phi();
+  _out.mass = _in.M();
+}
+
+void
 mithep::SimpleTreeMod::Process()
 {
+  if (fDebug)
+    Info("Process", "Begin event");
+
   auto* eventHeader = GetEventHeader();
   auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
 
@@ -52,17 +85,25 @@ mithep::SimpleTreeMod::Process()
 
   fAllEventTree->Fill();
 
+  if (fDebug)
+    Info("Process", "Filled allevent");
+
   if (fCondition && !fCondition->IsActive())
     return;
 
   auto* vertices = GetObject<mithep::VertexCol>(fVerticesName);
   auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
   auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
-  mithep::MCParticleCol* mcParticles(0);
   std::vector<MCParticle*> finalState;
+  TVector3 genVertex;
 
   auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
   TList const* toLists[simpletree::nHLTPaths]{};
+
+  // basic event info
+
+  if (fDebug)
+    Info("Process", "Fill event info");
 
   fEvent.run = eventHeader->RunNum();
   fEvent.lumi = eventHeader->LumiSec();
@@ -70,6 +111,141 @@ mithep::SimpleTreeMod::Process()
   fEvent.weight = 1.;
   fEvent.rho = energyDensity->At(0)->Rho(fRhoAlgo);
   fEvent.npv = vertices->GetEntries();
+
+  // event weights
+
+  if (fDebug)
+    Info("Process", "Fill event weights");
+
+  if (fIsMC) {
+    fEvent.weight = mcEvent->Weight();
+
+    unsigned iR(0);
+
+    if (mcEvent->NReweightScaleFactors() > 8) {
+      for (unsigned iW : {1, 2, 3, 4, 6, 8})
+        fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(iW);
+      for (unsigned id : fPdfReweightIds)
+        fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(id);
+    }
+  }
+
+  // gen particles
+
+  if (fDebug)
+    Info("Process", "Fill gen particles");
+  
+  if (fIsMC) {
+    unsigned nP(0);
+    std::map<unsigned, unsigned> partonMap;
+    for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
+      if (mcEvent->PartonStatus(iP) == -1)
+        continue;
+
+      int pid(mcEvent->PartonId(iP));
+      auto& p4(*mcEvent->PartonMom(iP));
+
+      partonMap[iP] = nP;
+
+      auto& outParton(fEvent.partons[nP++]);
+
+      fillP4_(outParton, p4);
+
+      outParton.pid = pid;
+      outParton.frixIso = false;
+
+      if (pid == 22) {
+        outParton.frixIso = true;
+
+        std::map<double, double> isoDep;
+        for (unsigned iQ(0); iQ != mcEvent->NPartons(); ++iQ) {
+          if (iQ == iP || mcEvent->PartonStatus(iQ) != 1)
+            continue;
+
+          double dR(mithep::MathUtils::DeltaR(p4, *mcEvent->PartonMom(iQ)));
+          if (dR < 0.4)
+            isoDep.emplace(dR, mcEvent->PartonMom(iQ)->E());
+        }
+        double isoSum(0.);
+        for (auto iso : isoDep) {
+          double dR(iso.first);
+          isoSum += iso.second;
+          if (isoSum > mcEvent->PartonMom(iP)->E() * 1. * ((1. - std::cos(dR)) / (1. - std::cos(0.4)))/*to the n=1 power*/) {
+            outParton.frixIso = false;
+            break;
+          }
+        }
+      }
+    }
+
+    fEvent.partons.resize(nP);
+
+    auto* mcParticles = GetObject<mithep::MCParticleCol>("MCParticles");
+    for (unsigned iP(0); iP != mcParticles->GetEntries(); ++iP) {
+      if (mcParticles->At(iP)->Status() == 1)
+        finalState.push_back(mcParticles->At(iP));
+    }
+
+    auto&& decayVtx(mcParticles->At(0)->DecayVertex());
+    genVertex.SetXYZ(decayVtx.X(), decayVtx.Y(), decayVtx.Z());
+
+    unsigned nF(0);
+    for (auto* mcp : finalState) {
+      auto const* mother(mcp);
+      // status 23: outgoing from hardest process
+      while (mother && mother->Status() != 23)
+        mother = mother->Mother();
+
+      if (!mother)
+        continue;
+
+      unsigned motherId(std::abs(mother->PdgId()));
+      if (motherId < 6 || motherId == 21)
+        continue;
+
+      auto& outFS(fEvent.partonFinalStates[nF++]);
+
+      fillP4_(outFS, *mcp);
+
+      outFS.pid = mcp->PdgId();
+
+      outFS.ancestor = -1;
+      double dRMin(-1.);
+      for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
+        if (mcEvent->PartonStatus(iP) != 1)
+          continue;
+
+        double dR(mithep::MathUtils::DeltaR(*mother, *mcEvent->PartonMom(iP)));
+        if (dRMin < 0. || dR < dRMin) {
+          outFS.ancestor = partonMap[iP];
+          dRMin = dR;
+        }
+      }
+    }
+    fEvent.partonFinalStates.resize(nF);
+  }
+
+  // gen jet
+
+  if (fDebug)
+    Info("Process", "Fill gen jets");
+
+  if (fIsMC && fGenJetsName.Length() != 0) {
+    auto* genJets = GetObject<mithep::GenJetCol>(fGenJetsName);
+    fEvent.genJets.resize(genJets->GetEntries());
+
+    for (unsigned iJ(0); iJ != genJets->GetEntries(); ++iJ) {
+      auto& inJet(*genJets->At(iJ));
+      auto& outJet(fEvent.genJets[iJ]);
+
+      fillP4_(outJet, inJet);
+    }
+  }
+
+  // triggers
+
+  if (fDebug)
+    Info("Process", "Fill triggers");
 
   for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
     if (fHLTIds[iH] != -1) {
@@ -81,73 +257,21 @@ mithep::SimpleTreeMod::Process()
       fEvent.hlt[iH].pass = false;
   }
 
-  if (fIsMC) {
-    mcParticles = GetObject<mithep::MCParticleCol>("MCParticles");
-    for (unsigned iP(0); iP != mcParticles->GetEntries(); ++iP) {
-      if (mcParticles->At(iP)->Status() == 1)
-        finalState.push_back(mcParticles->At(iP));
-    }
+  // MET
 
-    fEvent.weight = mcEvent->Weight();
-    fEvent.genHt = 0.;
-    fEvent.genBoson = 0;
-    fEvent.genBosonPt = fEvent.genBosonEta = fEvent.genBosonPhi = fEvent.genBosonM = 0.;
-
-    unsigned bosonIndex(-1);
-    for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
-      int pid(mcEvent->PartonId(iP));
-      auto& p4(*mcEvent->PartonMom(iP));
-
-      if (mcEvent->PartonStatus(iP) == 1 && pid != 12 && pid != 14 && pid != 16)
-        fEvent.genHt += p4.Pt();
-
-      if (pid == 23 || std::abs(pid) == 24) {
-        fEvent.genBoson = pid;
-        fEvent.genBosonPt = p4.Pt();
-        fEvent.genBosonEta = p4.Eta();
-        fEvent.genBosonPhi = p4.Phi();
-        fEvent.genBosonM = p4.M();
-
-        bosonIndex = iP + 1;
-      }
-
-      if (mcEvent->PartonMother1(iP) == bosonIndex || mcEvent->PartonMother2(iP) == bosonIndex) {
-        if (pid > 10 && pid < 17) {
-          fEvent.genLepton1 = pid;
-          fEvent.genLepton1Pt = p4.Pt();
-          fEvent.genLepton1Eta = p4.Eta();
-          fEvent.genLepton1Phi = p4.Phi();
-          fEvent.genLepton1M = p4.M();
-        }
-        else if (pid > -17 && pid < -10){
-          fEvent.genLepton2 = pid;
-          fEvent.genLepton2Pt = p4.Pt();
-          fEvent.genLepton2Eta = p4.Eta();
-          fEvent.genLepton2Phi = p4.Phi();
-          fEvent.genLepton2M = p4.M();
-        }
-      }
-    }
-  }
+  if (fDebug)
+    Info("Process", "Fill MET");
 
   simpletree::Met* outMets[] = {
     &fEvent.rawMet,
     &fEvent.t1Met,
-    &fEvent.t1NoCHSMet,
-    &fEvent.nhScaledMet,
-    &fEvent.chMet,
-    &fEvent.nhMet,
-    &fEvent.neMet
+    &fEvent.genMet
   };
 
   TString metNames[] = {
     fRawMetName,
     fT1MetName,
-    fT1NoCHSMetName,
-    fNHScaledMetName,
-    fCHMetName,
-    fNHMetName,
-    fNEMetName
+    fGenMetName
   };
 
   for (unsigned iM = 0; iM != sizeof(outMets) / sizeof(simpletree::Met*); ++iM) {
@@ -166,6 +290,9 @@ mithep::SimpleTreeMod::Process()
     outMet.sumEt = inMet.SumEt();
   }
 
+  if (fDebug)
+    Info("Process", "Fill photons");
+
   if (fPhotonsName.Length() != 0) {
     auto* photons = GetObject<mithep::PhotonCol>(fPhotonsName);
     auto* electrons = GetObject<mithep::ElectronCol>(Names::gkElectronBrn);
@@ -174,6 +301,7 @@ mithep::SimpleTreeMod::Process()
     auto* looseMask = GetObject<mithep::NFArrBool>(fLoosePhotonName);
     auto* mediumMask = GetObject<mithep::NFArrBool>(fMediumPhotonName);
     auto* tightMask = GetObject<mithep::NFArrBool>(fTightPhotonName);
+    auto* highPtMask = GetObject<mithep::NFArrBool>(fHighPtPhotonName);
 
     fEvent.photons.resize(photons->GetEntries());
 
@@ -190,9 +318,9 @@ mithep::SimpleTreeMod::Process()
       double scEta(inPhoton.SCluster()->AbsEta());
 
       outPhoton.isEB = (scEta < mithep::gkPhoEBEtaMax);
-      outPhoton.pt = inPhoton.Pt();
-      outPhoton.eta = inPhoton.Eta();
-      outPhoton.phi = inPhoton.Phi();
+
+      fillP4_(outPhoton, inPhoton);
+
       outPhoton.chIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
       outPhoton.nhIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
       if (outPhoton.isEB)
@@ -211,6 +339,7 @@ mithep::SimpleTreeMod::Process()
       outPhoton.loose = looseMask->At(iP);
       outPhoton.medium = mediumMask->At(iP);
       outPhoton.tight = tightMask->At(iP);
+      outPhoton.highpt = highPtMask->At(iP);
 
       auto&& caloPos(inPhoton.CaloPos());
 
@@ -246,59 +375,57 @@ mithep::SimpleTreeMod::Process()
       }
 
       outPhoton.matchedGen = 0;
-      outPhoton.hadDecay = false;
-      outPhoton.drParton = -1.;
 
       if (fIsMC) {
-        double minDR(-1.);
-        mithep::MCParticle* matched(0);
+        // find matched gen
+        // 22 -> gen photon with no matching parton
+        // -22 -> gen photon with matching isolated parton
+        // 11/-11 -> electrons
+        // 111 -> everything else
 
-        for (auto* part : finalState) {
-          TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());
-          auto&& vtx(part->Mother()->DecayVertex());
-          caloDir -= TVector3(vtx.X(), vtx.Y(), vtx.Z());
-          double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
-          if (dR < 0.1 && (minDR < 0. || dR < minDR)) {
-            outPhoton.matchedGen = part->PdgId();
-            unsigned absId(std::abs(outPhoton.matchedGen));
-            if (dR < 0.1 && (absId == 11 || absId == 13))
-              break;
+        for (auto& fs : fEvent.partonFinalStates) {
+          if (fs.pid != 22)
+            continue;
+          if (fs.ancestor >= fEvent.partons.size())
+            continue;
 
-            minDR = dR;
-            matched = part;
+          auto& parton(fEvent.partons[fs.ancestor]);
+          if (parton.pid != 22 || !parton.frixIso)
+            continue;
+
+          TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());          
+          caloDir -= genVertex;
+          auto&& partP4(fs.p4());
+          if (caloDir.DeltaR(TVector3(partP4.X(), partP4.Y(), partP4.Z())) < 0.1) {
+            outPhoton.matchedGen = -22;
+            break;
           }
         }
 
-        if (matched) {
-          auto* mother(matched->DistinctMother());
-          if ((mother->PdgId() == 2212 && !mother->HasMother()) || mother->StatusFlag(11)) // kFromHardProcessBeforeFSR
-            outPhoton.hadDecay = false;
-          else {
-            unsigned motherId(std::abs(mother->PdgId()));
-            outPhoton.hadDecay = (motherId == 21 || motherId > 25); // 21 probably never happens..
-          }
+        if (outPhoton.matchedGen == 0) {
+          mithep::MCParticle const* matched(0);
+          double minDR(-1.);
 
-          int iParton(-1);
-          for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
-            if (mcEvent->PartonId(iP) != 22)
-              continue;
+          for (auto* part : finalState) {
+            TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());          
+            caloDir -= genVertex;
 
-            auto& p4(*mcEvent->PartonMom(iP));
-            if (mithep::MathUtils::DeltaR(p4, *matched) < 0.15) {
-              iParton = iP;
-              break;
+            double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
+            if (dR < 0.1 && (minDR < 0. || dR < minDR)) {
+              outPhoton.matchedGen = part->PdgId();
+              unsigned absId(std::abs(outPhoton.matchedGen));
+              if (absId == 11 || absId == 13)
+                break;
+
+              minDR = dR;
+              matched = part;
             }
           }
 
-          if (iParton != -1) {
-            for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
-              if (int(iP) == iParton)
-                continue;
-
-              double dR(mithep::MathUtils::DeltaR(mcEvent->PartonMom(iP), mcEvent->PartonMom(iParton)));
-              if (outPhoton.drParton < 0. || dR < outPhoton.drParton)
-                outPhoton.drParton = dR;
-            }
+          if (outPhoton.matchedGen == 22 && matched) {
+            auto* mother(matched->DistinctMother());
+            if (!(mother->PdgId() == 2212 && !mother->HasMother()) && (mother->PdgId() == 21 || std::abs(mother->PdgId()) > 25))
+              outPhoton.matchedGen = 111;
           }
         }
       }
@@ -314,16 +441,6 @@ mithep::SimpleTreeMod::Process()
     &fMuonsName
   };
 
-  TString* looseMaskName[2] = {
-    &fLooseElectronsName,
-    &fLooseMuonsName
-  };
-
-  TString* mediumMaskName[2] = {
-    &fMediumElectronsName,
-    &fMediumMuonsName
-  };
-
   TString* tightMaskName[2] = {
     &fTightElectronsName,
     &fTightMuonsName
@@ -334,30 +451,40 @@ mithep::SimpleTreeMod::Process()
     &fEvent.muons
   };
 
-  bool* hltMatch[2][2] = {
-    {
-      fEvent.electrons.data.matchHLT23Loose,
-      fEvent.electrons.data.matchHLT27Loose
-    },
-    {
-      fEvent.muons.data.matchHLT24,
-      fEvent.muons.data.matchHLT27
-    }
+  bool* eleHLTMatch[] = {
+    fEvent.electrons.data.matchHLT23Loose,
+    fEvent.electrons.data.matchHLT27Loose,
+    fEvent.electrons.data.matchHLT120Ph,
+    fEvent.electrons.data.matchHLT135MET100Ph,
+    fEvent.electrons.data.matchHLT165HE10Ph,
+    fEvent.electrons.data.matchHLT175Ph
+  };
+  bool* muHLTMatch[] = {
+    fEvent.muons.data.matchHLT24,
+    fEvent.muons.data.matchHLT27
   };
 
-  simpletree::HLTPath hltPaths[2][2] = {
-    {
-      simpletree::kEle23Loose,
-      simpletree::kEle27Loose
-    },
-    {
-      simpletree::kMu24,
-      simpletree::kMu27
-    }
+  bool** hltMatch[2] = {eleHLTMatch, muHLTMatch};
+
+  simpletree::HLTPath eleHLTPaths[] = {
+    simpletree::kEle23Loose,
+    simpletree::kEle27Loose,
+    simpletree::kPhoton120,
+    simpletree::kPhoton135MET100,
+    simpletree::kPhoton165HE10,
+    simpletree::kPhoton175
+  };
+  simpletree::HLTPath muHLTPaths[] = {
+    simpletree::kMu24,
+    simpletree::kMu27
   };
 
-  auto* puPF = GetObject<mithep::PFCandidateCol>(fPUPFCandidatesName);
-  auto* pvPF = GetObject<mithep::PFCandidateCol>(fPVPFCandidatesName);
+  simpletree::HLTPath* hltPaths[2] = {eleHLTPaths, muHLTPaths};
+
+  unsigned nHLTPaths[2] = {sizeof(eleHLTPaths) / sizeof(simpletree::HLTPath), sizeof(muHLTPaths) / sizeof(simpletree::HLTPath)};
+
+  if (fDebug)
+    Info("Process", "Fill leptons");
 
   for (unsigned iC(0); iC != 2; ++iC) {
     if (inputLeptonName[iC]->Length() != 0) {
@@ -367,38 +494,31 @@ mithep::SimpleTreeMod::Process()
         return;
       }
 
-      auto* looseMask = GetObject<mithep::NFArrBool>(*looseMaskName[iC]);
-      auto* mediumMask = GetObject<mithep::NFArrBool>(*mediumMaskName[iC]);
+      mithep::NFArrBool* looseMask = 0;
       auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
+      if (iC == 0)
+        looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
 
       outputCollection[iC]->resize(leptons->GetEntries());
       for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
         auto& inLepton(*leptons->At(iL));
         auto& outLepton((*outputCollection[iC])[iL]);
-        outLepton.pt = inLepton.Pt();
-        outLepton.eta = inLepton.Eta();
-        outLepton.phi = inLepton.Phi();
+
+        fillP4_(outLepton, inLepton);
+
         outLepton.positive = inLepton.Charge() > 0.;
-        outLepton.loose = looseMask->At(iL);
-        outLepton.medium = mediumMask->At(iL);
         outLepton.tight = tightMask->At(iL);
 
         if (iC == 0) {
           auto& inElectron(static_cast<mithep::Electron&>(inLepton));
           auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
 
-          double scEta(inElectron.SCluster()->AbsEta());
-
-          outElectron.isEB = (scEta < mithep::gkPhoEBEtaMax);
-
-          outElectron.chIso = inElectron.PFChargedHadronIso();
-          outElectron.nhIso = inElectron.PFNeutralHadronIso();
-          outElectron.phIso = inElectron.PFPhotonIso();
-          outElectron.puIso = IsolationTools::PFElectronIsolation(&inElectron, puPF, vertices->At(0), 10000., 0., 0.3, 0., mithep::PFCandidate::eHadron);
-          outElectron.combRelIso = IsolationTools::PFEleCombinedIsolationRhoCorr(&inElectron, fEvent.rho, ElectronTools::kEleEASummer15) / inElectron.Pt();
-
+          outElectron.loose = looseMask->At(iL);
+          outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
+          
           double chIso, nhIso, phIso;
           IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+          double scEta(inElectron.SCluster()->AbsEta());
 
           outElectron.chIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
           outElectron.nhIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
@@ -408,20 +528,10 @@ mithep::SimpleTreeMod::Process()
           outElectron.hOverE = inElectron.HadOverEmTow();
         }
         else {
-          auto& inMuon(static_cast<mithep::Muon&>(inLepton));
-          auto& outMuon(static_cast<simpletree::Muon&>(outLepton));
-
-          double isoArr[4];
-          double combIso(IsolationTools::BetaMwithPUCorrection(pvPF, puPF, &inMuon, 0.4, isoArr));
-
-          outMuon.chIso = isoArr[0];
-          outMuon.nhIso = isoArr[1];
-          outMuon.phIso = isoArr[2];
-          outMuon.puIso = isoArr[3];
-          outMuon.combRelIso = combIso / inMuon.Pt();
+          outLepton.loose = true;
         }
 
-        for (unsigned iT(0); iT != 2; ++iT) {
+        for (unsigned iT(0); iT != nHLTPaths[iC]; ++iT) {
           simpletree::HLTPath iPath(hltPaths[iC][iT]);
           if (!toLists[iPath]) {
             hltMatch[iC][iT][iL] = false;
@@ -471,6 +581,9 @@ mithep::SimpleTreeMod::Process()
     }
   }
 
+  if (fDebug)
+    Info("Process", "Fill taus");
+
   if (fTausName.Length() != 0) {
     auto* taus = GetObject<mithep::PFTauCol>(fTausName);
     if (!taus) {
@@ -478,8 +591,20 @@ mithep::SimpleTreeMod::Process()
       return;
     }
 
-    fEvent.ntau = taus->GetEntries();
+    fEvent.taus.resize(taus->GetEntries());
+    for (unsigned iT(0); iT != taus->GetEntries(); ++iT) {
+      auto& inTau(*taus->At(iT));
+      auto& outTau(fEvent.taus[iT]);
+
+      fillP4_(outTau, inTau);
+
+      outTau.decayMode = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByDecayModeFinding) > 0.5;
+      outTau.combIso = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits);
+    }
   }
+
+  if (fDebug)
+    Info("Process", "Fill jets");
 
   if (fJetsName.Length() != 0) {
     auto* jets = GetObject<mithep::JetCol>(fJetsName);
@@ -492,10 +617,8 @@ mithep::SimpleTreeMod::Process()
     for (unsigned iJ = 0; iJ != jets->GetEntries(); ++iJ) {
       auto& inJet(*jets->At(iJ));
       auto& outJet(fEvent.jets[iJ]);
-      outJet.pt = inJet.Pt();
-      outJet.eta = inJet.Eta();
-      outJet.phi = inJet.Phi();
-      outJet.mass = inJet.Mass();
+
+      fillP4_(outJet, inJet);
     }
   }
 
@@ -505,15 +628,27 @@ mithep::SimpleTreeMod::Process()
 void
 mithep::SimpleTreeMod::SlaveBegin()
 {
+  auto* outputFile = TFile::Open(fOutputName, "recreate");
+  outputFile->cd();
+
   fEventTree = new TTree(fEventTreeName, "Events");
   fEvent.book(*fEventTree);
 
   fAllEventTree = new TTree(fAllEventTreeName, "Events");
   fAllEvent.book(*fAllEventTree);
 
-  AddOutput(fEventTree);
-  AddOutput(fAllEventTree);
-  AddOutput(simpletree::makeHLTPathTree());
+  simpletree::makeHLTPathTree();
+}
+
+void
+mithep::SimpleTreeMod::SlaveTerminate()
+{
+  auto* outputFile = fEventTree->GetCurrentFile();
+  outputFile->cd();
+
+  fEventTree->Write();
+  fAllEventTree->Write();
+  delete outputFile;
 }
 
 void
@@ -528,5 +663,38 @@ mithep::SimpleTreeMod::BeginRun()
       fHLTIds[iH] = triggerName->Id();
     else
       fHLTIds[iH] = -1;
+  }
+
+  if (fIsMC && (fPdfReweightGroupNames.size() != 0 || fPdfReweightGroupIds.size() != 0)) {
+    auto* mcRunInfo = GetMCRunInfo();
+
+    for (auto& name : fPdfReweightGroupNames) {
+      unsigned iG = 0;
+      for (; iG != mcRunInfo->NWeightGroups(); ++iG) {
+        if (name == mcRunInfo->WeightGroupType(iG))
+          break;
+      }
+      if (iG == mcRunInfo->NWeightGroups()) {
+        SendError(kAbortAnalysis, "BeginRun", "PDF reweight factor group " + name + " not found");
+      }
+
+      if (std::find(fPdfReweightGroupIds.begin(), fPdfReweightGroupIds.end(), iG) == fPdfReweightGroupIds.end());
+      fPdfReweightGroupIds.push_back(iG);
+    }
+
+    fPdfReweightGroupNames.clear();
+
+    for (unsigned gid : fPdfReweightGroupIds) {
+      for (unsigned iC = 0; iC != mcRunInfo->NWeights(); ++iC) {
+        if (mcRunInfo->WeightGroup(iC) != gid)
+          continue;
+
+        fPdfReweightIds.push_back(mcRunInfo->WeightPositionInEvent(iC));
+      }
+    }
+
+    fPdfReweightGroupIds.clear();
+
+    fEvent.reweight.resize(6 + fPdfReweightIds.size());
   }
 }

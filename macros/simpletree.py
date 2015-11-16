@@ -2,12 +2,37 @@ from MitAna.TreeMod.bambu import mithep, analysis
 from MitAna.TreeMod.sequenceable import Chain
 import os
 
+####################################
+### UTIL FUNCTIONS AND VARIABLES ###
+####################################
+
 mitdata = os.environ['MIT_DATA']
+
+def switchBX(case25, case50):
+    global analysis
+    return case25 if analysis.custom['bx'] == '25ns' else case50
+
+jecVersion = switchBX('25nsV6', '50nsV5')
+
+if analysis.isRealData:
+    jecPattern = mitdata + '/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_DATA_{level}_{jettype}.txt'
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+
+else:
+    jecPattern = mitdata +'/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_MC_{level}_{jettype}.txt'
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+
+#########################################
+### MODULES RUN WITH DEFAULT SETTINGS ###
+#########################################
 
 from MitPhysics.SelMods.BadEventsFilterMod import badEventsFilterMod
 from MitPhysics.Mods.GoodPVFilterMod import goodPVFilterMod
 from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
-from MitPhysics.Mods.JetIdMod import jetIdMod
+
+#####################
+### EVENT FILTERS ###
+#####################
 
 # this has to be in the same order as the HLTPaths enum
 hltPaths = [
@@ -26,11 +51,35 @@ hltPaths = [
 
 hltMod = mithep.HLTMod(
     AbortIfNotAccepted = analysis.isRealData,
+    ExportTrigObjects = False
 )
 for path, filters in hltPaths:
     hltMod.AddTrigger('HLT_' + path + '_v*')
 
-exoticMets = mithep.ExoticMetsMod()
+################################
+### JET/MET ID & CORRECTIONS ###
+################################
+
+jetCorrection = mithep.JetCorrectionMod('AK4JetCorrection',
+    InputName = 'AKt4PFJetsCHS',
+    CorrectedJetsName = 'CorrectedJets',
+    RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll
+)
+
+looseAK4Jets = mithep.JetIdMod('AK4JetId',
+    InputName = jetCorrection.GetOutputName(),
+    OutputName = 'GoodAK4Jets',
+    PFId = mithep.JetTools.kPFLoose,
+    MVATrainingSet = mithep.JetIDMVA.k74CHS, # set to mithep.JetIDMVA.nMVATrainingTypes to turn off MVA
+    MVACutWP = mithep.JetIDMVA.kLoose,
+    MVACutsFile = os.environ['MIT_DATA'] + '/JetId/jetIDCuts_150807.dat',
+    PtMin = 30.,
+    EtaMax = 5.
+)
+looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2.xml', 0)
+looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5.xml', 1)
+looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3.xml', 2)
+looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
 
 metCorrection = mithep.MetCorrectionMod('MetCorrection',
     InputName = 'PFMet',
@@ -38,199 +87,107 @@ metCorrection = mithep.MetCorrectionMod('MetCorrection',
     JetsName = 'AKt4PFJetsCHS',
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
     MaxEMFraction = 0.9,
-    SkipMuons = True
+    SkipMuons = True,
+    MuonGeometricMatch = True
 )
 metCorrection.ApplyType0(False)
 metCorrection.ApplyType1(True)
 metCorrection.ApplyShift(False)
 metCorrection.IsData(analysis.isRealData)
 
-metCorrectionNoCHS = metCorrection.clone('MetCorrectionNoCHS',
-    OutputName = 'PFType1MetNoCHS',
-    JetsName = 'AKt4PFJets'
-)
+for level in jecLevels:
+    repl = {'level': level, 'jettype': 'AK4PFchs'}
+    jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
+    metCorrection.AddJetCorrectionFromFile(jecPattern.format(**repl))
 
-jetCorrection = mithep.JetCorrectionMod(
-    InputName = 'AKt4PFJetsCHS',
-    CorrectedJetsName = 'CorrectedJets',
-    RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll
-)
+###########################
+### LEPTON & PHOTON IDS ###
+###########################
 
-if analysis.custom['bx'] == '25ns':
-    if analysis.isRealData:
-        jecSources = [
-            "Summer15_25nsV2_DATA_L1FastJet_AK4PFchs.txt",
-            "Summer15_25nsV2_DATA_L2Relative_AK4PFchs.txt",
-            "Summer15_25nsV2_DATA_L3Absolute_AK4PFchs.txt",
-            "Summer15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt"
-        ]
-        
-        jecSourcesNoCHS = [
-            "Summer15_25nsV2_DATA_L1FastJet_AK4PF.txt",
-            "Summer15_25nsV2_DATA_L2Relative_AK4PF.txt",
-            "Summer15_25nsV2_DATA_L3Absolute_AK4PF.txt",
-            "Summer15_25nsV2_DATA_L2L3Residual_AK4PF.txt"
-        ]
-    else:
-        jecSources = [
-            "Summer15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
-            "Summer15_25nsV2_MC_L2Relative_AK4PFchs.txt",
-            "Summer15_25nsV2_MC_L3Absolute_AK4PFchs.txt"
-        ]
-        
-        jecSourcesNoCHS = [
-            "Summer15_25nsV2_MC_L1FastJet_AK4PF.txt",
-            "Summer15_25nsV2_MC_L2Relative_AK4PF.txt",
-            "Summer15_25nsV2_MC_L3Absolute_AK4PF.txt"
-        ]
-
-else:
-    if analysis.isRealData:
-        jecSources = [
-            "Summer15_50nsV5_DATA_L1FastJet_AK4PFchs.txt",
-            "Summer15_50nsV5_DATA_L2Relative_AK4PFchs.txt",
-            "Summer15_50nsV5_DATA_L3Absolute_AK4PFchs.txt",
-            "Summer15_50nsV5_DATA_L2L3Residual_AK4PFchs.txt"
-        ]
-        
-        jecSourcesNoCHS = [
-            "Summer15_50nsV2_MC_L1FastJet_AK4PF.txt",
-            "Summer15_50nsV5_DATA_L2Relative_AK4PF.txt",
-            "Summer15_50nsV5_DATA_L3Absolute_AK4PF.txt",
-            "Summer15_50nsV5_DATA_L2L3Residual_AK4PF.txt"
-        ]
-    else:
-        jecSources = [
-            "Summer15_50nsV5_MC_L1FastJet_AK4PFchs.txt",
-            "Summer15_50nsV5_MC_L2Relative_AK4PFchs.txt",
-            "Summer15_50nsV5_MC_L3Absolute_AK4PFchs.txt"
-        ]
-        
-        jecSourcesNoCHS = [
-            "Summer15_50nsV5_MC_L1FastJet_AK4PF.txt",
-            "Summer15_50nsV5_MC_L2Relative_AK4PF.txt",
-            "Summer15_50nsV5_MC_L3Absolute_AK4PF.txt"
-        ]
-
-
-jecDir = mitdata + '/JEC/'
-
-for jec in jecSources:
-    metCorrection.AddJetCorrectionFromFile(jecDir + jec)
-    jetCorrection.AddCorrectionFromFile(jecDir + jec)
-
-for jec in jecSourcesNoCHS:
-    metCorrectionNoCHS.AddJetCorrectionFromFile(jecDir + jec)
+### ELECTRONS
 
 baselineElectrons = mithep.ElectronIdMod('BaselineElectrons',
-    InputName = 'Electrons',
+    InputName = mithep.Names.gkElectronBrn,
     OutputName = 'BaselineElectrons',
     IdType = mithep.ElectronTools.kNoId,
     IsoType = mithep.ElectronTools.kNoIso,
     ApplyEcalFiducial = True,
     ApplyD0Cut = False,
     ApplyDZCut = False,
+    WhichVertex = 0,
     PtMin = 10.,
-    EtaMax = 2.5
+    EtaMax = 2.5,
+    ApplyConvFilterType1 = False,
+    ApplyConvFilterType2 = False,
+    ApplyNExpectedHitsInnerCut = False,
+    ChargeFilter = False,
+    ConversionsName = 'Conversions'    
 )
 
-looseElectronMask = baselineElectrons.clone('ElectronLooseId',
-    InputName = baselineElectrons.GetOutputName(),
-    OutputName = 'LooseElectronMask',
+looseElectronId = mithep.ElectronIdMod('LooseElectronId',
     IsFilterMode = False,
+    InputName = baselineElectrons.GetOutputName(),
+    OutputName = 'LooseElectronId',
+    IdType = mithep.ElectronTools.kSummer15Veto,
+    IsoType = mithep.ElectronTools.kSummer15VetoIso,
     ApplyD0Cut = True,
     ApplyDZCut = True,
-    IdType = mithep.ElectronTools.kSummer15Veto,
-    IsoType = mithep.ElectronTools.kSummer15VetoIso
+    ApplyConvFilterType1 = True,
+    ApplyNExpectedHitsInnerCut = True
 )
 
-mediumElectronMask = looseElectronMask.clone('ElectronMediumId',
-    OutputName = 'MediumElectronMask',
-    IdType = mithep.ElectronTools.kSummer15Medium,
-    IsoType = mithep.ElectronTools.kSummer15MediumIso
-)
-
-tightElectronMask = looseElectronMask.clone('ElectronTightId',
-    OutputName = 'TightElectronMask',
+tightElectronId = looseElectronId.clone('TightElectronId',
+    OutputName = 'TightElectronId',
     IdType = mithep.ElectronTools.kSummer15Tight,
     IsoType = mithep.ElectronTools.kSummer15TightIso
 )
 
-tightElectrons = mithep.MaskCollectionMod('TightElectrons',
-    InputName = baselineElectrons.GetOutputName(),
-    MaskName = tightElectronMask.GetOutputName(),
-    OutputName = 'TightElectrons'
-)
+### MUONS
 
-baselineMuons = mithep.MuonIdMod('BaseLineMuons',
+looseMuons = mithep.MuonIdMod('LooseMuons',
     InputName = 'Muons',
-    OutputName = 'BaselineMuons',
-    MuonClassType = mithep.MuonTools.kPFGlobalorTracker,
-    IdType = mithep.MuonTools.kNoId,
-    IsoType = mithep.MuonTools.kNoIso,
-    ApplyD0Cut = False,
-    ApplyDZCut = False
-)
-
-looseMuonMask = baselineMuons.clone('MuonLooseId',
-    IsFilterMode = False,
-    InputName = baselineMuons.GetOutputName(),
-    OutputName = 'LooseMuonMask',
+    OutputName = 'LooseMuons',
     IdType = mithep.MuonTools.kLoose,
-    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedLoose,
+    IsoType = mithep.MuonTools.kNoIso,
     PFNoPileupCandidatesName = 'pfNoPU',
     PFPileupCandidatesName = 'pfPU',
-    ApplyD0Cut = False,
-    ApplyDZCut = False
-)
-
-mediumMuonMask = looseMuonMask.clone('MuonMediumId',
-    OutputName = 'MediumMuonMask',
-    IdType = mithep.MuonTools.kMedium,
-    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedLoose,
     ApplyD0Cut = True,
-    ApplyDZCut = True
+    ApplyDZCut = True,
+    PtMin = 10.,
+    EtaMax = 2.4
 )
 
-tightMuonMask = looseMuonMask.clone('MuonTightId',
-    OutputName = 'TightMuonMask',
+tightMuonId = looseMuons.clone('MuonTightId',
+    IsFilterMode = False,
+    InputName = looseMuons.GetOutputName(),
+    OutputName = 'TightMuonId',
     IdType = mithep.MuonTools.kTight,
-    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight,
-    ApplyD0Cut = True,
-    ApplyDZCut = True
+    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight
 )
 
-tightMuons = mithep.MaskCollectionMod('TightMuons',
-    InputName = baselineMuons.GetOutputName(),
-    MaskName = tightMuonMask.GetOutputName(),
-    OutputName = 'TightMuons'
-)
+### TAUS
 
-vetoTaus = mithep.PFTauIdMod('VetoTauId',
+looseTaus = mithep.PFTauIdMod('LooseTaus',
     InputName = 'HPSTaus',
-    OutputName = 'VetoTaus',
+    OutputName = 'LooseTaus',
     PtMin = 18.,
     EtaMax = 2.3
 )
-vetoTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByLooseCombinedIsolationDBSumPtCorr3Hits)
-vetoTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByTightMuonRejection3)
-vetoTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByMVA5TightElectronRejection)
+looseTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByDecayModeFinding)
+looseTaus.AddCutDiscriminator(mithep.PFTau.kDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits, 5., False)
 
-tightTaus = mithep.PFTauIdMod('TightTauId',
-    InputName = vetoTaus.GetOutputName(),
-    OutputName = 'TightTaus'
-)
-tightTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByTightCombinedIsolationDBSumPtCorr3Hits)
+### PHOTONS
 
 baselinePhotons = mithep.PhotonIdMod('BaselinePhotons',
+    InputName = mithep.Names.gkPhotonBrn,
     OutputName = 'BaselinePhotons',
     IdType = mithep.PhotonTools.kNoId,
     IsoType = mithep.PhotonTools.kNoIso,
-    PtMin = 15.,
-    EtaMax = 2.5
+    PtMin = 30.,
+    EtaMax = 3.
 )
 
-photonLooseId = baselinePhotons.clone('PhotonLooseId',
+photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     IsFilterMode = False,
     InputName = baselinePhotons.GetOutputName(),
     OutputName = 'PhotonLooseId',
@@ -244,60 +201,40 @@ photonMediumId = photonLooseId.clone('PhotonMediumId',
     IsoType = mithep.PhotonTools.kSummer15MediumIso
 )
 
-mediumPhotons = mithep.MaskCollectionMod('MediumPhotons',
-    InputName = baselinePhotons.GetOutputName(),
-    MaskName = photonMediumId.GetOutputName(),
-    OutputName = 'MediumPhotons'
-)
-
-photonTightId = photonMediumId.clone('PhotonTightId',
+photonTightId = photonLooseId.clone('PhotonTightId',
     OutputName = 'PhotonTightId',
     IdType = mithep.PhotonTools.kSummer15Tight,
     IsoType = mithep.PhotonTools.kSummer15TightIso
 )
 
-jetId = jetIdMod.clone()
-
-jetCleaning = mithep.JetCleaningMod('JetCleaning',
-    CleanJetsName = 'CleanJets',
-    CleanMuonsName = tightMuons.GetOutputName(),
-    CleanPhotonsName = mediumPhotons.GetOutputName(),
-    GoodJetsName = jetId.GetOutputName(),
-    CleanElectronsName = tightElectrons.GetOutputName(),
-    CleanTausName = tightTaus.GetOutputName()
+photonHighPtId = photonLooseId.clone('PhotonHighPtId',
+    OutputName = 'PhotonHighPtId',
+    IdType = mithep.PhotonTools.kHighPtV2,
+    IsoType = mithep.PhotonTools.kHighPtV2Iso,
+    PtMin = 100.
 )
 
 ntuples = mithep.SimpleTreeMod(
     EventTreeName = 'events',
     AllEventTreeName = 'allevents',
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
-    JetsName = jetCleaning.GetOutputName(),
+    JetsName = looseAK4Jets.GetOutputName(),
     PhotonsName = baselinePhotons.GetOutputName(),
     ElectronsName = baselineElectrons.GetOutputName(),
-    LooseElectronsName = looseElectronMask.GetOutputName(),
-    MediumElectronsName = mediumElectronMask.GetOutputName(),
-    TightElectronsName = tightElectronMask.GetOutputName(),
-    MuonsName = baselineMuons.GetOutputName(),
-    LooseMuonsName = looseMuonMask.GetOutputName(),
-    MediumMuonsName = mediumMuonMask.GetOutputName(),
-    TightMuonsName = tightMuonMask.GetOutputName(),
-    TausName = vetoTaus.GetOutputName(),
+    LooseElectronsName = looseElectronId.GetOutputName(),
+    TightElectronsName = tightElectronId.GetOutputName(),
+    MuonsName = looseMuons.GetOutputName(),
+    TightMuonsName = tightMuonId.GetOutputName(),
+    TausName = looseTaus.GetOutputName(),
     ConversionsName = mithep.Names.gkMvfConversionBrn,
     VerticesName = mithep.ModNames.gkGoodVertexesName,
     LoosePhotonName = photonLooseId.GetOutputName(),
     MediumPhotonName = photonMediumId.GetOutputName(),
     TightPhotonName = photonTightId.GetOutputName(),
-    PUPFCandidatesName = separatePileUpMod.GetPFPileUpName(),
-    PVPFCandidatesName = separatePileUpMod.GetPFNoPileUpName(),
+    HighPtPhotonName = photonHighPtId.GetOutputName(),
     RawMetName = 'PFMet',
     T1MetName = metCorrection.GetOutputName(),
-    T1NoCHSMetName = metCorrectionNoCHS.GetOutputName(),
-    NHScaledMetName = exoticMets.GetNHScaledMetName(),
-    CHMetName = exoticMets.GetCHMetName(),
-    NHMetName = exoticMets.GetNHMetName(),
-    NEMetName = exoticMets.GetNEMetName(),
-    IsMC = not analysis.isRealData,
-    Condition = jetCleaning
+    IsMC = not analysis.isRealData
 )
 
 for iP, (path, filters) in enumerate(hltPaths):
@@ -305,33 +242,77 @@ for iP, (path, filters) in enumerate(hltPaths):
         ntuples.AddTriggerFilterName(iP, f)
     ntuples.SetTriggerPathName(iP, path)
 
-analysis.setSequence(
-    hltMod *
-    badEventsFilterMod *
-    goodPVFilterMod *
-    separatePileUpMod *
-    baselineElectrons *
-    looseElectronMask *
-    mediumElectronMask *
-    tightElectronMask *
-    tightElectrons *
-    baselineMuons *
-    looseMuonMask *
-    mediumMuonMask *
-    tightMuonMask *
-    tightMuons *
-    vetoTaus *
-    tightTaus *
-    exoticMets *
-    metCorrection *
-    metCorrectionNoCHS *
-    baselinePhotons *
-    photonLooseId *
-    photonMediumId *
-    photonTightId *
-    mediumPhotons *
-    jetCorrection *
-    jetId *
-    jetCleaning +
-    ntuples
-)
+recoChain = [
+    hltMod,
+    badEventsFilterMod,
+    goodPVFilterMod,
+]
+
+if not analysis.isRealData:
+    generator = mithep.GeneratorMod(
+        IsData = False,
+        CopyArrays = False,
+        MCMETName = "GenMet",
+        FillHist = True
+    )
+
+    mcParticlesNoNu = mithep.MCParticleFilterMod('MCParticlesNoNu',
+        InputName = mithep.Names.gkMCPartBrn,
+        OutputName = 'MCParticlesNoNu',
+        VetoParticleId = True
+    )
+    for pid in [12, 14, 16, 1000022]:
+        mcParticlesNoNu.AddParticleId(pid)
+
+    genJets = mithep.FastJetMod('GenJetsNoNu',
+        InputName = mcParticlesNoNu.GetOutputName(),
+        OutputJetsName = 'GenJetsNoNu',
+        OutputType = mithep.kGenJet,
+        ConeSize = 0.4,
+        NoActiveArea = True,
+        ParticleMinPt = 0.,
+        JetMinPt = 3.
+    )
+
+    recoChain += [
+        generator,
+        mcParticlesNoNu,
+        genJets
+    ]
+
+    ntuples.SetGenMetName(generator.GetMCMETName())
+    ntuples.SetGenJetsName(genJets.GetOutputJetsName())
+
+    if 'pdfrwgt' in analysis.custom and analysis.custom['pdfrwgt'] != '-':
+        if analysis.custom['pdfrwgt'] == 'amc_74':
+            ntuples.AddPdfReweightGroup('PDF_variation')
+        elif analysis.custom['pdfrwgt'] == 'mg5_74':
+            ntuples.AddPdfReweightGroup('NNPDF30_lo_as_0130.LHgrid')
+        elif analysis.custom['pdfrwgt'] == 'pwhg_74':
+            ntuples.AddPdfReweightId(1) # group id = 0 -> scale reweights, 1 -> pdf reweights
+        else:
+            print 'Unrecognized pdfrwgt option', analysis.custom['pdfrwgt']
+            sys.exit(1)
+
+
+recoChain += [
+    separatePileUpMod,
+    baselineElectrons,
+    looseElectronId,
+    tightElectronId,
+    looseMuons,
+    tightMuonId,
+    looseTaus,
+    metCorrection,
+    baselinePhotons,
+    photonLooseId,
+    photonMediumId,
+    photonTightId,
+    photonHighPtId,
+    jetCorrection,
+    looseAK4Jets
+]
+
+ntuples.SetCondition(recoChain[-1])
+
+analysis.setSequence(Chain(recoChain) + ntuples)

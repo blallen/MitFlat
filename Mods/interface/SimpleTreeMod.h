@@ -21,11 +21,8 @@ namespace mithep {
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
     void SetLooseElectronsName(char const* n) { fLooseElectronsName = n; }
-    void SetMediumElectronsName(char const* n) { fMediumElectronsName = n; }
     void SetTightElectronsName(char const* n) { fTightElectronsName = n; }
     void SetMuonsName(char const* n) { fMuonsName = n; }
-    void SetLooseMuonsName(char const* n) { fLooseMuonsName = n; }
-    void SetMediumMuonsName(char const* n) { fMediumMuonsName = n; }
     void SetTightMuonsName(char const* n) { fTightMuonsName = n; }
     void SetTausName(char const* n) { fTausName = n; }
     void SetConversionsName(char const* n) { fConversionsName = n; }
@@ -33,27 +30,30 @@ namespace mithep {
     void SetLoosePhotonName(char const* n) { fLoosePhotonName = n; }
     void SetMediumPhotonName(char const* n) { fMediumPhotonName = n; }
     void SetTightPhotonName(char const* n) { fTightPhotonName = n; }
-    void SetPUPFCandidatesName(char const* n) { fPUPFCandidatesName = n; }
-    void SetPVPFCandidatesName(char const* n) { fPVPFCandidatesName = n; }
+    void SetHighPtPhotonName(char const* n) { fHighPtPhotonName = n; }
     void SetRawMetName(char const* n) { fRawMetName = n; }
     void SetT1MetName(char const* n) { fT1MetName = n; }
-    void SetT1NoCHSMetName(char const* n) { fT1NoCHSMetName = n; }
-    void SetNHScaledMetName(char const* n) { fNHScaledMetName = n; }
-    void SetCHMetName(char const* n) { fCHMetName = n; }
-    void SetNHMetName(char const* n) { fNHMetName = n; }
-    void SetNEMetName(char const* n) { fNEMetName = n; }
+    void SetGenMetName(char const* n) { fGenMetName = n; }
+    void SetGenJetsName(char const* n) { fGenJetsName = n; }
     void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
+    void AddPdfReweightGroup(char const* n) { fPdfReweightGroupNames.push_back(n); }
+    void AddPdfReweightId(UInt_t id) { fPdfReweightGroupIds.push_back(id); }
     void SetIsMC(Bool_t k) { fIsMC = k; }
 
     void SetCondition(BaseMod* m) { fCondition = m; }
+    void SetOutputName(char const* p) { fOutputName = p; }
+
+    void SetDebug(Bool_t d) { fDebug = d; }
 
   protected:
     void Process() override;
     void SlaveBegin() override;
+    void SlaveTerminate() override;
     void BeginRun() override;
 
     // output
+    TString fOutputName{"simpletree.root"};
     TString fEventTreeName{"events"};
     TString fAllEventTreeName{"all"};
     TTree* fEventTree{0};
@@ -68,30 +68,28 @@ namespace mithep {
     TString fPhotonsName{"Photons"};
     TString fElectronsName{"Electrons"};
     TString fLooseElectronsName{"LooseElectrons"};
-    TString fMediumElectronsName{"MediumElectrons"};
     TString fTightElectronsName{"TightElectrons"};
     TString fMuonsName{"Muons"};
-    TString fLooseMuonsName{"LooseMuons"};
-    TString fMediumMuonsName{"MediumMuons"};
     TString fTightMuonsName{"TightMuons"};
     TString fTausName{"HPSTaus"};
     TString fConversionsName{"Conversions"};
     TString fLoosePhotonName{"LoosePhotons"};
     TString fMediumPhotonName{"MediumPhotons"};
     TString fTightPhotonName{"TightPhotons"};
-    TString fPUPFCandidatesName{"pfPU"};
-    TString fPVPFCandidatesName{"pfNoPU"};
+    TString fHighPtPhotonName{"HighPtPhotons"};
     TString fRawMetName{"PFMet"};
     TString fT1MetName{""};
-    TString fT1NoCHSMetName{""};
-    TString fNHScaledMetName{""};
-    TString fCHMetName{""};
-    TString fNHMetName{""};
-    TString fNEMetName{""};
+    TString fGenMetName{""};
+    TString fGenJetsName{""};
     std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};
     TString fTriggerPathName[simpletree::nHLTPaths]{};
+    std::vector<TString> fPdfReweightGroupNames{};
+    std::vector<UInt_t> fPdfReweightGroupIds{};
+    std::vector<unsigned> fPdfReweightIds{};
 
     Bool_t fIsMC{kTRUE};
+
+    Bool_t fDebug{kFALSE};
 
     BaseMod* fCondition{0};
 
