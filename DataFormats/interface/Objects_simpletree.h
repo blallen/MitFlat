@@ -19,7 +19,9 @@ namespace simpletree {
     kPhoton175,
     kEle23Loose,
     kEle27Loose,
-    kMu24,
+    kMu20,
+    kTrkMu20,
+    kMu24eta2p1,
     kMu27,
     kMET170,
     kMETNoMu90MHTNoMu90,
@@ -126,6 +128,7 @@ namespace simpletree {
       Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
+      Bool_t electronVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
       Bool_t loose[NMAX]{};
       Bool_t medium[NMAX]{};
@@ -161,6 +164,7 @@ namespace simpletree {
     Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;
+    Bool_t& electronVeto;
     Bool_t& csafeVeto;
     Bool_t& loose;
     Bool_t& medium;
@@ -253,6 +257,8 @@ namespace simpletree {
   class Muon : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
+      Bool_t matchHLT20[NMAX]{};
+      Bool_t matchHLTTrk20[NMAX]{};
       Bool_t matchHLT24[NMAX]{};
       Bool_t matchHLT27[NMAX]{};
 
@@ -267,6 +273,8 @@ namespace simpletree {
     Muon& operator=(Muon const&);
 
   public:
+    Bool_t& matchHLT20;
+    Bool_t& matchHLTTrk20;
     Bool_t& matchHLT24;
     Bool_t& matchHLT27;
   };
@@ -348,7 +356,7 @@ namespace simpletree {
   class HLT {
   public:
     struct array_data {
-      static UInt_t const NMAX{11};
+      static UInt_t const NMAX{13};
 
       Bool_t pass[NMAX]{};
 

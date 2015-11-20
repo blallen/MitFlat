@@ -11,7 +11,9 @@ enum HLTPath {
   kPhoton175,
   kEle23Loose,
   kEle27Loose,
-  kMu24,
+  kMu20,
+  kTrkMu20,
+  kMu24eta2p1,
   kMu27,
   kMET170,
   kMETNoMu90MHTNoMu90,
@@ -46,6 +48,7 @@ hOverE/F
 matchedGen/I
 isEB/O
 pixelVeto/O
+electronVeto/O
 csafeVeto/O
 loose/O
 medium/O
@@ -95,6 +98,8 @@ bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 
 bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
 [Muon:Lepton]
+matchHLT20/O
+matchHLTTrk20/O
 matchHLT24/O
 matchHLT27/O
 

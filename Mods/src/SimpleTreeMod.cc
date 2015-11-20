@@ -335,6 +335,13 @@ mithep::SimpleTreeMod::Process()
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
       outPhoton.pixelVeto = !inPhoton.HasPixelSeed();
+      outPhoton.electronVeto = true;
+      for (unsigned iE(0); iE != electrons->GetEntries(); ++iE) {
+        if (electrons->At(iE)->SCluster() == inPhoton.SCluster()) {
+          outPhoton.electronVeto = false;
+          break;
+        }
+      }
       outPhoton.csafeVeto = PhotonTools::PassElectronVetoConvRecovery(&inPhoton, electrons, conversions, vertices->At(0));
       outPhoton.loose = looseMask->At(iP);
       outPhoton.medium = mediumMask->At(iP);
@@ -460,6 +467,8 @@ mithep::SimpleTreeMod::Process()
     fEvent.electrons.data.matchHLT175Ph
   };
   bool* muHLTMatch[] = {
+    fEvent.muons.data.matchHLT20,
+    fEvent.muons.data.matchHLTTrk20,
     fEvent.muons.data.matchHLT24,
     fEvent.muons.data.matchHLT27
   };
@@ -475,7 +484,9 @@ mithep::SimpleTreeMod::Process()
     simpletree::kPhoton175
   };
   simpletree::HLTPath muHLTPaths[] = {
-    simpletree::kMu24,
+    simpletree::kMu20,
+    simpletree::kTrkMu20,
+    simpletree::kMu24eta2p1,
     simpletree::kMu27
   };
 
@@ -594,6 +605,9 @@ mithep::SimpleTreeMod::Process()
     fEvent.taus.resize(taus->GetEntries());
     for (unsigned iT(0); iT != taus->GetEntries(); ++iT) {
       auto& inTau(*taus->At(iT));
+      if (inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByDecayModeFindingNewDMs) < 0.5)
+        continue;
+
       auto& outTau(fEvent.taus[iT]);
 
       fillP4_(outTau, inTau);

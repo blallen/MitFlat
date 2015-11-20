@@ -26,7 +26,6 @@ else:
 ### MODULES RUN WITH DEFAULT SETTINGS ###
 #########################################
 
-from MitPhysics.SelMods.BadEventsFilterMod import badEventsFilterMod
 from MitPhysics.Mods.GoodPVFilterMod import goodPVFilterMod
 from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
 
@@ -40,8 +39,10 @@ hltPaths = [
     ('Photon135_PFMET100_JetIdCleaned', ['hltEG135HEFilter']),
     ('Photon165_HE10', ['hltEG165HE10Filter']),
     ('Photon175', ['hltEG175HEFilter']),
-    ('Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele23_CaloIdL_TrackIdL_IsoVL', ['hltEle23WPLooseGsfTrackIsoFilter']),
+    ('Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele22_eta2p1_WP75_Gsf', ['hltEle23WPLooseGsfTrackIsoFilter']),
     ('Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf', ['hltEle27WPLooseGsfTrackIsoFilter']), # filter only matches data
+    ('IsoMu20', ['hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09']),
+    ('IsoTkMu20', ['hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09']),
     ('IsoMu24_eta2p1', ['hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09']),
     ('IsoMu27', ['hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09']),
     ('PFMET170_NoiseCleaned', []),
@@ -244,11 +245,19 @@ for iP, (path, filters) in enumerate(hltPaths):
 
 recoChain = [
     hltMod,
-    badEventsFilterMod,
-    goodPVFilterMod,
+    goodPVFilterMod
 ]
 
-if not analysis.isRealData:
+if analysis.isRealData:
+    badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
+        EEBadScFilter = True,
+        HBHENoiseFilter = True,
+        FillHist = True
+    )
+
+    recoChain.append(badEventsFilterMod)
+
+else:
     generator = mithep.GeneratorMod(
         IsData = False,
         CopyArrays = False,
