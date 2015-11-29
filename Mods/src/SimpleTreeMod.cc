@@ -68,33 +68,42 @@ mithep::SimpleTreeMod::Process()
   if (fDebug)
     Info("Process", "Begin event");
 
-  auto* eventHeader = GetEventHeader();
-  auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
+  fEventCounter->Fill(0.5, 1.);
 
-  fAllEvent.run = eventHeader->RunNum();
-  fAllEvent.lumi = eventHeader->LumiSec();
-  fAllEvent.event = eventHeader->EvtNum();
-  fAllEvent.weight = 1.;
-  fAllEvent.rho = energyDensity->At(0)->Rho(fRhoAlgo);
-  
+  auto* eventHeader = GetEventHeader();
+
   mithep::MCEventInfo* mcEvent = 0;
   if (fIsMC) {
     mcEvent = GetObject<mithep::MCEventInfo>(mithep::Names::gkMCEvtInfoBrn);
-    fAllEvent.weight = mcEvent->Weight();
-  }
+    fEventCounter->Fill(1.5, mcEvent->Weight());
 
-  fAllEventTree->Fill();
+    double binCenter(2.5);
+    if (mcEvent->NReweightScaleFactors() > 8) {
+      for (unsigned iW : {1, 2, 3, 4, 6, 8}) {
+        fEventCounter->Fill(binCenter, mcEvent->Weight() * mcEvent->ReweightScaleFactor(iW));
+        binCenter += 1.;
+      }
+      for (unsigned id : fPdfReweightIds) {
+        fEventCounter->Fill(binCenter, mcEvent->Weight() * mcEvent->ReweightScaleFactor(id));
+        binCenter += 1.;
+      }
+    }
+  }
+  else
+    fEventCounter->Fill(1.5, 1.);
 
   if (fDebug)
-    Info("Process", "Filled allevent");
+    Info("Process", "Filled event counter");
 
   if (fCondition && !fCondition->IsActive())
     return;
 
   auto* vertices = GetObject<mithep::VertexCol>(fVerticesName);
   auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
+  auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
   auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
   std::vector<MCParticle*> finalState;
+  std::vector<MCParticle*> partonFinalState;
   TVector3 genVertex;
 
   auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
@@ -139,9 +148,6 @@ mithep::SimpleTreeMod::Process()
     unsigned nP(0);
     std::map<unsigned, unsigned> partonMap;
     for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
-      if (mcEvent->PartonStatus(iP) == -1)
-        continue;
-
       int pid(mcEvent->PartonId(iP));
       auto& p4(*mcEvent->PartonMom(iP));
 
@@ -152,6 +158,7 @@ mithep::SimpleTreeMod::Process()
       fillP4_(outParton, p4);
 
       outParton.pid = pid;
+      outParton.status = mcEvent->PartonStatus(iP);
       outParton.frixIso = false;
 
       if (pid == 22) {
@@ -193,7 +200,7 @@ mithep::SimpleTreeMod::Process()
     for (auto* mcp : finalState) {
       auto const* mother(mcp);
       // status 23: outgoing from hardest process
-      while (mother && mother->Status() != 23)
+      while (mother && mother->Status() != 23 && mother->Status() != 22)
         mother = mother->Mother();
 
       if (!mother)
@@ -205,12 +212,21 @@ mithep::SimpleTreeMod::Process()
 
       auto& outFS(fEvent.partonFinalStates[nF++]);
 
+      partonFinalState.push_back(mcp);
+
       fillP4_(outFS, *mcp);
 
       outFS.pid = mcp->PdgId();
 
       outFS.ancestor = -1;
       double dRMin(-1.);
+
+      if (mother->PdgId() != mcp->PdgId()) {
+        auto* daughter = mother->FindDaughter(mcp->PdgId(), true);
+        if (daughter)
+          mother = daughter;
+      }
+
       for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
         if (mcEvent->PartonStatus(iP) != 1)
           continue;
@@ -382,6 +398,7 @@ mithep::SimpleTreeMod::Process()
       }
 
       outPhoton.matchedGen = 0;
+      outPhoton.genIso = 0.;
 
       if (fIsMC) {
         // find matched gen
@@ -390,7 +407,13 @@ mithep::SimpleTreeMod::Process()
         // 11/-11 -> electrons
         // 111 -> everything else
 
-        for (auto& fs : fEvent.partonFinalStates) {
+        TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());          
+        caloDir -= genVertex;
+
+        mithep::MCParticle* matched(0);
+
+        for (unsigned iFS(0); iFS != fEvent.partonFinalStates.size(); ++iFS) {
+          auto& fs(fEvent.partonFinalStates[iFS]);
           if (fs.pid != 22)
             continue;
           if (fs.ancestor >= fEvent.partons.size())
@@ -400,23 +423,18 @@ mithep::SimpleTreeMod::Process()
           if (parton.pid != 22 || !parton.frixIso)
             continue;
 
-          TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());          
-          caloDir -= genVertex;
           auto&& partP4(fs.p4());
           if (caloDir.DeltaR(TVector3(partP4.X(), partP4.Y(), partP4.Z())) < 0.1) {
+            matched = partonFinalState[iFS];
             outPhoton.matchedGen = -22;
             break;
           }
         }
 
-        if (outPhoton.matchedGen == 0) {
-          mithep::MCParticle const* matched(0);
+        if (!matched) {
           double minDR(-1.);
 
           for (auto* part : finalState) {
-            TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());          
-            caloDir -= genVertex;
-
             double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
             if (dR < 0.1 && (minDR < 0. || dR < minDR)) {
               outPhoton.matchedGen = part->PdgId();
@@ -431,8 +449,16 @@ mithep::SimpleTreeMod::Process()
 
           if (outPhoton.matchedGen == 22 && matched) {
             auto* mother(matched->DistinctMother());
-            if (!(mother->PdgId() == 2212 && !mother->HasMother()) && (mother->PdgId() == 21 || std::abs(mother->PdgId()) > 25))
+            if (!(mother->PdgId() == 2212 && !mother->HasMother()) && std::abs(mother->PdgId()) > 25)
               outPhoton.matchedGen = 111;
+          }
+        }
+
+        if (matched) {
+          for (auto* part : finalState) {
+            double dR(mithep::MathUtils::DeltaR(*part, *matched));
+            if (dR < 0.3)
+              outPhoton.genIso += part->Pt();
           }
         }
       }
@@ -648,8 +674,21 @@ mithep::SimpleTreeMod::SlaveBegin()
   fEventTree = new TTree(fEventTreeName, "Events");
   fEvent.book(*fEventTree);
 
-  fAllEventTree = new TTree(fAllEventTreeName, "Events");
-  fAllEvent.book(*fAllEventTree);
+  if (fIsMC)
+    fEventCounter = new TH1D("counter", "", 8, 0., 8.);
+  else
+    fEventCounter = new TH1D("counter", "", 2, 0., 2.);
+
+  fEventCounter->GetXaxis()->SetBinLabel(1, "NEntries");
+  fEventCounter->GetXaxis()->SetBinLabel(2, "SumW");
+  if (fIsMC) {
+    fEventCounter->GetXaxis()->SetBinLabel(3, "muR=1 muF=2");
+    fEventCounter->GetXaxis()->SetBinLabel(4, "muR=1 muF=0.5");
+    fEventCounter->GetXaxis()->SetBinLabel(5, "muR=2 muF=1");
+    fEventCounter->GetXaxis()->SetBinLabel(6, "muR=2 muF=2");
+    fEventCounter->GetXaxis()->SetBinLabel(7, "muR=0.5 muF=1");
+    fEventCounter->GetXaxis()->SetBinLabel(8, "muR=0.5 muF=2");
+  }
 
   simpletree::makeHLTPathTree();
 }
@@ -661,7 +700,7 @@ mithep::SimpleTreeMod::SlaveTerminate()
   outputFile->cd();
 
   fEventTree->Write();
-  fAllEventTree->Write();
+  fEventCounter->Write();
   delete outputFile;
 }
 
@@ -698,12 +737,15 @@ mithep::SimpleTreeMod::BeginRun()
 
     fPdfReweightGroupNames.clear();
 
+    int iCounterBin(9);
     for (unsigned gid : fPdfReweightGroupIds) {
       for (unsigned iC = 0; iC != mcRunInfo->NWeights(); ++iC) {
         if (mcRunInfo->WeightGroup(iC) != gid)
           continue;
 
         fPdfReweightIds.push_back(mcRunInfo->WeightPositionInEvent(iC));
+        fEventCounter->SetBins(fEventCounter->GetNbinsX() + 1, 0., fEventCounter->GetXaxis()->GetXmax() + 1.);
+        fEventCounter->GetXaxis()->SetBinLabel(iCounterBin++, mcRunInfo->WeightDefinition(iC));
       }
     }
 

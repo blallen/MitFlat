@@ -80,39 +80,6 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   reweight.book(_tree, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
-void
-simpletree::Weight::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
-{
-  flatutils::setStatus(_tree, "", "run", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, "", "lumi", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, "", "event", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, "", "weight", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, "", "rho", _status, _branches, _whitelist);
-
-}
-
-void
-simpletree::Weight::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
-{
-  flatutils::setStatusAndAddress(_tree, "", "run", &run, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, "", "lumi", &lumi, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, "", "event", &event, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, "", "weight", &weight, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, "", "rho", &rho, _branches, _whitelist);
-
-}
-
-void
-simpletree::Weight::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
-{
-  flatutils::book(_tree, "", "run", "", 'i', &run, _branches, _whitelist);
-  flatutils::book(_tree, "", "lumi", "", 'i', &lumi, _branches, _whitelist);
-  flatutils::book(_tree, "", "event", "", 'i', &event, _branches, _whitelist);
-  flatutils::book(_tree, "", "weight", "", 'D', &weight, _branches, _whitelist);
-  flatutils::book(_tree, "", "rho", "", 'D', &rho, _branches, _whitelist);
-
-}
-
 TTree*
 simpletree::makeHLTPathTree()
 {

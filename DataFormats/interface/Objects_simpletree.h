@@ -125,6 +125,7 @@ namespace simpletree {
       Float_t phIso[NMAX]{};
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
+      Float_t genIso[NMAX]{};
       Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
@@ -161,6 +162,7 @@ namespace simpletree {
     Float_t& phIso;
     Float_t& sieie;
     Float_t& hOverE;
+    Float_t& genIso;
     Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;
@@ -304,6 +306,7 @@ namespace simpletree {
   public:
     struct array_data : public ParticleM::array_data {
       Int_t pid[NMAX]{};
+      Short_t status[NMAX]{};
       Bool_t frixIso[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -318,6 +321,7 @@ namespace simpletree {
 
   public:
     Int_t& pid;
+    Short_t& status;
     Bool_t& frixIso;
   };
 

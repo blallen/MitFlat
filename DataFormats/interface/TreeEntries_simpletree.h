@@ -46,19 +46,6 @@ namespace simpletree {
     void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
   };
 
-  class Weight {
-  public:
-    UInt_t run{};
-    UInt_t lumi{};
-    UInt_t event{};
-    Double_t weight{};
-    Double_t rho{};
-
-    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-  };
-
   TTree* makeHLTPathTree();
 
 }

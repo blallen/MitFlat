@@ -6,6 +6,7 @@
 
 #include "TString.h"
 #include "TTree.h"
+#include "TH1D.h"
 
 namespace mithep {
 
@@ -15,7 +16,6 @@ namespace mithep {
     ~SimpleTreeMod() {}
 
     void SetEventTreeName(char const* n) { fEventTreeName = n; }
-    void SetAllEventTreeName(char const* n) { fAllEventTreeName = n; }
     void SetRhoAlgo(UInt_t a) { fRhoAlgo = a; }
     void SetJetsName(char const* n) { fJetsName = n; }
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
@@ -55,11 +55,9 @@ namespace mithep {
     // output
     TString fOutputName{"simpletree.root"};
     TString fEventTreeName{"events"};
-    TString fAllEventTreeName{"all"};
     TTree* fEventTree{0};
-    TTree* fAllEventTree{0};
+    TH1D* fEventCounter{0};
     simpletree::Event fEvent;
-    simpletree::Weight fAllEvent;
 
     // input
     UInt_t fRhoAlgo{0};

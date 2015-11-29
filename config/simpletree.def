@@ -45,6 +45,7 @@ nhIso/F
 phIso/F
 sieie/F
 hOverE/F
+genIso/F
 matchedGen/I
 isEB/O
 pixelVeto/O
@@ -109,6 +110,7 @@ combIso/F
 
 [Parton:ParticleM]
 pid/I
+status/S
 frixIso/O
 
 [MCParticle:ParticleM]
@@ -143,10 +145,3 @@ t1Met/Met
 genMet/Met
 hlt/HLTCollection
 reweight/ReweightScaleCollection
-
-{Weight}
-run/i
-lumi/i
-event/i
-weight/D
-rho/D

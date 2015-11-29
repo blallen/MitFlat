@@ -162,6 +162,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "phIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hOverE", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "genIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "pixelVeto", _status, _branches, _whitelist);
@@ -187,6 +188,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "phIso", phIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hOverE", hOverE, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "genIso", genIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "pixelVeto", pixelVeto, _branches, _whitelist);
@@ -212,6 +214,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "phIso", _name + ".size", 'F', phIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
   flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches, _whitelist);
+  flatutils::book(_tree, _name, "genIso", _name + ".size", 'F', genIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches, _whitelist);
   flatutils::book(_tree, _name, "isEB", _name + ".size", 'O', isEB, _branches, _whitelist);
   flatutils::book(_tree, _name, "pixelVeto", _name + ".size", 'O', pixelVeto, _branches, _whitelist);
@@ -234,6 +237,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   phIso(_data.phIso[_idx]),
   sieie(_data.sieie[_idx]),
   hOverE(_data.hOverE[_idx]),
+  genIso(_data.genIso[_idx]),
   matchedGen(_data.matchedGen[_idx]),
   isEB(_data.isEB[_idx]),
   pixelVeto(_data.pixelVeto[_idx]),
@@ -257,6 +261,7 @@ simpletree::Photon::Photon(Photon const& _src) :
   phIso(_src.phIso),
   sieie(_src.sieie),
   hOverE(_src.hOverE),
+  genIso(_src.genIso),
   matchedGen(_src.matchedGen),
   isEB(_src.isEB),
   pixelVeto(_src.pixelVeto),
@@ -283,6 +288,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
   phIso = _rhs.phIso;
   sieie = _rhs.sieie;
   hOverE = _rhs.hOverE;
+  genIso = _rhs.genIso;
   matchedGen = _rhs.matchedGen;
   isEB = _rhs.isEB;
   pixelVeto = _rhs.pixelVeto;
@@ -605,6 +611,7 @@ simpletree::Parton::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "pid", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "status", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "frixIso", _status, _branches, _whitelist);
 }
 
@@ -614,6 +621,7 @@ simpletree::Parton::array_data::setAddress(TTree& _tree, TString const& _name, f
   ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "pid", pid, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "status", status, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "frixIso", frixIso, _branches, _whitelist);
 }
 
@@ -623,12 +631,14 @@ simpletree::Parton::array_data::book(TTree& _tree, TString const& _name, flatuti
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
   flatutils::book(_tree, _name, "pid", _name + ".size", 'I', pid, _branches, _whitelist);
+  flatutils::book(_tree, _name, "status", _name + ".size", 'S', status, _branches, _whitelist);
   flatutils::book(_tree, _name, "frixIso", _name + ".size", 'O', frixIso, _branches, _whitelist);
 }
 
 simpletree::Parton::Parton(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx),
   pid(_data.pid[_idx]),
+  status(_data.status[_idx]),
   frixIso(_data.frixIso[_idx])
 {
 }
@@ -636,6 +646,7 @@ simpletree::Parton::Parton(array_data& _data, UInt_t _idx) :
 simpletree::Parton::Parton(Parton const& _src) :
   ParticleM(_src),
   pid(_src.pid),
+  status(_src.status),
   frixIso(_src.frixIso)
 {
 }
@@ -646,6 +657,7 @@ simpletree::Parton::operator=(Parton const& _rhs)
   ParticleM::operator=(_rhs);
 
   pid = _rhs.pid;
+  status = _rhs.status;
   frixIso = _rhs.frixIso;
   return *this;
 }

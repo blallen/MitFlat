@@ -192,20 +192,20 @@ photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     IsFilterMode = False,
     InputName = baselinePhotons.GetOutputName(),
     OutputName = 'PhotonLooseId',
-    IdType = mithep.PhotonTools.kSummer15Loose,
-    IsoType = mithep.PhotonTools.kSummer15LooseIso
+    IdType = mithep.PhotonTools.kSpring15Loose50ns,
+    IsoType = mithep.PhotonTools.kSpring15Loose50nsIso
 )
 
 photonMediumId = photonLooseId.clone('PhotonMediumId',
     OutputName = 'PhotonMediumId',
-    IdType = mithep.PhotonTools.kSummer15Medium,
-    IsoType = mithep.PhotonTools.kSummer15MediumIso
+    IdType = mithep.PhotonTools.kSpring15Medium50ns,
+    IsoType = mithep.PhotonTools.kSpring15Medium50nsIso
 )
 
 photonTightId = photonLooseId.clone('PhotonTightId',
     OutputName = 'PhotonTightId',
-    IdType = mithep.PhotonTools.kSummer15Tight,
-    IsoType = mithep.PhotonTools.kSummer15TightIso
+    IdType = mithep.PhotonTools.kSpring15Tight50ns,
+    IsoType = mithep.PhotonTools.kSpring15Tight50nsIso
 )
 
 photonHighPtId = photonLooseId.clone('PhotonHighPtId',
@@ -217,7 +217,6 @@ photonHighPtId = photonLooseId.clone('PhotonHighPtId',
 
 ntuples = mithep.SimpleTreeMod(
     EventTreeName = 'events',
-    AllEventTreeName = 'allevents',
     RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
     JetsName = looseAK4Jets.GetOutputName(),
     PhotonsName = baselinePhotons.GetOutputName(),
