@@ -6,6 +6,7 @@
 
 #include "TString.h"
 #include "TTree.h"
+#include "TH1D.h"
 
 namespace mithep {
 
@@ -15,7 +16,6 @@ namespace mithep {
     ~SimpleTreeMod() {}
 
     void SetEventTreeName(char const* n) { fEventTreeName = n; }
-    void SetAllEventTreeName(char const* n) { fAllEventTreeName = n; }
     void SetRhoAlgo(UInt_t a) { fRhoAlgo = a; }
     void SetJetsName(char const* n) { fJetsName = n; }
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
@@ -30,37 +30,34 @@ namespace mithep {
     void SetLoosePhotonName(char const* n) { fLoosePhotonName = n; }
     void SetMediumPhotonName(char const* n) { fMediumPhotonName = n; }
     void SetTightPhotonName(char const* n) { fTightPhotonName = n; }
+    void SetHighPtPhotonName(char const* n) { fHighPtPhotonName = n; }
     void SetRawMetName(char const* n) { fRawMetName = n; }
     void SetT1MetName(char const* n) { fT1MetName = n; }
-    void SetT1NoCHSMetName(char const* n) { fT1NoCHSMetName = n; }
-    void SetEta30MetName(char const* n) { fEta30MetName = n; }
-    void SetEta30T1MetName(char const* n) { fEta30T1MetName = n; }
-    void SetEta30T1NoCHSMetName(char const* n) { fEta30T1NoCHSMetName = n; }
-    void SetNHScaledMetName(char const* n) { fNHScaledMetName = n; }
-    void SetCHMetName(char const* n) { fCHMetName = n; }
-    void SetNHMetName(char const* n) { fNHMetName = n; }
-    void SetNEMetName(char const* n) { fNEMetName = n; }
-    void SetCHGt30MetName(char const* n) { fCHGt30MetName = n; }
-    void SetNHGt30MetName(char const* n) { fNHGt30MetName = n; }
-    void SetNEGt30MetName(char const* n) { fNEGt30MetName = n; }
+    void SetGenMetName(char const* n) { fGenMetName = n; }
+    void SetGenJetsName(char const* n) { fGenJetsName = n; }
     void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
+    void AddPdfReweightGroup(char const* n) { fPdfReweightGroupNames.push_back(n); }
+    void AddPdfReweightId(UInt_t id) { fPdfReweightGroupIds.push_back(id); }
     void SetIsMC(Bool_t k) { fIsMC = k; }
 
     void SetCondition(BaseMod* m) { fCondition = m; }
+    void SetOutputName(char const* p) { fOutputName = p; }
+
+    void SetDebug(Bool_t d) { fDebug = d; }
 
   protected:
     void Process() override;
     void SlaveBegin() override;
+    void SlaveTerminate() override;
     void BeginRun() override;
 
     // output
+    TString fOutputName{"simpletree.root"};
     TString fEventTreeName{"events"};
-    TString fAllEventTreeName{"all"};
     TTree* fEventTree{0};
-    TTree* fAllEventTree{0};
+    TH1D* fEventCounter{0};
     simpletree::Event fEvent;
-    simpletree::Weight fAllEvent;
 
     // input
     UInt_t fRhoAlgo{0};
@@ -77,23 +74,20 @@ namespace mithep {
     TString fLoosePhotonName{"LoosePhotons"};
     TString fMediumPhotonName{"MediumPhotons"};
     TString fTightPhotonName{"TightPhotons"};
+    TString fHighPtPhotonName{"HighPtPhotons"};
     TString fRawMetName{"PFMet"};
     TString fT1MetName{""};
-    TString fT1NoCHSMetName{""};
-    TString fEta30MetName{""};
-    TString fEta30T1MetName{""};
-    TString fEta30T1NoCHSMetName{""};
-    TString fNHScaledMetName{""};
-    TString fCHMetName{""};
-    TString fNHMetName{""};
-    TString fNEMetName{""};
-    TString fCHGt30MetName{""};
-    TString fNHGt30MetName{""};
-    TString fNEGt30MetName{""};
+    TString fGenMetName{""};
+    TString fGenJetsName{""};
     std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};
     TString fTriggerPathName[simpletree::nHLTPaths]{};
+    std::vector<TString> fPdfReweightGroupNames{};
+    std::vector<UInt_t> fPdfReweightGroupIds{};
+    std::vector<unsigned> fPdfReweightIds{};
 
     Bool_t fIsMC{kTRUE};
+
+    Bool_t fDebug{kFALSE};
 
     BaseMod* fCondition{0};
 

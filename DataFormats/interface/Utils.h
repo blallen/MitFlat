@@ -10,6 +10,20 @@ class TTree;
 
 namespace flatutils {
 
+  template<class T>
+  void
+  shiftAddr(T*& addr, Int_t shift)
+  {
+    reinterpret_cast<char*&>(addr) += shift;
+  }
+
+  template<class T>
+  void
+  shiftAddr(T const*& addr, Int_t shift)
+  {
+    reinterpret_cast<char const*&>(addr) += shift;
+  }
+
   template<class C>
   class const_iterator;
 

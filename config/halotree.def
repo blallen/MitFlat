@@ -1,0 +1,55 @@
+#include "Math/GenVector/LorentzVector.h"
+#include "Math/GenVector/PtEtaPhiM4D.h"
+#include "TVector2.h"
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
+
+[Met:SINGLE]
+met/F
+phi/F
+sumEt/F
+TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+
+[Photon:MAX=32]
+pt/F
+eta/F
+phi/F
+chIso/F
+nhIso/F
+phIso/F
+sieie/F
+hOverE/F
+seedTime/F
+pixelVeto/O
+loose/O
+medium/O
+tight/O
+isEB/O
+virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+bool passCHIso(UInt_t wp) const { return chIso < (isEB ? chIsoCuts[0][wp] : chIsoCuts[1][wp]); }
+bool passNHIso(UInt_t wp) const { return nhIso < (isEB ? nhIsoCuts[0][wp] : nhIsoCuts[1][wp]); }
+bool passPhIso(UInt_t wp) const { return phIso < (isEB ? phIsoCuts[0][wp] : phIsoCuts[1][wp]); }
+bool passSieie(UInt_t wp) const { return sieie < (isEB ? sieieCuts[0][wp] : sieieCuts[1][wp]); }
+bool passHOverE(UInt_t wp) const { return hOverE < (isEB ? hOverECuts[0][wp] : hOverECuts[1][wp]); }
+static double const chIsoCuts[2][3]{{2.67, 1.79, 1.66}, {1.79, 1.09, 1.04}};
+static double const nhIsoCuts[2][3]{{7.23, 0.16, 0.14}, {8.89, 4.31, 3.89}};
+static double const phIsoCuts[2][3]{{2.11, 1.9, 1.4}, {3.09, 1.9, 1.4}};
+static double const sieieCuts[2][3]{{0.0107, 0.01, 0.01}, {0.0272, 0.0267, 0.0265}};
+static double const hOverECuts[2][3]{{0.028, 0.012, 0.01}, {0.093, 0.023, 0.015}};
+
+[Muon:MAX=32]
+pt/F
+eta/F
+phi/F
+
+[MIP:SINGLE]
+energy/F
+phi/F
+r/F
+nclus/s
+
+{Event}
+photons/PhotonCollection
+met/Met
+muons/MuonCollection
+mip/MIP
