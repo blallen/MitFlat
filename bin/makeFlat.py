@@ -239,9 +239,10 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
 
         if len(defs[obj].statics) != 0:
             for st in defs[obj].statics:
-                if not st.endswith(';'):
-                    st += ';'
-                header.write('\n    constexpr ' + st)
+                decl = st[:st.find('{')]
+                if not decl.endswith(';'):
+                    decl += ';'
+                header.write('\n    ' + decl)
 
             header.write('\n')
 
@@ -503,6 +504,21 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
         src.write('\n')
         src.write('  return *this;\n')
         src.write('}\n\n')
+
+        if len(defs[obj].statics) != 0:
+            for st in defs[obj].statics:
+                decl = st[:st.find('{')].replace('static ', '').strip()
+                words = decl.split()
+                dfn = ' '.join(words[:-1])
+                dfn += ' ' + namespace + '::' + obj + '::' + words[-1]
+                dfn += st[st.find('{'):]
+                if not dfn.endswith(';'):
+                    dfn += ';'
+
+                src.write(dfn + '\n')
+
+            src.write('\n')
+
 
 # Tree source
 with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
