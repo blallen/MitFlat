@@ -185,7 +185,8 @@ baselinePhotons = mithep.PhotonIdMod('BaselinePhotons',
     IdType = mithep.PhotonTools.kNoId,
     IsoType = mithep.PhotonTools.kNoIso,
     PtMin = 30.,
-    EtaMax = 3.
+    EtaMax = 3.,
+    MinOutput = 1
 )
 
 photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
@@ -304,6 +305,7 @@ else:
 
 
 recoChain += [
+    baselinePhotons, # skim >= 1 photon with pT > 30
     separatePileUpMod,
     baselineElectrons,
     looseElectronId,
@@ -312,7 +314,6 @@ recoChain += [
     tightMuonId,
     looseTaus,
     metCorrection,
-    baselinePhotons,
     photonLooseId,
     photonMediumId,
     photonTightId,
