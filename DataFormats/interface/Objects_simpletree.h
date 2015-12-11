@@ -126,6 +126,10 @@ namespace simpletree {
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
       Float_t genIso[NMAX]{};
+      Float_t mipEnergy[NMAX]{};
+      Float_t mipChi2[NMAX]{};
+      Float_t time[NMAX]{};
+      Float_t timeSpan[NMAX]{};
       Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
@@ -163,6 +167,10 @@ namespace simpletree {
     Float_t& sieie;
     Float_t& hOverE;
     Float_t& genIso;
+    Float_t& mipEnergy;
+    Float_t& mipChi2;
+    Float_t& time;
+    Float_t& timeSpan;
     Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;

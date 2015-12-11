@@ -46,6 +46,10 @@ phIso/F
 sieie/F
 hOverE/F
 genIso/F
+mipEnergy/F
+mipChi2/F
+time/F
+timeSpan/F
 matchedGen/I
 isEB/O
 pixelVeto/O

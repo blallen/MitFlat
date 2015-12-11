@@ -346,11 +346,13 @@ mithep::SimpleTreeMod::Process()
       if (inPhoton.Pt() < 10.)
         continue;
 
+      auto& superCluster(*inPhoton.SCluster());
+
       auto& outPhoton(fEvent.photons[nP]);
 
       double chIso, nhIso, phIso;
       IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
-      double scEta(inPhoton.SCluster()->AbsEta());
+      double scEta(superCluster.AbsEta());
 
       outPhoton.isEB = (scEta < mithep::gkPhoEBEtaMax);
 
@@ -369,10 +371,16 @@ mithep::SimpleTreeMod::Process()
         outPhoton.phIso -= 0.0041 * inPhoton.Pt();
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
+
+      outPhoton.mipEnergy = inPhoton.MipTotEnergy();
+      outPhoton.mipChi2 = inPhoton.MipChi2();
+      outPhoton.time = superCluster.SeedTime();
+      outPhoton.timeSpan = superCluster.LeadTimeSpan();
+
       outPhoton.pixelVeto = !inPhoton.HasPixelSeed();
       outPhoton.electronVeto = true;
       for (unsigned iE(0); iE != electrons->GetEntries(); ++iE) {
-        if (electrons->At(iE)->SCluster() == inPhoton.SCluster()) {
+        if (electrons->At(iE)->SCluster() == &superCluster) {
           outPhoton.electronVeto = false;
           break;
         }
