@@ -1,13 +1,14 @@
-#include "MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
-#include "NeroProducer/Core/interface/BareEvent.hpp"
-#include "NeroProducer/Core/interface/BareJets.hpp"
-#include "NeroProducer/Core/interface/BareMet.hpp"
-#include "NeroProducer/Core/interface/BarePhotons.hpp"
-#include "NeroProducer/Core/interface/BareLeptons.hpp"
-#include "NeroProducer/Core/interface/BareTaus.hpp"
-#include "NeroProducer/Core/interface/BareMonteCarlo.hpp"
-#include "NeroProducer/Core/interface/BareTrigger.hpp"
-#include "NeroProducer/Core/interface/BareVertex.hpp"
+#include "TreeEntries_simpletree.h"
+
+#include "BareEvent.hpp"
+#include "BareJets.hpp"
+#include "BareMet.hpp"
+#include "BarePhotons.hpp"
+#include "BareLeptons.hpp"
+#include "BareTaus.hpp"
+#include "BareMonteCarlo.hpp"
+#include "BareTrigger.hpp"
+#include "BareVertex.hpp"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -183,6 +184,7 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
     p4ToParticle(inTaus_, iT, tau);
     tau.combIso = inTaus_.iso->at(iT);
+    tau.decayMode = (inTaus_.selBits->at(iT) & BareTaus::TauDecayModeFinding) != 0;
   }
 
   event_.rawMet.sumEt = inMet_.sumEtRaw;
