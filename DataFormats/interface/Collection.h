@@ -36,6 +36,9 @@ namespace flatutils {
     Char_t* array_{0};
   };
 
+  typedef BaseCollection<kTRUE> StaticCollection;
+  typedef BaseCollection<kFALSE> DynamicCollection;
+
   template<class T, class B>
   class Collection : public B {
   public:

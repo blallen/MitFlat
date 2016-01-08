@@ -1,4 +1,4 @@
-#include "MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
+#include "../interface/TreeEntries_simpletree.h"
 #include "TTree.h"
 #include "TFile.h"
 #include "TDirectory.h"

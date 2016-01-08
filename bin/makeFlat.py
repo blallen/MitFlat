@@ -39,11 +39,9 @@ def branchType(code):
 
 argParser = ArgumentParser(description = 'Generate C++ code for a flat tree')
 argParser.add_argument('config', metavar = 'CONFIG')
-argParser.add_argument('-p', '--package', metavar = 'DIR', default = 'MitFlat/DataFormats')
+argParser.add_argument('-p', '--package', metavar = 'DIR', default = os.environ['CMSSW_BASE'] + '/src/MitFlat/DataFormats')
 
 args = argParser.parse_args()
-
-FULLPATH = os.environ['CMSSW_BASE'] + '/src/' + args.package
 
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
 brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[[0-9]+\\])/(.+)$')
@@ -185,22 +183,28 @@ for obj in objs:
 colObjs = filter(lambda x: sizes[x] != 0, objs)
 singleObjs = filter(lambda x: sizes[x] == 0, objs)
 
-if not os.path.isdir(FULLPATH + '/interface'):
-    os.makedirs(FULLPATH + '/interface')
-if not os.path.isdir(FULLPATH + '/src'):
-    os.makedirs(FULLPATH + '/src')
-if not os.path.exists(FULLPATH + '/BuildFile.xml'):
-    with open(FULLPATH + '/BuildFile.xml', 'w') as buildFile:
+if not os.path.isdir(args.package + '/interface'):
+    os.makedirs(args.package + '/interface')
+if not os.path.isdir(args.package + '/src'):
+    os.makedirs(args.package + '/src')
+
+isCMSSW = False
+if os.path.exists(args.package + '../../../.SCRAM/Environment'):
+    with open(args.package + '../../../.SCRAM/Environment') as environment:
+        isCMSSW = 'CMSSW' in environment.readline()
+
+if isCMSSW and not os.path.exists(args.package + '/BuildFile.xml'):
+    with open(args.package + '/BuildFile.xml', 'w') as buildFile:
         buildFile.write('<use name="root"/>\n')
         buildFile.write('<export>\n')
         buildFile.write('  <lib name="1"/>\n')
         buildFile.write('</export>\n')
 
 # Objects header
-with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
+with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as header:
     header.write('#ifndef Objects_' + namespace + '_h\n')
     header.write('#define Objects_' + namespace + '_h\n')
-    header.write('#include "MitFlat/DataFormats/interface/Utils.h"\n')
+    header.write('#include "Utils.h"\n')
     for inc in includes:
         header.write(inc + '\n')
 
@@ -315,11 +319,11 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
     header.write('#endif\n')
 
 # Tree header
-with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as header:
+with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as header:
     header.write('#ifndef TreeEntries_' + namespace + '_h\n')
     header.write('#define TreeEntries_' + namespace + '_h\n')
-    header.write('#include "MitFlat/DataFormats/interface/Collection.h"\n')
-    header.write('#include "' + args.package + '/interface/Objects_' + namespace + '.h"\n')
+    header.write('#include "Collection.h"\n')
+    header.write('#include "Objects_' + namespace + '.h"\n')
 
     header.write('\nnamespace ' + namespace + ' {\n')
 
@@ -375,8 +379,8 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
     header.write('\n#endif\n')
 
 # Objects source
-with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
-    src.write('#include "' + args.package + '/interface/Objects_' + namespace + '.h"\n')
+with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
+    src.write('#include "../interface/Objects_' + namespace + '.h"\n')
 
     src.write('#include "TTree.h"\n\n')
 
@@ -521,8 +525,8 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
 
 # Tree source
-with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
-    src.write('#include "' + args.package + '/interface/TreeEntries_' + namespace + '.h"\n')
+with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
+    src.write('#include "../interface/TreeEntries_' + namespace + '.h"\n')
     src.write('#include "TTree.h"\n')
     src.write('#include "TFile.h"\n')
     src.write('#include "TDirectory.h"\n\n')

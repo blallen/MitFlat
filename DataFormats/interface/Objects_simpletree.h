@@ -1,6 +1,6 @@
 #ifndef Objects_simpletree_h
 #define Objects_simpletree_h
-#include "MitFlat/DataFormats/interface/Utils.h"
+#include "Utils.h"
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
