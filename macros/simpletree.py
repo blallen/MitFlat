@@ -85,7 +85,7 @@ if run == 2:
 ################################
 
 jetCorrection = mithep.JetCorrectionMod('JetCorrection',
-    InputName = switchRun('AKt4PFJetsCHS', 'AKt5PFJetsCHS'),
+    InputName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
     CorrectedJetsName = 'CorrectedJets',
     RhoAlgo = rhoAlgo
 )
