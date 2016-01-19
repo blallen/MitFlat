@@ -40,6 +40,7 @@ def branchType(code):
 argParser = ArgumentParser(description = 'Generate C++ code for a flat tree')
 argParser.add_argument('config', metavar = 'CONFIG')
 argParser.add_argument('-p', '--package', metavar = 'DIR', default = os.environ['CMSSW_BASE'] + '/src/MitFlat/DataFormats')
+argParser.add_argument('-L', '--linkdef', action = 'store_true', dest = 'makeLinkdef')
 
 args = argParser.parse_args()
 
@@ -605,3 +606,41 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('  tree->ResetBranchAddresses();\n')
         src.write('  return tree;\n')
         src.write('}\n\n')
+
+if args.makeLinkdef:
+    with open(args.package + '/interface/' + namespace + '_LinkDef.h', 'w') as linkdef:
+        linkdef.write('#include "TreeEntries_' + namespace + '.h"\n\n')
+    
+        linkdef.write('#ifdef __CLING__\n')
+        linkdef.write('#pragma link off all globals;\n')
+        linkdef.write('#pragma link off all classes;\n')
+        linkdef.write('#pragma link off all functions;\n')
+        linkdef.write('#pragma link C++ nestedclass;\n')
+        linkdef.write('#pragma link C++ nestedtypedef;\n')
+        linkdef.write('#pragma link C++ namespace flatutils;\n')
+        linkdef.write('#pragma link C++ namespace ' + namespace + ';\n\n')
+
+        for name, items in enums:
+            linkdef.write('#pragma link C++ enum ' + namespace + '::' + name + ';\n')
+
+        for obj in objs:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
+    
+        for obj in objs:
+            if obj in singleObjs:
+                continue
+
+            if obj in inheritance:
+                linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
+            else:
+                if obj in fixedSize:
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::BaseCollection<kTRUE>>;\n')
+                else:
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::BaseCollection<kFALSE>>;\n')
+
+            linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
+    
+        for tree in trees:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
+
+        linkdef.write('#endif\n')
