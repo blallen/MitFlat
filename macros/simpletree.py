@@ -73,12 +73,21 @@ if run == 2:
         ('PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight', [])
     ]
     
-    hltMod = mithep.HLTMod(
-        AbortIfNotAccepted = analysis.isRealData,
-        ExportTrigObjects = False
-    )
-    for path, filters in hltPaths:
-        hltMod.AddTrigger('HLT_' + path + '_v*')
+else:
+    hltPaths = [
+        ('DiPFJet40_PFMETnoMu65_MJJ600VBF_LeadingJets', []),
+        ('DiPFJet40_PFMETnoMu65_MJJ800VBF_AllJets', []),
+        ('IsoMu24_eta2p1', []),
+        ('IsoMu24', []),
+        ('Ele27_WP80', [])
+    ]
+
+hltMod = mithep.HLTMod(
+    AbortIfNotAccepted = analysis.isRealData,
+    ExportTrigObjects = False
+)
+for path, filters in hltPaths:
+    hltMod.AddTrigger('HLT_' + path + '_v*')
 
 ################################
 ### JET/MET ID & CORRECTIONS ###
@@ -274,15 +283,12 @@ ntuples = mithep.SimpleTreeMod(
     IsMC = not analysis.isRealData
 )
 
-if run == 2:
-    for iP, (path, filters) in enumerate(hltPaths):
-        for f in filters:
-            ntuples.AddTriggerFilterName(iP, f)
-        ntuples.SetTriggerPathName(iP, path)
+for iP, (path, filters) in enumerate(hltPaths):
+    for f in filters:
+        ntuples.AddTriggerFilterName(iP, f)
+    ntuples.SetTriggerPathName(iP, path)
 
-    recoChain = [hltMod]
-else:
-    recoChain = []
+recoChain = [hltMod]
 
 recoChain.append(goodPVFilterMod)
 
