@@ -71,7 +71,7 @@ namespace simpletree {
     virtual ~ParticleM() {}
     ParticleM& operator=(ParticleM const&);
 
-    LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
   public:
     Float_t& mass;
@@ -100,7 +100,7 @@ namespace simpletree {
     virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
 
-    TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+    virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
   protected:
     TString name_;
@@ -109,6 +109,27 @@ namespace simpletree {
     Float_t met{};
     Float_t phi{};
     Float_t sumEt{};
+  };
+
+  class CorrectedMet : public Met {
+  public:
+    CorrectedMet(TString const& name) : Met(name) {}
+    CorrectedMet(CorrectedMet const&);
+    virtual ~CorrectedMet() {}
+    CorrectedMet& operator=(CorrectedMet const&);
+
+    void setName(TString const& name) { name_ = name; }
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+
+    virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
+
+  public:
+    Float_t metCorrUp{};
+    Float_t phiCorrUp{};
+    Float_t metCorrDown{};
+    Float_t phiCorrDown{};
   };
 
   class Photon : public Particle {
@@ -128,6 +149,18 @@ namespace simpletree {
       Float_t genIso[NMAX]{};
       Float_t mipEnergy[NMAX]{};
       Float_t mipChi2[NMAX]{};
+      Float_t mipSlope[NMAX]{};
+      Float_t mipIntercept[NMAX]{};
+      UShort_t mipNhitCone[NMAX]{};
+      Bool_t mipIsHalo[NMAX]{};
+      Float_t e15[NMAX]{};
+      Float_t e25[NMAX]{};
+      Float_t e33[NMAX]{};
+      Float_t e55[NMAX]{};
+      Float_t r9[NMAX]{};
+      Float_t etaWidth[NMAX]{};
+      Float_t phiWidth[NMAX]{};
+      Float_t s4[NMAX]{};
       Float_t time[NMAX]{};
       Float_t timeSpan[NMAX]{};
       Int_t matchedGen[NMAX]{};
@@ -169,6 +202,18 @@ namespace simpletree {
     Float_t& genIso;
     Float_t& mipEnergy;
     Float_t& mipChi2;
+    Float_t& mipSlope;
+    Float_t& mipIntercept;
+    UShort_t& mipNhitCone;
+    Bool_t& mipIsHalo;
+    Float_t& e15;
+    Float_t& e25;
+    Float_t& e33;
+    Float_t& e55;
+    Float_t& r9;
+    Float_t& etaWidth;
+    Float_t& phiWidth;
+    Float_t& s4;
     Float_t& time;
     Float_t& timeSpan;
     Int_t& matchedGen;
@@ -226,6 +271,7 @@ namespace simpletree {
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
+      Bool_t veto[NMAX]{};
       Bool_t matchHLT23Loose[NMAX]{};
       Bool_t matchHLT27Loose[NMAX]{};
       Bool_t matchHLT120Ph[NMAX]{};
@@ -256,6 +302,7 @@ namespace simpletree {
     Float_t& sieie;
     Float_t& hOverE;
     Bool_t& isEB;
+    Bool_t& veto;
     Bool_t& matchHLT23Loose;
     Bool_t& matchHLT27Loose;
     Bool_t& matchHLT120Ph;

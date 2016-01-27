@@ -5,19 +5,19 @@
 
 namespace simpletree {
 
-  typedef flatutils::Collection<simpletree::Particle, flatutils::DynamicCollection> ParticleCollection;
-  typedef flatutils::Collection<simpletree::ParticleM, simpletree::ParticleCollection> ParticleMCollection;
-  typedef flatutils::Collection<simpletree::Jet, simpletree::ParticleMCollection> JetCollection;
-  typedef flatutils::Collection<simpletree::Photon, simpletree::ParticleCollection> PhotonCollection;
-  typedef flatutils::Collection<simpletree::Lepton, simpletree::ParticleMCollection> LeptonCollection;
-  typedef flatutils::Collection<simpletree::Electron, simpletree::LeptonCollection> ElectronCollection;
-  typedef flatutils::Collection<simpletree::Muon, simpletree::LeptonCollection> MuonCollection;
-  typedef flatutils::Collection<simpletree::Tau, simpletree::ParticleMCollection> TauCollection;
-  typedef flatutils::Collection<simpletree::Parton, simpletree::ParticleMCollection> PartonCollection;
-  typedef flatutils::Collection<simpletree::MCParticle, simpletree::ParticleMCollection> MCParticleCollection;
-  typedef flatutils::Collection<simpletree::GenJet, simpletree::JetCollection> GenJetCollection;
-  typedef flatutils::Collection<simpletree::HLT, flatutils::StaticCollection> HLTCollection;
-  typedef flatutils::Collection<simpletree::ReweightScale, flatutils::DynamicCollection> ReweightScaleCollection;
+  typedef flatutils::Collection<Particle, flatutils::BaseCollection<kFALSE>> ParticleCollection;
+  typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
+  typedef flatutils::Collection<Jet, ParticleMCollection> JetCollection;
+  typedef flatutils::Collection<Photon, ParticleCollection> PhotonCollection;
+  typedef flatutils::Collection<Lepton, ParticleMCollection> LeptonCollection;
+  typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
+  typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
+  typedef flatutils::Collection<Tau, ParticleMCollection> TauCollection;
+  typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
+  typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
+  typedef flatutils::Collection<GenJet, JetCollection> GenJetCollection;
+  typedef flatutils::Collection<HLT, flatutils::BaseCollection<kTRUE>> HLTCollection;
+  typedef flatutils::Collection<ReweightScale, flatutils::BaseCollection<kFALSE>> ReweightScaleCollection;
 
   class Event {
   public:
@@ -36,7 +36,7 @@ namespace simpletree {
     MuonCollection muons = MuonCollection("muons");
     TauCollection taus = TauCollection("taus");
     Met rawMet = Met("rawMet");
-    Met t1Met = Met("t1Met");
+    CorrectedMet t1Met = CorrectedMet("t1Met");
     Met genMet = Met("genMet");
     HLTCollection hlt = HLTCollection("hlt");
     ReweightScaleCollection reweight = ReweightScaleCollection("reweight");

@@ -13,9 +13,14 @@ if 'run' in analysis.custom:
 else:
     run = 2
 
+if 'bx' in analysis.custom:
+    bx = analysis.custom['bx']
+else:
+    bx = '25ns'
+
 def switchBX(case25, case50):
-    global analysis
-    return case25 if analysis.custom['bx'] == '25ns' else case50
+    global bx
+    return case25 if bx == '25ns' else case50
 
 def switchRun(case2, case1):
     global run
@@ -69,8 +74,8 @@ if run == 2:
         ('IsoMu24_eta2p1', ['hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09']),
         ('IsoMu27', ['hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09']),
         ('PFMET170_NoiseCleaned', []),
-        ('PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight', []),
-        ('PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight', [])
+        ('PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and bx == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight', []),
+        ('PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and bx == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight', [])
     ]
     
 else:
@@ -132,10 +137,25 @@ metCorrection.ApplyType1(True)
 metCorrection.ApplyShift(False)
 metCorrection.IsData(analysis.isRealData)
 
+metCorrectionJESUp = metCorrection.clone('MetCorrectionJESUp',
+    OutputName = 'PFType1CorrectedMetJESUp',
+    JESUncertaintySigma = 1.
+)
+metCorrectionJESDown = metCorrection.clone('MetCorrectionJESDown',
+    OutputName = 'PFType1CorrectedMetJESDown',
+    JESUncertaintySigma = -1.
+)
+
 for level in jecLevels:
     repl = {'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
     jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
     metCorrection.AddJetCorrectionFromFile(jecPattern.format(**repl))
+    metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
+    metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
+
+repl = {'level': 'Uncertainty', 'jettype': 'AK4PFchs'}
+metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
+metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
 
 ###########################
 ### LEPTON & PHOTON IDS ###
@@ -161,12 +181,10 @@ baselineElectrons = mithep.ElectronIdMod('BaselineElectrons',
     ConversionsName = 'Conversions'    
 )
 
-looseElectronId = mithep.ElectronIdMod('LooseElectronId',
+vetoElectronId = mithep.ElectronIdMod('VetoElectronId',
     IsFilterMode = False,
     InputName = baselineElectrons.GetOutputName(),
-    OutputName = 'LooseElectronId',
-#    IdType = switchRun(mithep.ElectronTools.kSummer15Veto, mithep.ElectronTools.kLoose),
-#    IsoType = switchRun(mithep.ElectronTools.kSummer15VetoIso, mithep.ElectronTools.kPFIsoRhoCorrected),
+    OutputName = 'VetoElectronId',
     IdType = mithep.ElectronTools.kSummer15Veto,
     IsoType = mithep.ElectronTools.kSummer15VetoIso,
     ApplyD0Cut = True,
@@ -175,10 +193,14 @@ looseElectronId = mithep.ElectronIdMod('LooseElectronId',
     ApplyNExpectedHitsInnerCut = True
 )
 
-tightElectronId = looseElectronId.clone('TightElectronId',
+looseElectronId = vetoElectronId.clone('LooseElectronId',
+    OutputName = 'LooseElectronId',
+    IdType = mithep.ElectronTools.kSummer15Loose,
+    IsoType = mithep.ElectronTools.kSummer15LooseIso
+)
+
+tightElectronId = vetoElectronId.clone('TightElectronId',
     OutputName = 'TightElectronId',
-#    IdType = switchRun(mithep.ElectronTools.kSummer15Tight, mithep.ElectronTools.kTight),
-#    IsoType = switchRun(mithep.ElectronTools.kSummer15TightIso, mithep.ElectronTools.kPFIsoRhoCorrected)
     IdType = mithep.ElectronTools.kSummer15Tight,
     IsoType = mithep.ElectronTools.kSummer15TightIso
 )
@@ -232,24 +254,18 @@ photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     IsFilterMode = False,
     InputName = baselinePhotons.GetOutputName(),
     OutputName = 'PhotonLooseId',
-#    IdType = switchRun(mithep.PhotonTools.kSpring15Loose50ns, mithep.PhotonTools.kLooseEM),
-#    IsoType = switchRun(mithep.PhotonTools.kSpring15Loose50nsIso, mithep.PhotonTools.kPFPUCorrected)
     IdType = mithep.PhotonTools.kSpring15Loose50ns,
     IsoType = mithep.PhotonTools.kSpring15Loose50nsIso
 )
 
 photonMediumId = photonLooseId.clone('PhotonMediumId',
     OutputName = 'PhotonMediumId',
-#    IdType = switchRun(mithep.PhotonTools.kSpring15Medium50ns, mithep.PhotonTools.kEgammaMedium),
-#    IsoType = switchRun(mithep.PhotonTools.kSpring15Medium50nsIso, mithep.PhotonTools.kPFPUCorrected)
     IdType = mithep.PhotonTools.kSpring15Medium50ns,
     IsoType = mithep.PhotonTools.kSpring15Medium50nsIso
 )
 
 photonTightId = photonLooseId.clone('PhotonTightId',
     OutputName = 'PhotonTightId',
-#    IdType = switchRun(mithep.PhotonTools.kSpring15Tight50ns, mithep.PhotonTools.kTight),
-#    IsoType = switchRun(mithep.PhotonTools.kSpring15Tight50nsIso, mithep.PhotonTools.kPFPUCorrected)
     IdType = mithep.PhotonTools.kSpring15Tight50ns,
     IsoType = mithep.PhotonTools.kSpring15Tight50nsIso
 )
@@ -267,6 +283,7 @@ ntuples = mithep.SimpleTreeMod(
     JetsName = looseJets.GetOutputName(),
     PhotonsName = baselinePhotons.GetOutputName(),
     ElectronsName = baselineElectrons.GetOutputName(),
+    VetoElectronsName = vetoElectronId.GetOutputName(),
     LooseElectronsName = looseElectronId.GetOutputName(),
     TightElectronsName = tightElectronId.GetOutputName(),
     MuonsName = looseMuons.GetOutputName(),
@@ -280,6 +297,8 @@ ntuples = mithep.SimpleTreeMod(
     HighPtPhotonName = photonHighPtId.GetOutputName(),
     RawMetName = 'PFMet',
     T1MetName = metCorrection.GetOutputName(),
+    CorrUpMetName = metCorrectionJESUp.GetOutputName(),
+    CorrDownMetName = metCorrectionJESDown.GetOutputName(),
     IsMC = not analysis.isRealData
 )
 
@@ -294,10 +313,10 @@ recoChain.append(goodPVFilterMod)
 
 if analysis.isRealData:
     badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
-        EEBadScFilter = True,
-        HBHENoiseFilter = True,
         FillHist = True
     )
+    badEventsFilterMod.SetFilter('HBHENoiseFilter')
+    badEventsFilterMod.SetFilter('EEBadScFilter')
 
     recoChain.append(badEventsFilterMod)
 
@@ -352,12 +371,15 @@ recoChain += [
     baselinePhotons, # skim >= 1 photon with pT > 30
     separatePileUpMod,
     baselineElectrons,
+    vetoElectronId,
     looseElectronId,
     tightElectronId,
     looseMuons,
     tightMuonId,
     looseTaus,
     metCorrection,
+    metCorrectionJESUp,
+    metCorrectionJESDown,
     photonLooseId,
     photonMediumId,
     photonTightId,
@@ -366,8 +388,8 @@ recoChain += [
     looseJets
 ]
 
-#baselinePhotons.SetMinOutput(1)
-looseJets.SetMinOutput(2)
+baselinePhotons.SetMinOutput(1)
+#looseJets.SetMinOutput(2)
 ntuples.SetCondition(recoChain[-1])
 
 analysis.setSequence(Chain(recoChain) + ntuples)

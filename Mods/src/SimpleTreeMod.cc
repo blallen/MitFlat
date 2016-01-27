@@ -325,6 +325,28 @@ mithep::SimpleTreeMod::Process()
     outMet.sumEt = inMet.SumEt();
   }
 
+  if (fCorrUpMetName.Length() != 0) {
+    auto* mets = GetObject<mithep::MetCol>(fCorrUpMetName);
+    if (!mets) {
+      SendError(kAbortAnalysis, "Process", fCorrUpMetName);
+      return;
+    }
+    auto& inMet(*mets->At(0));
+    fEvent.t1Met.metCorrUp = inMet.Pt();
+    fEvent.t1Met.phiCorrUp = inMet.Phi();
+  }
+
+  if (fCorrDownMetName.Length() != 0) {
+    auto* mets = GetObject<mithep::MetCol>(fCorrDownMetName);
+    if (!mets) {
+      SendError(kAbortAnalysis, "Process", fCorrDownMetName);
+      return;
+    }
+    auto& inMet(*mets->At(0));
+    fEvent.t1Met.metCorrDown = inMet.Pt();
+    fEvent.t1Met.phiCorrDown = inMet.Phi();
+  }
+
   if (fDebug)
     Info("Process", "Fill photons");
 
@@ -374,6 +396,18 @@ mithep::SimpleTreeMod::Process()
 
       outPhoton.mipEnergy = inPhoton.MipTotEnergy();
       outPhoton.mipChi2 = inPhoton.MipChi2();
+      outPhoton.mipSlope = inPhoton.MipSlope();
+      outPhoton.mipIntercept = inPhoton.MipIntercept();
+      outPhoton.mipNhitCone = inPhoton.MipNhitCone();
+      outPhoton.mipIsHalo = inPhoton.MipIsHalo();
+      outPhoton.e15 = inPhoton.E15();
+      outPhoton.e25 = inPhoton.E25();
+      outPhoton.e33 = inPhoton.E33();
+      outPhoton.e55 = inPhoton.E55();
+      outPhoton.r9 = inPhoton.R9();
+      outPhoton.etaWidth = inPhoton.EtaWidth();
+      outPhoton.phiWidth = inPhoton.PhiWidth();
+      outPhoton.s4 = inPhoton.S4Ratio();
       outPhoton.time = superCluster.SeedTime();
       outPhoton.timeSpan = superCluster.LeadTimeSpan();
 
@@ -561,10 +595,13 @@ mithep::SimpleTreeMod::Process()
         return;
       }
 
+      mithep::NFArrBool* vetoMask = 0;
       mithep::NFArrBool* looseMask = 0;
       auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
-      if (iC == 0)
+      if (iC == 0) {
+        vetoMask = GetObject<mithep::NFArrBool>(fVetoElectronsName);
         looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
+      }
 
       outputCollection[iC]->resize(leptons->GetEntries());
       for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
@@ -580,6 +617,7 @@ mithep::SimpleTreeMod::Process()
           auto& inElectron(static_cast<mithep::Electron&>(inLepton));
           auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
 
+          outElectron.veto = vetoMask->At(iL);
           outElectron.loose = looseMask->At(iL);
           outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
           
@@ -702,7 +740,10 @@ mithep::SimpleTreeMod::SlaveBegin()
   outputFile->cd();
 
   fEventTree = new TTree(fEventTreeName, "Events");
-  fEvent.book(*fEventTree);
+  if (fIsMC)
+    fEvent.book(*fEventTree);
+  else
+    fEvent.book(*fEventTree, {"partons", "partonFinalStates", "genJets", "genMet", "reweight"}, false);
 
   if (fIsMC)
     fEventCounter = new TH1D("counter", "", 8, 0., 8.);

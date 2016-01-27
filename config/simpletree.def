@@ -29,7 +29,7 @@ virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 
 [ParticleM:Particle]
 mass/F
-LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
 [Jet:ParticleM]
 
@@ -37,7 +37,14 @@ LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
 met/F
 phi/F
 sumEt/F
-TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+
+[CorrectedMet:Met]
+metCorrUp/F
+phiCorrUp/F
+metCorrDown/F
+phiCorrDown/F
+virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
 [Photon:Particle]
 chIso/F
@@ -48,6 +55,18 @@ hOverE/F
 genIso/F
 mipEnergy/F
 mipChi2/F
+mipSlope/F
+mipIntercept/F
+mipNhitCone/s
+mipIsHalo/O
+e15/F
+e25/F
+e33/F
+e55/F
+r9/F
+etaWidth/F
+phiWidth/F
+s4/F
 time/F
 timeSpan/F
 matchedGen/I
@@ -90,6 +109,7 @@ phIsoPh/F
 sieie/F
 hOverE/F
 isEB/O
+veto/O
 matchHLT23Loose/O
 matchHLT27Loose/O
 matchHLT120Ph/O
@@ -145,7 +165,7 @@ electrons/ElectronCollection
 muons/MuonCollection
 taus/TauCollection
 rawMet/Met
-t1Met/Met
+t1Met/CorrectedMet
 genMet/Met
 hlt/HLTCollection
 reweight/ReweightScaleCollection
