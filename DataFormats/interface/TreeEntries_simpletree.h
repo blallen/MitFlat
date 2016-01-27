@@ -36,7 +36,7 @@ namespace simpletree {
     MuonCollection muons = MuonCollection("muons");
     TauCollection taus = TauCollection("taus");
     Met rawMet = Met("rawMet");
-    Met t1Met = Met("t1Met");
+    CorrectedMet t1Met = CorrectedMet("t1Met");
     Met genMet = Met("genMet");
     HLTCollection hlt = HLTCollection("hlt");
     ReweightScaleCollection reweight = ReweightScaleCollection("reweight");

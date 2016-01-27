@@ -254,7 +254,7 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
         if obj in singleObjs:
             header.write('\n    ' + obj + '(TString const& name)')
             if obj in inheritance:
-                header.write(' : ' + inheritance(obj) + '(name)')
+                header.write(' : ' + inheritance[obj] + '(name)')
             else:
                 header.write(' : name_(name)')
             header.write(' {}')
@@ -391,7 +391,7 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
             src.write(namespace + '::' + obj + '::' + obj + '(' + obj + ' const& _src) :\n')
             if obj in inheritance:
-                src.write('  ' + inheritance(obj) + '(_src)')
+                src.write('  ' + inheritance[obj] + '(_src)')
             else:
                 src.write('  name_(_src.name_)')
             if len(defs[obj].branches) != 0:
