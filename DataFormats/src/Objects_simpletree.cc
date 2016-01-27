@@ -115,7 +115,8 @@ simpletree::Met::Met(Met const& _src) :
   name_(_src.name_),
   met(_src.met),
   phi(_src.phi),
-  sumEt(_src.sumEt)
+  sumEt(_src.sumEt),
+  dPhiJetMetMin(_src.dPhiJetMetMin)
 {
 }
 
@@ -125,6 +126,7 @@ simpletree::Met::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList c
   flatutils::setStatus(_tree, name_, "met", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "phi", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "sumEt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "dPhiJetMetMin", _status, _branches, _whitelist);
 }
 
 void
@@ -133,6 +135,7 @@ simpletree::Met::setAddress(TTree& _tree, flatutils::BranchList const& _branches
   flatutils::setStatusAndAddress(_tree, name_, "met", &met, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "phi", &phi, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "sumEt", &sumEt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "dPhiJetMetMin", &dPhiJetMetMin, _branches, _whitelist);
 }
 
 void
@@ -141,6 +144,7 @@ simpletree::Met::book(TTree& _tree, flatutils::BranchList const& _branches/* = {
   flatutils::book(_tree, name_, "met", "", 'F', &met, _branches, _whitelist);
   flatutils::book(_tree, name_, "phi", "", 'F', &phi, _branches, _whitelist);
   flatutils::book(_tree, name_, "sumEt", "", 'F', &sumEt, _branches, _whitelist);
+  flatutils::book(_tree, name_, "dPhiJetMetMin", "", 'F', &dPhiJetMetMin, _branches, _whitelist);
 }
 
 simpletree::Met&
@@ -149,6 +153,7 @@ simpletree::Met::operator=(Met const& _rhs)
   met = _rhs.met;
   phi = _rhs.phi;
   sumEt = _rhs.sumEt;
+  dPhiJetMetMin = _rhs.dPhiJetMetMin;
   return *this;
 }
 

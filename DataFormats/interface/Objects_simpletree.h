@@ -109,6 +109,7 @@ namespace simpletree {
     Float_t met{};
     Float_t phi{};
     Float_t sumEt{};
+    Float_t dPhiJetMetMin{};
   };
 
   class Photon : public Particle {

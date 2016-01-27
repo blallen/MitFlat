@@ -37,6 +37,7 @@ LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
 met/F
 phi/F
 sumEt/F
+dPhiJetMetMin/F
 TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
 [Photon:Particle]
