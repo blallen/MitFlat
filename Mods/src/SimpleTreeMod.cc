@@ -33,6 +33,7 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
+#include <functional>
 
 ClassImp(mithep::SimpleTreeMod)
 
@@ -102,8 +103,9 @@ mithep::SimpleTreeMod::Process()
   auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
   auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
   auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
-  std::vector<MCParticle*> finalState;
-  std::vector<MCParticle*> partonFinalState;
+  std::vector<mithep::MCParticle const*> finalState;
+  typedef std::pair<mithep::MCParticle const*, mithep::MCParticle const*> ParticlePair;
+  std::vector<ParticlePair> partonFinalState;
   TVector3 genVertex;
 
   auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
@@ -196,7 +198,6 @@ mithep::SimpleTreeMod::Process()
     auto&& decayVtx(mcParticles->At(0)->DecayVertex());
     genVertex.SetXYZ(decayVtx.X(), decayVtx.Y(), decayVtx.Z());
 
-    unsigned nF(0);
     for (auto* mcp : finalState) {
       auto const* mother(mcp);
       // status 23: outgoing from hardest process
@@ -210,33 +211,48 @@ mithep::SimpleTreeMod::Process()
       if (motherId < 6 || motherId == 21)
         continue;
 
+      partonFinalState.emplace_back(mcp, mother);
+    }
+
+    // highest pt first
+    auto ptOrdering([](ParticlePair const& lhs, ParticlePair const& rhs)->bool {
+        return lhs.first->Pt() > rhs.first->Pt();
+      });
+
+    std::sort(partonFinalState.begin(), partonFinalState.end(), ptOrdering);
+
+    unsigned nF(0);
+    for (auto& pp : partonFinalState) {
+      auto* mcp(pp.first);
+      auto* parton(pp.second);
+
       auto& outFS(fEvent.partonFinalStates[nF++]);
 
-      partonFinalState.push_back(mcp);
-
       fillP4_(outFS, *mcp);
-
       outFS.pid = mcp->PdgId();
 
       outFS.ancestor = -1;
       double dRMin(-1.);
 
-      if (mother->PdgId() != mcp->PdgId()) {
-        auto* daughter = mother->FindDaughter(mcp->PdgId(), true);
+      if (parton->PdgId() != mcp->PdgId()) {
+        auto* daughter = parton->FindDaughter(mcp->PdgId(), true);
         if (daughter)
-          mother = daughter;
+          parton = daughter;
       }
 
       for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
         if (mcEvent->PartonStatus(iP) != 1)
           continue;
 
-        double dR(mithep::MathUtils::DeltaR(*mother, *mcEvent->PartonMom(iP)));
+        double dR(mithep::MathUtils::DeltaR(*parton, *mcEvent->PartonMom(iP)));
         if (dRMin < 0. || dR < dRMin) {
           outFS.ancestor = partonMap[iP];
           dRMin = dR;
         }
       }
+
+      if (nF == simpletree::Particle::array_data::NMAX)
+        break;
     }
     fEvent.partonFinalStates.resize(nF);
   }
@@ -252,6 +268,9 @@ mithep::SimpleTreeMod::Process()
 
     for (unsigned iJ(0); iJ != genJets->GetEntries(); ++iJ) {
       auto& inJet(*genJets->At(iJ));
+      if (inJet.Pt() < 20.)
+        continue;
+
       auto& outJet(fEvent.genJets[iJ]);
 
       fillP4_(outJet, inJet);
@@ -327,33 +346,41 @@ mithep::SimpleTreeMod::Process()
       if (inPhoton.Pt() < 10.)
         continue;
 
+      auto& superCluster(*inPhoton.SCluster());
+
       auto& outPhoton(fEvent.photons[nP]);
 
       double chIso, nhIso, phIso;
       IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
-      double scEta(inPhoton.SCluster()->AbsEta());
+      double scEta(superCluster.AbsEta());
 
       outPhoton.isEB = (scEta < mithep::gkPhoEBEtaMax);
 
       fillP4_(outPhoton, inPhoton);
 
-      outPhoton.chIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
-      outPhoton.nhIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
+      outPhoton.chIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEASpring1550ns, PhotonTools::kPhoChargedHadron03);
+      outPhoton.nhIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEASpring1550ns, PhotonTools::kPhoNeutralHadron03);
       if (outPhoton.isEB)
-        outPhoton.nhIso -= std::exp(0.0028 * inPhoton.Pt() + 0.5408);
+        outPhoton.nhIso -= std::exp(0.0044 * inPhoton.Pt() + 0.5809);
       else
-        outPhoton.nhIso -= 0.01725 * inPhoton.Pt();
-      outPhoton.phIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, phIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoPhoton03);
+        outPhoton.nhIso -= std::exp(0.004 * inPhoton.Pt() + 0.9402);
+      outPhoton.phIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, phIso, fEvent.rho, PhotonTools::kPhoEASpring1550ns, PhotonTools::kPhoPhoton03);
       if (outPhoton.isEB)
-        outPhoton.phIso -= 0.0014 * inPhoton.Pt();
+        outPhoton.phIso -= 0.0043 * inPhoton.Pt();
       else
-        outPhoton.phIso -= 0.0091 * inPhoton.Pt();
+        outPhoton.phIso -= 0.0041 * inPhoton.Pt();
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
+
+      outPhoton.mipEnergy = inPhoton.MipTotEnergy();
+      outPhoton.mipChi2 = inPhoton.MipChi2();
+      outPhoton.time = superCluster.SeedTime();
+      outPhoton.timeSpan = superCluster.LeadTimeSpan();
+
       outPhoton.pixelVeto = !inPhoton.HasPixelSeed();
       outPhoton.electronVeto = true;
       for (unsigned iE(0); iE != electrons->GetEntries(); ++iE) {
-        if (electrons->At(iE)->SCluster() == inPhoton.SCluster()) {
+        if (electrons->At(iE)->SCluster() == &superCluster) {
           outPhoton.electronVeto = false;
           break;
         }
@@ -410,7 +437,7 @@ mithep::SimpleTreeMod::Process()
         TVector3 caloDir(caloPos.X(), caloPos.Y(), caloPos.Z());          
         caloDir -= genVertex;
 
-        mithep::MCParticle* matched(0);
+        mithep::MCParticle const* matched(0);
 
         for (unsigned iFS(0); iFS != fEvent.partonFinalStates.size(); ++iFS) {
           auto& fs(fEvent.partonFinalStates[iFS]);
@@ -425,7 +452,7 @@ mithep::SimpleTreeMod::Process()
 
           auto&& partP4(fs.p4());
           if (caloDir.DeltaR(TVector3(partP4.X(), partP4.Y(), partP4.Z())) < 0.1) {
-            matched = partonFinalState[iFS];
+            matched = partonFinalState[iFS].first;
             outPhoton.matchedGen = -22;
             break;
           }
@@ -456,6 +483,9 @@ mithep::SimpleTreeMod::Process()
 
         if (matched) {
           for (auto* part : finalState) {
+            if (part == matched)
+              continue;
+
             double dR(mithep::MathUtils::DeltaR(*part, *matched));
             if (dR < 0.3)
               outPhoton.genIso += part->Pt();
@@ -588,7 +618,7 @@ mithep::SimpleTreeMod::Process()
           outLepton.matchedGen = 0;
 
           double minDR(-1.);
-          mithep::MCParticle* matched(0);
+          mithep::MCParticle const* matched(0);
 
           for (auto* part : finalState) {
             double dR(mithep::MathUtils::DeltaR(inLepton, *part));

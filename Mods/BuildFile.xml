@@ -3,6 +3,7 @@
 <use name="MitPhysics/Utils"/>
 <use name="MitFlat/DataFormats"/>
 <use name="root"/>
+<use name="fastjet"/>
 <export>
   <lib name="1"/>
 </export>

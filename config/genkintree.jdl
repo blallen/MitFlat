@@ -1,0 +1,6 @@
+Requirements            = Arch == "X86_64" && OpSysAndVer == "SL6" && HasFileTransfer
+Notification            = Error
+Rank                    = Mips
+transfer_output_files = {fileset}.root,genkintree.root
+transfer_output_remaps = "genkintree.root = /scratch5/yiiyama/studies/genkinematics/nlglo_{fileset}.root"
+accounting_group = group_cmsuser

@@ -8,19 +8,41 @@ import os
 
 mitdata = os.environ['MIT_DATA']
 
+if 'run' in analysis.custom:
+    run = int(analysis.custom['run'])
+else:
+    run = 2
+
 def switchBX(case25, case50):
     global analysis
     return case25 if analysis.custom['bx'] == '25ns' else case50
 
-jecVersion = switchBX('25nsV6', '50nsV5')
+def switchRun(case2, case1):
+    global run
+    return case2 if run == 2 else case1
 
-if analysis.isRealData:
-    jecPattern = mitdata + '/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_DATA_{level}_{jettype}.txt'
-    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+rhoAlgo = switchRun(mithep.PileupEnergyDensity.kFixedGridFastjetAll, mithep.PileupEnergyDensity.kHighEta)
+
+if run == 2:
+    jecVersion = switchBX('25nsV6', '50nsV5')
+
+    if analysis.isRealData:
+        jecPattern = mitdata + '/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_DATA_{level}_{jettype}.txt'
+        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+    
+    else:
+        jecPattern = mitdata +'/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_MC_{level}_{jettype}.txt'
+        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
 
 else:
-    jecPattern = mitdata +'/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_MC_{level}_{jettype}.txt'
-    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+    if analysis.isRealData:
+        jecPattern = mitdata + '/JEC/Summer13_V4/Summer13_V4_DATA_{level}_{jettype}.txt'
+        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+    
+    else:
+        jecPattern = mitdata +'/JEC/Summer13_V4/Summer13_V4_MC_{level}_{jettype}.txt'
+        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+
 
 #########################################
 ### MODULES RUN WITH DEFAULT SETTINGS ###
@@ -33,22 +55,32 @@ from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
 ### EVENT FILTERS ###
 #####################
 
-# this has to be in the same order as the HLTPaths enum
-hltPaths = [
-    ('Photon120', ['hltEG120HEFilter']),
-    ('Photon135_PFMET100_JetIdCleaned', ['hltEG135HEFilter']),
-    ('Photon165_HE10', ['hltEG165HE10Filter']),
-    ('Photon175', ['hltEG175HEFilter']),
-    ('Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele22_eta2p1_WP75_Gsf', ['hltEle23WPLooseGsfTrackIsoFilter']),
-    ('Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf', ['hltEle27WPLooseGsfTrackIsoFilter']), # filter only matches data
-    ('IsoMu20', ['hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09']),
-    ('IsoTkMu20', ['hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09']),
-    ('IsoMu24_eta2p1', ['hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09']),
-    ('IsoMu27', ['hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09']),
-    ('PFMET170_NoiseCleaned', []),
-    ('PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight', []),
-    ('PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight', [])
-]
+if run == 2:
+    # this has to be in the same order as the HLTPaths enum
+    hltPaths = [
+        ('Photon120', ['hltEG120HEFilter']),
+        ('Photon135_PFMET100_JetIdCleaned', ['hltEG135HEFilter']),
+        ('Photon165_HE10', ['hltEG165HE10Filter']),
+        ('Photon175', ['hltEG175HEFilter']),
+        ('Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele22_eta2p1_WP75_Gsf', ['hltEle23WPLooseGsfTrackIsoFilter']),
+        ('Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf', ['hltEle27WPLooseGsfTrackIsoFilter']), # filter only matches data
+        ('IsoMu20', ['hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09']),
+        ('IsoTkMu20', ['hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09']),
+        ('IsoMu24_eta2p1', ['hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09']),
+        ('IsoMu27', ['hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09']),
+        ('PFMET170_NoiseCleaned', []),
+        ('PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight', []),
+        ('PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and analysis.custom['bx'] == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight', [])
+    ]
+    
+else:
+    hltPaths = [
+        ('DiPFJet40_PFMETnoMu65_MJJ600VBF_LeadingJets', []),
+        ('DiPFJet40_PFMETnoMu65_MJJ800VBF_AllJets', []),
+        ('IsoMu24_eta2p1', []),
+        ('IsoMu24', []),
+        ('Ele27_WP80', [])
+    ]
 
 hltMod = mithep.HLTMod(
     AbortIfNotAccepted = analysis.isRealData,
@@ -61,35 +93,39 @@ for path, filters in hltPaths:
 ### JET/MET ID & CORRECTIONS ###
 ################################
 
-jetCorrection = mithep.JetCorrectionMod('AK4JetCorrection',
-    InputName = 'AKt4PFJetsCHS',
+jetCorrection = mithep.JetCorrectionMod('JetCorrection',
+    InputName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
     CorrectedJetsName = 'CorrectedJets',
-    RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll
+    RhoAlgo = rhoAlgo
 )
 
-looseAK4Jets = mithep.JetIdMod('AK4JetId',
+looseJets = mithep.JetIdMod('JetId',
     InputName = jetCorrection.GetOutputName(),
-    OutputName = 'GoodAK4Jets',
+    OutputName = 'GoodJets',
     PFId = mithep.JetTools.kPFLoose,
-    MVATrainingSet = mithep.JetIDMVA.k74CHS, # set to mithep.JetIDMVA.nMVATrainingTypes to turn off MVA
-    MVACutWP = mithep.JetIDMVA.kLoose,
-    MVACutsFile = os.environ['MIT_DATA'] + '/JetId/jetIDCuts_150807.dat',
     PtMin = 30.,
     EtaMax = 5.
 )
-looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2.xml', 0)
-looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5.xml', 1)
-looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3.xml', 2)
-looseAK4Jets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
+if run == 2:
+    looseJets.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
+    looseJets.SetMVACutWP(mithep.JetIDMVA.kLoose)
+    looseJets.SetMVACutsFile(os.environ['MIT_DATA'] + '/JetId/jetIDCuts_150807.dat')
+
+    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2.xml', 0)
+    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5.xml', 1)
+    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3.xml', 2)
+    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
+else:
+    looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
 
 metCorrection = mithep.MetCorrectionMod('MetCorrection',
     InputName = 'PFMet',
     OutputName = 'PFType1Met',
-    JetsName = 'AKt4PFJetsCHS',
-    RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
+    JetsName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
+    RhoAlgo = rhoAlgo,
     MaxEMFraction = 0.9,
     SkipMuons = True,
-    MuonGeometricMatch = True
+    MuonGeometricMatch = switchRun(True, False)
 )
 metCorrection.ApplyType0(False)
 metCorrection.ApplyType1(True)
@@ -97,7 +133,7 @@ metCorrection.ApplyShift(False)
 metCorrection.IsData(analysis.isRealData)
 
 for level in jecLevels:
-    repl = {'level': level, 'jettype': 'AK4PFchs'}
+    repl = {'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
     jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
     metCorrection.AddJetCorrectionFromFile(jecPattern.format(**repl))
 
@@ -129,6 +165,8 @@ looseElectronId = mithep.ElectronIdMod('LooseElectronId',
     IsFilterMode = False,
     InputName = baselineElectrons.GetOutputName(),
     OutputName = 'LooseElectronId',
+#    IdType = switchRun(mithep.ElectronTools.kSummer15Veto, mithep.ElectronTools.kLoose),
+#    IsoType = switchRun(mithep.ElectronTools.kSummer15VetoIso, mithep.ElectronTools.kPFIsoRhoCorrected),
     IdType = mithep.ElectronTools.kSummer15Veto,
     IsoType = mithep.ElectronTools.kSummer15VetoIso,
     ApplyD0Cut = True,
@@ -139,6 +177,8 @@ looseElectronId = mithep.ElectronIdMod('LooseElectronId',
 
 tightElectronId = looseElectronId.clone('TightElectronId',
     OutputName = 'TightElectronId',
+#    IdType = switchRun(mithep.ElectronTools.kSummer15Tight, mithep.ElectronTools.kTight),
+#    IsoType = switchRun(mithep.ElectronTools.kSummer15TightIso, mithep.ElectronTools.kPFIsoRhoCorrected)
     IdType = mithep.ElectronTools.kSummer15Tight,
     IsoType = mithep.ElectronTools.kSummer15TightIso
 )
@@ -192,18 +232,24 @@ photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     IsFilterMode = False,
     InputName = baselinePhotons.GetOutputName(),
     OutputName = 'PhotonLooseId',
+#    IdType = switchRun(mithep.PhotonTools.kSpring15Loose50ns, mithep.PhotonTools.kLooseEM),
+#    IsoType = switchRun(mithep.PhotonTools.kSpring15Loose50nsIso, mithep.PhotonTools.kPFPUCorrected)
     IdType = mithep.PhotonTools.kSpring15Loose50ns,
     IsoType = mithep.PhotonTools.kSpring15Loose50nsIso
 )
 
 photonMediumId = photonLooseId.clone('PhotonMediumId',
     OutputName = 'PhotonMediumId',
+#    IdType = switchRun(mithep.PhotonTools.kSpring15Medium50ns, mithep.PhotonTools.kEgammaMedium),
+#    IsoType = switchRun(mithep.PhotonTools.kSpring15Medium50nsIso, mithep.PhotonTools.kPFPUCorrected)
     IdType = mithep.PhotonTools.kSpring15Medium50ns,
     IsoType = mithep.PhotonTools.kSpring15Medium50nsIso
 )
 
 photonTightId = photonLooseId.clone('PhotonTightId',
     OutputName = 'PhotonTightId',
+#    IdType = switchRun(mithep.PhotonTools.kSpring15Tight50ns, mithep.PhotonTools.kTight),
+#    IsoType = switchRun(mithep.PhotonTools.kSpring15Tight50nsIso, mithep.PhotonTools.kPFPUCorrected)
     IdType = mithep.PhotonTools.kSpring15Tight50ns,
     IsoType = mithep.PhotonTools.kSpring15Tight50nsIso
 )
@@ -217,8 +263,8 @@ photonHighPtId = photonLooseId.clone('PhotonHighPtId',
 
 ntuples = mithep.SimpleTreeMod(
     EventTreeName = 'events',
-    RhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll,
-    JetsName = looseAK4Jets.GetOutputName(),
+    RhoAlgo = rhoAlgo,
+    JetsName = looseJets.GetOutputName(),
     PhotonsName = baselinePhotons.GetOutputName(),
     ElectronsName = baselineElectrons.GetOutputName(),
     LooseElectronsName = looseElectronId.GetOutputName(),
@@ -242,10 +288,9 @@ for iP, (path, filters) in enumerate(hltPaths):
         ntuples.AddTriggerFilterName(iP, f)
     ntuples.SetTriggerPathName(iP, path)
 
-recoChain = [
-    hltMod,
-    goodPVFilterMod
-]
+recoChain = [hltMod]
+
+recoChain.append(goodPVFilterMod)
 
 if analysis.isRealData:
     badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
@@ -276,7 +321,7 @@ else:
         InputName = mcParticlesNoNu.GetOutputName(),
         OutputJetsName = 'GenJetsNoNu',
         OutputType = mithep.kGenJet,
-        ConeSize = 0.4,
+        ConeSize = switchRun(0.4, 0.5),
         NoActiveArea = True,
         ParticleMinPt = 0.,
         JetMinPt = 3.
@@ -304,6 +349,7 @@ else:
 
 
 recoChain += [
+    baselinePhotons, # skim >= 1 photon with pT > 30
     separatePileUpMod,
     baselineElectrons,
     looseElectronId,
@@ -312,15 +358,16 @@ recoChain += [
     tightMuonId,
     looseTaus,
     metCorrection,
-    baselinePhotons,
     photonLooseId,
     photonMediumId,
     photonTightId,
     photonHighPtId,
     jetCorrection,
-    looseAK4Jets
+    looseJets
 ]
 
+#baselinePhotons.SetMinOutput(1)
+looseJets.SetMinOutput(2)
 ntuples.SetCondition(recoChain[-1])
 
 analysis.setSequence(Chain(recoChain) + ntuples)

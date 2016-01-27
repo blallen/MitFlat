@@ -1,4 +1,4 @@
-#include "MitFlat/DataFormats/interface/Objects_simpletree.h"
+#include "../interface/Objects_simpletree.h"
 #include "TTree.h"
 
 void
@@ -163,6 +163,10 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hOverE", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "genIso", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "mipEnergy", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "mipChi2", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "time", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "timeSpan", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "pixelVeto", _status, _branches, _whitelist);
@@ -189,6 +193,10 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hOverE", hOverE, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "genIso", genIso, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "mipEnergy", mipEnergy, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "mipChi2", mipChi2, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "time", time, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "timeSpan", timeSpan, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "pixelVeto", pixelVeto, _branches, _whitelist);
@@ -215,6 +223,10 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
   flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches, _whitelist);
   flatutils::book(_tree, _name, "genIso", _name + ".size", 'F', genIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipEnergy", _name + ".size", 'F', mipEnergy, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipChi2", _name + ".size", 'F', mipChi2, _branches, _whitelist);
+  flatutils::book(_tree, _name, "time", _name + ".size", 'F', time, _branches, _whitelist);
+  flatutils::book(_tree, _name, "timeSpan", _name + ".size", 'F', timeSpan, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches, _whitelist);
   flatutils::book(_tree, _name, "isEB", _name + ".size", 'O', isEB, _branches, _whitelist);
   flatutils::book(_tree, _name, "pixelVeto", _name + ".size", 'O', pixelVeto, _branches, _whitelist);
@@ -238,6 +250,10 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   sieie(_data.sieie[_idx]),
   hOverE(_data.hOverE[_idx]),
   genIso(_data.genIso[_idx]),
+  mipEnergy(_data.mipEnergy[_idx]),
+  mipChi2(_data.mipChi2[_idx]),
+  time(_data.time[_idx]),
+  timeSpan(_data.timeSpan[_idx]),
   matchedGen(_data.matchedGen[_idx]),
   isEB(_data.isEB[_idx]),
   pixelVeto(_data.pixelVeto[_idx]),
@@ -262,6 +278,10 @@ simpletree::Photon::Photon(Photon const& _src) :
   sieie(_src.sieie),
   hOverE(_src.hOverE),
   genIso(_src.genIso),
+  mipEnergy(_src.mipEnergy),
+  mipChi2(_src.mipChi2),
+  time(_src.time),
+  timeSpan(_src.timeSpan),
   matchedGen(_src.matchedGen),
   isEB(_src.isEB),
   pixelVeto(_src.pixelVeto),
@@ -289,6 +309,10 @@ simpletree::Photon::operator=(Photon const& _rhs)
   sieie = _rhs.sieie;
   hOverE = _rhs.hOverE;
   genIso = _rhs.genIso;
+  mipEnergy = _rhs.mipEnergy;
+  mipChi2 = _rhs.mipChi2;
+  time = _rhs.time;
+  timeSpan = _rhs.timeSpan;
   matchedGen = _rhs.matchedGen;
   isEB = _rhs.isEB;
   pixelVeto = _rhs.pixelVeto;
@@ -304,6 +328,12 @@ simpletree::Photon::operator=(Photon const& _rhs)
   matchHLT175 = _rhs.matchHLT175;
   return *this;
 }
+
+double const simpletree::Photon::chIsoCuts[2][3]{{2.44, 1.31, 0.91}, {1.84, 1.25, 0.65}};
+double const simpletree::Photon::nhIsoCuts[2][3]{{2.57, 0.60, 0.33}, {4., 1.65, 0.93}};
+double const simpletree::Photon::phIsoCuts[2][3]{{1.92, 1.33, 0.61}, {2.15, 1.02, 0.54}};
+double const simpletree::Photon::sieieCuts[2][3]{{0.0103, 0.01, 0.01}, {0.0277, 0.0267, 0.0267}};
+double const simpletree::Photon::hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
 void
 simpletree::Lepton::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)

@@ -1,0 +1,32 @@
+#include "Math/GenVector/LorentzVector.h"
+#include "Math/GenVector/PtEtaPhiM4D.h"
+#include "TVector2.h"
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
+
+[Particle:MAX=256]
+pt/F
+eta/F
+phi/F
+virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+
+[Jet:Particle]
+mass/F
+LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+
+[Photon:Particle]
+isot/F
+
+[Met:SINGLE]
+pt/F
+phi/F
+TVector2 v() const { TVector2 vec; vec.SetMagPhi(pt, phi); return vec; }
+
+{Event}
+weight/D
+photons/PhotonCollection
+electrons/ParticleCollection
+muons/ParticleCollection
+neutrinos/ParticleCollection
+jets/JetCollection
+met/Met

@@ -36,6 +36,9 @@ namespace flatutils {
     Char_t* array_{0};
   };
 
+  typedef BaseCollection<kTRUE> StaticCollection;
+  typedef BaseCollection<kFALSE> DynamicCollection;
+
   template<class T, class B>
   class Collection : public B {
   public:
@@ -256,6 +259,10 @@ namespace flatutils {
   void
   Collection<T, B>::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
   {
+    bool inList(branchIn(this->base_type::name_, _branches));
+    if ((_whitelist && !inList) || (!_whitelist && inList))
+      return;
+
     if (!FIXED)
       _tree.Branch(this->base_type::name_ + ".size", &this->base_type::size_, "size/i");
 

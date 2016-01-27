@@ -1,6 +1,6 @@
 #ifndef Objects_simpletree_h
 #define Objects_simpletree_h
-#include "MitFlat/DataFormats/interface/Utils.h"
+#include "Utils.h"
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
@@ -113,11 +113,11 @@ namespace simpletree {
 
   class Photon : public Particle {
   public:
-    constexpr static double const chIsoCuts[2][3]{{2.67, 1.79, 1.66}, {1.79, 1.09, 1.04}};
-    constexpr static double const nhIsoCuts[2][3]{{7.23, 0.16, 0.14}, {8.89, 4.31, 3.89}};
-    constexpr static double const phIsoCuts[2][3]{{2.11, 1.9, 1.4}, {3.09, 1.9, 1.4}};
-    constexpr static double const sieieCuts[2][3]{{0.0107, 0.01, 0.01}, {0.0272, 0.0267, 0.0265}};
-    constexpr static double const hOverECuts[2][3]{{0.028, 0.012, 0.01}, {0.093, 0.023, 0.015}};
+    static double const chIsoCuts[2][3];
+    static double const nhIsoCuts[2][3];
+    static double const phIsoCuts[2][3];
+    static double const sieieCuts[2][3];
+    static double const hOverECuts[2][3];
 
     struct array_data : public Particle::array_data {
       Float_t chIso[NMAX]{};
@@ -126,6 +126,10 @@ namespace simpletree {
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
       Float_t genIso[NMAX]{};
+      Float_t mipEnergy[NMAX]{};
+      Float_t mipChi2[NMAX]{};
+      Float_t time[NMAX]{};
+      Float_t timeSpan[NMAX]{};
       Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
@@ -163,6 +167,10 @@ namespace simpletree {
     Float_t& sieie;
     Float_t& hOverE;
     Float_t& genIso;
+    Float_t& mipEnergy;
+    Float_t& mipChi2;
+    Float_t& time;
+    Float_t& timeSpan;
     Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;

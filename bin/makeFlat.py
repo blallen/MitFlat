@@ -39,11 +39,10 @@ def branchType(code):
 
 argParser = ArgumentParser(description = 'Generate C++ code for a flat tree')
 argParser.add_argument('config', metavar = 'CONFIG')
-argParser.add_argument('-p', '--package', metavar = 'DIR', default = 'MitFlat/DataFormats')
+argParser.add_argument('-p', '--package', metavar = 'DIR', default = os.environ['CMSSW_BASE'] + '/src/MitFlat/DataFormats')
+argParser.add_argument('-L', '--linkdef', action = 'store_true', dest = 'makeLinkdef')
 
 args = argParser.parse_args()
-
-FULLPATH = os.environ['CMSSW_BASE'] + '/src/' + args.package
 
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
 brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[[0-9]+\\])/(.+)$')
@@ -185,22 +184,28 @@ for obj in objs:
 colObjs = filter(lambda x: sizes[x] != 0, objs)
 singleObjs = filter(lambda x: sizes[x] == 0, objs)
 
-if not os.path.isdir(FULLPATH + '/interface'):
-    os.makedirs(FULLPATH + '/interface')
-if not os.path.isdir(FULLPATH + '/src'):
-    os.makedirs(FULLPATH + '/src')
-if not os.path.exists(FULLPATH + '/BuildFile.xml'):
-    with open(FULLPATH + '/BuildFile.xml', 'w') as buildFile:
+if not os.path.isdir(args.package + '/interface'):
+    os.makedirs(args.package + '/interface')
+if not os.path.isdir(args.package + '/src'):
+    os.makedirs(args.package + '/src')
+
+isCMSSW = False
+if os.path.exists(args.package + '../../../.SCRAM/Environment'):
+    with open(args.package + '../../../.SCRAM/Environment') as environment:
+        isCMSSW = 'CMSSW' in environment.readline()
+
+if isCMSSW and not os.path.exists(args.package + '/BuildFile.xml'):
+    with open(args.package + '/BuildFile.xml', 'w') as buildFile:
         buildFile.write('<use name="root"/>\n')
         buildFile.write('<export>\n')
         buildFile.write('  <lib name="1"/>\n')
         buildFile.write('</export>\n')
 
 # Objects header
-with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
+with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as header:
     header.write('#ifndef Objects_' + namespace + '_h\n')
     header.write('#define Objects_' + namespace + '_h\n')
-    header.write('#include "MitFlat/DataFormats/interface/Utils.h"\n')
+    header.write('#include "Utils.h"\n')
     for inc in includes:
         header.write(inc + '\n')
 
@@ -239,9 +244,10 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
 
         if len(defs[obj].statics) != 0:
             for st in defs[obj].statics:
-                if not st.endswith(';'):
-                    st += ';'
-                header.write('\n    constexpr ' + st)
+                decl = st[:st.find('{')]
+                if not decl.endswith(';'):
+                    decl += ';'
+                header.write('\n    ' + decl)
 
             header.write('\n')
 
@@ -314,11 +320,11 @@ with open(FULLPATH + '/interface/Objects_' + namespace + '.h', 'w') as header:
     header.write('#endif\n')
 
 # Tree header
-with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as header:
+with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as header:
     header.write('#ifndef TreeEntries_' + namespace + '_h\n')
     header.write('#define TreeEntries_' + namespace + '_h\n')
-    header.write('#include "MitFlat/DataFormats/interface/Collection.h"\n')
-    header.write('#include "' + args.package + '/interface/Objects_' + namespace + '.h"\n')
+    header.write('#include "Collection.h"\n')
+    header.write('#include "Objects_' + namespace + '.h"\n')
 
     header.write('\nnamespace ' + namespace + ' {\n')
 
@@ -374,8 +380,8 @@ with open(FULLPATH + '/interface/TreeEntries_' + namespace + '.h', 'w') as heade
     header.write('\n#endif\n')
 
 # Objects source
-with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
-    src.write('#include "' + args.package + '/interface/Objects_' + namespace + '.h"\n')
+with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
+    src.write('#include "../interface/Objects_' + namespace + '.h"\n')
 
     src.write('#include "TTree.h"\n\n')
 
@@ -504,9 +510,24 @@ with open(FULLPATH + '/src/Objects_' + namespace + '.cc', 'w') as src:
         src.write('  return *this;\n')
         src.write('}\n\n')
 
+        if len(defs[obj].statics) != 0:
+            for st in defs[obj].statics:
+                decl = st[:st.find('{')].replace('static ', '').strip()
+                words = decl.split()
+                dfn = ' '.join(words[:-1])
+                dfn += ' ' + namespace + '::' + obj + '::' + words[-1]
+                dfn += st[st.find('{'):]
+                if not dfn.endswith(';'):
+                    dfn += ';'
+
+                src.write(dfn + '\n')
+
+            src.write('\n')
+
+
 # Tree source
-with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
-    src.write('#include "' + args.package + '/interface/TreeEntries_' + namespace + '.h"\n')
+with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
+    src.write('#include "../interface/TreeEntries_' + namespace + '.h"\n')
     src.write('#include "TTree.h"\n')
     src.write('#include "TFile.h"\n')
     src.write('#include "TDirectory.h"\n\n')
@@ -585,3 +606,41 @@ with open(FULLPATH + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('  tree->ResetBranchAddresses();\n')
         src.write('  return tree;\n')
         src.write('}\n\n')
+
+if args.makeLinkdef:
+    with open(args.package + '/interface/' + namespace + '_LinkDef.h', 'w') as linkdef:
+        linkdef.write('#include "TreeEntries_' + namespace + '.h"\n\n')
+    
+        linkdef.write('#ifdef __CLING__\n')
+        linkdef.write('#pragma link off all globals;\n')
+        linkdef.write('#pragma link off all classes;\n')
+        linkdef.write('#pragma link off all functions;\n')
+        linkdef.write('#pragma link C++ nestedclass;\n')
+        linkdef.write('#pragma link C++ nestedtypedef;\n')
+        linkdef.write('#pragma link C++ namespace flatutils;\n')
+        linkdef.write('#pragma link C++ namespace ' + namespace + ';\n\n')
+
+        for name, items in enums:
+            linkdef.write('#pragma link C++ enum ' + namespace + '::' + name + ';\n')
+
+        for obj in objs:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
+    
+        for obj in objs:
+            if obj in singleObjs:
+                continue
+
+            if obj in inheritance:
+                linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
+            else:
+                if obj in fixedSize:
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::BaseCollection<kTRUE>>;\n')
+                else:
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::BaseCollection<kFALSE>>;\n')
+
+            linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
+    
+        for tree in trees:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
+
+        linkdef.write('#endif\n')
