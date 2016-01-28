@@ -237,6 +237,9 @@ namespace flatutils {
   void
   Collection<T, B>::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
   {
+    if (!_tree.GetBranch(this->base_type::name_ + ".size"))
+      return;
+
     if (!FIXED) {
       if (_status || (_whitelist && flatutils::branchIn("size", _branches)))
         _tree.SetBranchStatus(this->base_type::name_ + ".size", _status);
