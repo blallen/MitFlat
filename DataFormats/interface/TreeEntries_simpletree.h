@@ -39,6 +39,7 @@ namespace simpletree {
     CorrectedMet t1Met = CorrectedMet("t1Met");
     Met genMet = Met("genMet");
     HLTCollection hlt = HLTCollection("hlt");
+    MetFilters metFilters = MetFilters("metFilters");
     ReweightScaleCollection reweight = ReweightScaleCollection("reweight");
 
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);

@@ -146,6 +146,13 @@ ancestor/s
 [HLT:SIZE=nHLTPaths]
 pass/O
 
+[MetFilters:SINGLE]
+cschalo/O
+hbhe/O
+badsc/O
+badTrack/O
+badMuonTrack/O
+
 [ReweightScale:MAX=256]
 scale/F
 
@@ -168,4 +175,5 @@ rawMet/Met
 t1Met/CorrectedMet
 genMet/Met
 hlt/HLTCollection
+metFilters/MetFilters
 reweight/ReweightScaleCollection

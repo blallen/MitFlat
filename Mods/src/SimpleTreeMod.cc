@@ -28,6 +28,7 @@
 #include "MitPhysics/Init/interface/Constants.h"
 
 #include "TVector3.h"
+#include "TObjArray.h"
 
 #include <iostream>
 #include <cstring>
@@ -138,6 +139,33 @@ mithep::SimpleTreeMod::Process()
         fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(iW);
       for (unsigned id : fPdfReweightIds)
         fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(id);
+    }
+  }
+
+  // met filters
+
+  if (!fIsMC && fMetFilterName.Length() != 0) {
+    auto* filterNames = GetObject<TObjArray>(fMetFilterName + "Names");
+    auto* filterResults = GetObject<NFArrBool>(fMetFilterName);
+
+    fEvent.metFilters.cschalo = false;
+    fEvent.metFilters.hbhe = false;
+    fEvent.metFilters.badsc = false;
+    fEvent.metFilters.badTrack = false;
+    fEvent.metFilters.badMuonTrack = false;
+
+    for (unsigned iF(0); iF != filterResults->GetEntries(); ++iF) {
+      TString name(filterNames->At(iF)->GetName());
+      if (name == "CSCBeamHalo")
+        fEvent.metFilters.cschalo |= filterResults->At(iF);
+      else if (name == "HBHENoise")
+        fEvent.metFilters.hbhe |= filterResults->At(iF);
+      else if (name == "EEBadSc")
+        fEvent.metFilters.badsc |= filterResults->At(iF);
+      else if (name == "BadResolutionTrack")
+        fEvent.metFilters.badTrack |= filterResults->At(iF);
+      else if (name == "MuonBadTrack")
+        fEvent.metFilters.badMuonTrack |= filterResults->At(iF);
     }
   }
 
