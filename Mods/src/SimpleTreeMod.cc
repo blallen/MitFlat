@@ -497,11 +497,14 @@ mithep::SimpleTreeMod::Process()
 
           for (auto* part : finalState) {
             double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
-            if (dR < 0.1 && (minDR < 0. || dR < minDR)) {
+            if (dR > 0.1)
+              continue;
+
+            unsigned absId(std::abs(part->PdgId()));
+            bool isLepton(absId == 11 || absId == 13);
+
+            if (minDR < 0. || dR < minDR || (outPhoton.matchedGen == 22 && isLepton)) {
               outPhoton.matchedGen = part->PdgId();
-              unsigned absId(std::abs(outPhoton.matchedGen));
-              if (absId == 11 || absId == 13)
-                break;
 
               minDR = dR;
               matched = part;
