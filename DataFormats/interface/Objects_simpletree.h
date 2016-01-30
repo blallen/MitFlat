@@ -445,6 +445,8 @@ namespace simpletree {
     virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
 
+    virtual bool pass() const { return !cschalo && !hbhe && !badsc && !badTrack && !badMuonTrack; }
+
   protected:
     TString name_;
 
