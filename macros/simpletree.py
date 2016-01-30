@@ -313,12 +313,19 @@ recoChain.append(goodPVFilterMod)
 
 if analysis.isRealData:
     badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
-        FillHist = True
+        FillHist = True,
+        TaggingMode = True
     )
-    badEventsFilterMod.SetFilter('HBHENoiseFilter')
-    badEventsFilterMod.SetFilter('EEBadScFilter')
+    badEventsFilterMod.SetFilter('HBHENoise')
+    badEventsFilterMod.SetFilter('EEBadSc')
+    badEventsFilterMod.AddEventList('CSCBeamHalo', '/scratch5/yiiyama/eventlist/csc2015_Dec01.txt')
+    badEventsFilterMod.AddEventList('EEBadSc', '/scratch5/yiiyama/eventlist/ecalscn1043093_Dec01.txt')
+    badEventsFilterMod.AddEventList('BadResolutionTrack', '/scratch5/yiiyama/eventlist/badResolutionTrack_Jan13.txt')
+    badEventsFilterMod.AddEventList('MuonBadTrack', '/scratch5/yiiyama/eventlist/muonBadTrack_Jan13.txt')
 
     recoChain.append(badEventsFilterMod)
+
+    ntuples.SetMetFilterName(badEventsFilterMod.GetOutputName())
 
 else:
     generator = mithep.GeneratorMod(

@@ -28,6 +28,7 @@
 #include "MitPhysics/Init/interface/Constants.h"
 
 #include "TVector3.h"
+#include "TObjArray.h"
 
 #include <iostream>
 #include <cstring>
@@ -138,6 +139,33 @@ mithep::SimpleTreeMod::Process()
         fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(iW);
       for (unsigned id : fPdfReweightIds)
         fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(id);
+    }
+  }
+
+  // met filters
+
+  if (!fIsMC && fMetFilterName.Length() != 0) {
+    auto* filterNames = GetObject<TObjArray>(fMetFilterName + "Names");
+    auto* filterResults = GetObject<NFArrBool>(fMetFilterName);
+
+    fEvent.metFilters.cschalo = false;
+    fEvent.metFilters.hbhe = false;
+    fEvent.metFilters.badsc = false;
+    fEvent.metFilters.badTrack = false;
+    fEvent.metFilters.badMuonTrack = false;
+
+    for (unsigned iF(0); iF != filterResults->GetEntries(); ++iF) {
+      TString name(filterNames->At(iF)->GetName());
+      if (name == "CSCBeamHalo")
+        fEvent.metFilters.cschalo |= filterResults->At(iF);
+      else if (name == "HBHENoise")
+        fEvent.metFilters.hbhe |= filterResults->At(iF);
+      else if (name == "EEBadSc")
+        fEvent.metFilters.badsc |= filterResults->At(iF);
+      else if (name == "BadResolutionTrack")
+        fEvent.metFilters.badTrack |= filterResults->At(iF);
+      else if (name == "MuonBadTrack")
+        fEvent.metFilters.badMuonTrack |= filterResults->At(iF);
     }
   }
 
@@ -497,11 +525,14 @@ mithep::SimpleTreeMod::Process()
 
           for (auto* part : finalState) {
             double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
-            if (dR < 0.1 && (minDR < 0. || dR < minDR)) {
+            if (dR > 0.1)
+              continue;
+
+            unsigned absId(std::abs(part->PdgId()));
+            bool isLepton(absId == 11 || absId == 13);
+
+            if (minDR < 0. || dR < minDR || (outPhoton.matchedGen == 22 && isLepton)) {
               outPhoton.matchedGen = part->PdgId();
-              unsigned absId(std::abs(outPhoton.matchedGen));
-              if (absId == 11 || absId == 13)
-                break;
 
               minDR = dR;
               matched = part;

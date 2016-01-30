@@ -42,6 +42,7 @@ namespace mithep {
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
     void AddPdfReweightGroup(char const* n) { fPdfReweightGroupNames.push_back(n); }
     void AddPdfReweightId(UInt_t id) { fPdfReweightGroupIds.push_back(id); }
+    void SetMetFilterName(char const* n) { fMetFilterName = n; }
     void SetIsMC(Bool_t k) { fIsMC = k; }
 
     void SetCondition(BaseMod* m) { fCondition = m; }
@@ -90,6 +91,7 @@ namespace mithep {
     std::vector<TString> fPdfReweightGroupNames{};
     std::vector<UInt_t> fPdfReweightGroupIds{};
     std::vector<unsigned> fPdfReweightIds{};
+    TString fMetFilterName{""};
 
     Bool_t fIsMC{kTRUE};
 

@@ -434,6 +434,31 @@ namespace simpletree {
     Bool_t& pass;
   };
 
+  class MetFilters {
+  public:
+    MetFilters(TString const& name) : name_(name) {}
+    MetFilters(MetFilters const&);
+    virtual ~MetFilters() {}
+    MetFilters& operator=(MetFilters const&);
+
+    void setName(TString const& name) { name_ = name; }
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+
+    virtual bool pass() const { return !cschalo && !hbhe && !badsc && !badTrack && !badMuonTrack; }
+
+  protected:
+    TString name_;
+
+  public:
+    Bool_t cschalo{};
+    Bool_t hbhe{};
+    Bool_t badsc{};
+    Bool_t badTrack{};
+    Bool_t badMuonTrack{};
+  };
+
   class ReweightScale {
   public:
     struct array_data {

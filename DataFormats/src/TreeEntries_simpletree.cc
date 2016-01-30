@@ -27,6 +27,7 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   t1Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   genMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hlt.setStatus(_tree, _status, flatutils::subBranchList(_branches, "hlt"), _whitelist);
+  metFilters.setStatus(_tree, _status, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
   reweight.setStatus(_tree, _status, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
@@ -52,6 +53,7 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   t1Met.setAddress(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   genMet.setAddress(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hlt.setAddress(_tree, flatutils::subBranchList(_branches, "hlt"), _whitelist);
+  metFilters.setAddress(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
   reweight.setAddress(_tree, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
@@ -77,6 +79,7 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   t1Met.book(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   genMet.book(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hlt.book(_tree, flatutils::subBranchList(_branches, "hlt"), _whitelist);
+  metFilters.book(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
   reweight.book(_tree, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
