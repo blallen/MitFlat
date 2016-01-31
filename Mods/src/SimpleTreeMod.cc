@@ -522,19 +522,20 @@ mithep::SimpleTreeMod::Process()
 
         if (!matched) {
           double minDR(-1.);
+          bool leptonMatched(false);
 
           for (auto* part : finalState) {
             double dR(caloDir.DeltaR(TVector3(part->Px(), part->Py(), part->Pz())));
             if (dR > 0.1)
               continue;
 
-            unsigned absId(std::abs(part->PdgId()));
-            bool isLepton(absId == 11 || absId == 13);
-
-            if (minDR < 0. || dR < minDR || (outPhoton.matchedGen == 22 && isLepton)) {
+            if (minDR < 0. || (dR < minDR && !leptonMatched)) {
               outPhoton.matchedGen = part->PdgId();
 
               minDR = dR;
+              if (std::abs(outPhoton.matchedGen) == 11 || std::abs(outPhoton.matchedGen) == 13)
+                leptonMatched = true;
+
               matched = part;
             }
           }
