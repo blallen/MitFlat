@@ -47,6 +47,7 @@ namespace simpletree {
     Particle(Particle const&);
     virtual ~Particle() {}
     Particle& operator=(Particle const&);
+    virtual void init();
 
     virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 
@@ -70,6 +71,7 @@ namespace simpletree {
     ParticleM(ParticleM const&);
     virtual ~ParticleM() {}
     ParticleM& operator=(ParticleM const&);
+    virtual void init();
 
     LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
@@ -86,6 +88,7 @@ namespace simpletree {
     Jet(Jet const&);
     virtual ~Jet() {}
     Jet& operator=(Jet const&);
+    virtual void init();
   };
 
   class Met {
@@ -188,6 +191,7 @@ namespace simpletree {
     Photon(Photon const&);
     virtual ~Photon() {}
     Photon& operator=(Photon const&);
+    virtual void init();
 
     bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -252,6 +256,7 @@ namespace simpletree {
     Lepton(Lepton const&);
     virtual ~Lepton() {}
     Lepton& operator=(Lepton const&);
+    virtual void init();
 
     int charge() const { return positive ? 1 : -1; }
 
@@ -290,6 +295,7 @@ namespace simpletree {
     Electron(Electron const&);
     virtual ~Electron() {}
     Electron& operator=(Electron const&);
+    virtual void init();
 
     bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -330,6 +336,7 @@ namespace simpletree {
     Muon(Muon const&);
     virtual ~Muon() {}
     Muon& operator=(Muon const&);
+    virtual void init();
 
   public:
     Bool_t& matchHLT20;
@@ -353,6 +360,7 @@ namespace simpletree {
     Tau(Tau const&);
     virtual ~Tau() {}
     Tau& operator=(Tau const&);
+    virtual void init();
 
   public:
     Bool_t& decayMode;
@@ -375,6 +383,7 @@ namespace simpletree {
     Parton(Parton const&);
     virtual ~Parton() {}
     Parton& operator=(Parton const&);
+    virtual void init();
 
   public:
     Int_t& pid;
@@ -397,6 +406,7 @@ namespace simpletree {
     MCParticle(MCParticle const&);
     virtual ~MCParticle() {}
     MCParticle& operator=(MCParticle const&);
+    virtual void init();
 
   public:
     Int_t& pid;
@@ -412,6 +422,7 @@ namespace simpletree {
     GenJet(GenJet const&);
     virtual ~GenJet() {}
     GenJet& operator=(GenJet const&);
+    virtual void init();
   };
 
   class HLT {
@@ -430,6 +441,7 @@ namespace simpletree {
     HLT(HLT const&);
     virtual ~HLT() {}
     HLT& operator=(HLT const&);
+    virtual void init();
 
   public:
     Bool_t& pass;
@@ -477,6 +489,7 @@ namespace simpletree {
     ReweightScale(ReweightScale const&);
     virtual ~ReweightScale() {}
     ReweightScale& operator=(ReweightScale const&);
+    virtual void init();
 
   public:
     Float_t& scale;

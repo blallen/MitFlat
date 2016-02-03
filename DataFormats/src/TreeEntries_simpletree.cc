@@ -93,20 +93,20 @@ simpletree::Event::init()
   rho = 0.;
   npv = 0;
 
-  partons.clear();
-  partonFinalStates.clear();
-  jets.clear();
-  genJets.clear();
-  photons.clear();
-  electrons.clear();
-  muons.clear();
-  taus.clear();
+  partons.init();
+  partonFinalStates.init();
+  jets.init();
+  genJets.init();
+  photons.init();
+  electrons.init();
+  muons.init();
+  taus.init();
   rawMet.init();
   t1Met.init();
   genMet.init();
-  hlt.clear();
+  hlt.init();
   metFilters.init();
-  reweight.clear();
+  reweight.init();
 }
 
 TTree*

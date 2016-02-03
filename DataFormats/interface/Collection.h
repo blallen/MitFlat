@@ -74,8 +74,10 @@ namespace flatutils {
     reference back() { return operator[](this->base_type::size_ - 1); }
     const_reference back() const { return operator[](this->base_type::size_ - 1); }
     void push_back(const_reference);
-    void copy(self_type const& source) { resize(source.size()); std::copy(source.begin(), source.end(), begin()); }
+    //    void copy(self_type const& source) { resize(source.size()); std::copy(source.begin(), source.end(), begin()); }
+    void copy(self_type const& source) { clear(); for (auto& s : source) push_back(s); }
     void resize(UInt_t size);
+    void init();
     void clear();
 
     virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -223,6 +225,18 @@ namespace flatutils {
       throw std::length_error((this->base_type::name_ + "::resize").Data());
   
     this->base_type::size_ = _size;
+  }
+
+  template<class T, class B>
+  void
+  Collection<T, B>::init()
+  {
+    if (FIXED) {
+      for (iterator itr(begin()); itr != end(); ++itr)
+        itr->init();
+    }
+    else
+      clear();
   }
 
   template<class T, class B>

@@ -49,6 +49,14 @@ simpletree::Particle::operator=(Particle const& _rhs)
 }
 
 void
+simpletree::Particle::init()
+{
+  pt = 0.;
+  eta = 0.;
+  phi = 0.;
+}
+
+void
 simpletree::ParticleM::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
   Particle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
@@ -93,6 +101,14 @@ simpletree::ParticleM::operator=(ParticleM const& _rhs)
   return *this;
 }
 
+void
+simpletree::ParticleM::init()
+{
+  Particle::init();
+
+  mass = 0.;
+}
+
 simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx)
 {
@@ -109,6 +125,13 @@ simpletree::Jet::operator=(Jet const& _rhs)
   ParticleM::operator=(_rhs);
 
   return *this;
+}
+
+void
+simpletree::Jet::init()
+{
+  ParticleM::init();
+
 }
 
 simpletree::Met::Met(Met const& _src) :
@@ -143,14 +166,6 @@ simpletree::Met::book(TTree& _tree, flatutils::BranchList const& _branches/* = {
   flatutils::book(_tree, name_, "sumEt", "", 'F', &sumEt, _branches, _whitelist);
 }
 
-void
-simpletree::Met::init()
-{
-  met = 0.;
-  phi = 0.;
-  sumEt = 0.;
-}
-
 simpletree::Met&
 simpletree::Met::operator=(Met const& _rhs)
 {
@@ -158,6 +173,14 @@ simpletree::Met::operator=(Met const& _rhs)
   phi = _rhs.phi;
   sumEt = _rhs.sumEt;
   return *this;
+}
+
+void
+simpletree::Met::init()
+{
+  met = 0.;
+  phi = 0.;
+  sumEt = 0.;
 }
 
 simpletree::CorrectedMet::CorrectedMet(CorrectedMet const& _src) :
@@ -202,17 +225,6 @@ simpletree::CorrectedMet::book(TTree& _tree, flatutils::BranchList const& _branc
   flatutils::book(_tree, name_, "phiCorrDown", "", 'F', &phiCorrDown, _branches, _whitelist);
 }
 
-void
-simpletree::CorrectedMet::init()
-{
-  Met::init();
-
-  metCorrUp = 0.;
-  phiCorrUp = 0.;
-  metCorrDown = 0.;
-  phiCorrDown = 0.;
-}
-
 simpletree::CorrectedMet&
 simpletree::CorrectedMet::operator=(CorrectedMet const& _rhs)
 {
@@ -223,6 +235,17 @@ simpletree::CorrectedMet::operator=(CorrectedMet const& _rhs)
   metCorrDown = _rhs.metCorrDown;
   phiCorrDown = _rhs.phiCorrDown;
   return *this;
+}
+
+void
+simpletree::CorrectedMet::init()
+{
+  Met::init();
+
+  metCorrUp = 0.;
+  phiCorrUp = 0.;
+  metCorrDown = 0.;
+  phiCorrDown = 0.;
 }
 
 void
@@ -474,6 +497,48 @@ simpletree::Photon::operator=(Photon const& _rhs)
   return *this;
 }
 
+void
+simpletree::Photon::init()
+{
+  Particle::init();
+
+  chIso = 0.;
+  nhIso = 0.;
+  phIso = 0.;
+  sieie = 0.;
+  hOverE = 0.;
+  genIso = 0.;
+  mipEnergy = 0.;
+  mipChi2 = 0.;
+  mipSlope = 0.;
+  mipIntercept = 0.;
+  mipNhitCone = 0;
+  mipIsHalo = false;
+  e15 = 0.;
+  e25 = 0.;
+  e33 = 0.;
+  e55 = 0.;
+  r9 = 0.;
+  etaWidth = 0.;
+  phiWidth = 0.;
+  s4 = 0.;
+  time = 0.;
+  timeSpan = 0.;
+  matchedGen = 0;
+  isEB = false;
+  pixelVeto = false;
+  electronVeto = false;
+  csafeVeto = false;
+  loose = false;
+  medium = false;
+  tight = false;
+  highpt = false;
+  matchHLT120 = false;
+  matchHLT135MET100 = false;
+  matchHLT165HE10 = false;
+  matchHLT175 = false;
+}
+
 double const simpletree::Photon::chIsoCuts[2][3]{{2.44, 1.31, 0.91}, {1.84, 1.25, 0.65}};
 double const simpletree::Photon::nhIsoCuts[2][3]{{2.57, 0.60, 0.33}, {4., 1.65, 0.93}};
 double const simpletree::Photon::phIsoCuts[2][3]{{1.92, 1.33, 0.61}, {2.15, 1.02, 0.54}};
@@ -553,6 +618,19 @@ simpletree::Lepton::operator=(Lepton const& _rhs)
   loose = _rhs.loose;
   tight = _rhs.tight;
   return *this;
+}
+
+void
+simpletree::Lepton::init()
+{
+  ParticleM::init();
+
+  matchedGen = 0;
+  tauDecay = false;
+  hadDecay = false;
+  positive = false;
+  loose = false;
+  tight = false;
 }
 
 void
@@ -673,6 +751,26 @@ simpletree::Electron::operator=(Electron const& _rhs)
 }
 
 void
+simpletree::Electron::init()
+{
+  Lepton::init();
+
+  chIsoPh = 0.;
+  nhIsoPh = 0.;
+  phIsoPh = 0.;
+  sieie = 0.;
+  hOverE = 0.;
+  isEB = false;
+  veto = false;
+  matchHLT23Loose = false;
+  matchHLT27Loose = false;
+  matchHLT120Ph = false;
+  matchHLT135MET100Ph = false;
+  matchHLT165HE10Ph = false;
+  matchHLT175Ph = false;
+}
+
+void
 simpletree::Muon::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
   Lepton::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
@@ -736,6 +834,17 @@ simpletree::Muon::operator=(Muon const& _rhs)
 }
 
 void
+simpletree::Muon::init()
+{
+  Lepton::init();
+
+  matchHLT20 = false;
+  matchHLTTrk20 = false;
+  matchHLT24 = false;
+  matchHLT27 = false;
+}
+
+void
 simpletree::Tau::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
   ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
@@ -784,6 +893,15 @@ simpletree::Tau::operator=(Tau const& _rhs)
   decayMode = _rhs.decayMode;
   combIso = _rhs.combIso;
   return *this;
+}
+
+void
+simpletree::Tau::init()
+{
+  ParticleM::init();
+
+  decayMode = false;
+  combIso = 0.;
 }
 
 void
@@ -844,6 +962,16 @@ simpletree::Parton::operator=(Parton const& _rhs)
 }
 
 void
+simpletree::Parton::init()
+{
+  ParticleM::init();
+
+  pid = 0;
+  status = 0;
+  frixIso = false;
+}
+
+void
 simpletree::MCParticle::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
   ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
@@ -894,6 +1022,15 @@ simpletree::MCParticle::operator=(MCParticle const& _rhs)
   return *this;
 }
 
+void
+simpletree::MCParticle::init()
+{
+  ParticleM::init();
+
+  pid = 0;
+  ancestor = 0;
+}
+
 simpletree::GenJet::GenJet(array_data& _data, UInt_t _idx) :
   Jet(_data, _idx)
 {
@@ -910,6 +1047,13 @@ simpletree::GenJet::operator=(GenJet const& _rhs)
   Jet::operator=(_rhs);
 
   return *this;
+}
+
+void
+simpletree::GenJet::init()
+{
+  Jet::init();
+
 }
 
 void
@@ -945,6 +1089,12 @@ simpletree::HLT::operator=(HLT const& _rhs)
 {
   pass = _rhs.pass;
   return *this;
+}
+
+void
+simpletree::HLT::init()
+{
+  pass = false;
 }
 
 simpletree::MetFilters::MetFilters(MetFilters const& _src) :
@@ -987,16 +1137,6 @@ simpletree::MetFilters::book(TTree& _tree, flatutils::BranchList const& _branche
   flatutils::book(_tree, name_, "badMuonTrack", "", 'O', &badMuonTrack, _branches, _whitelist);
 }
 
-void
-simpletree::MetFilters::init()
-{
-  cschalo = false;
-  hbhe = false;
-  badsc = false;
-  badTrack = false;
-  badMuonTrack = false;
-}
-
 simpletree::MetFilters&
 simpletree::MetFilters::operator=(MetFilters const& _rhs)
 {
@@ -1006,6 +1146,16 @@ simpletree::MetFilters::operator=(MetFilters const& _rhs)
   badTrack = _rhs.badTrack;
   badMuonTrack = _rhs.badMuonTrack;
   return *this;
+}
+
+void
+simpletree::MetFilters::init()
+{
+  cschalo = false;
+  hbhe = false;
+  badsc = false;
+  badTrack = false;
+  badMuonTrack = false;
 }
 
 void
@@ -1041,5 +1191,11 @@ simpletree::ReweightScale::operator=(ReweightScale const& _rhs)
 {
   scale = _rhs.scale;
   return *this;
+}
+
+void
+simpletree::ReweightScale::init()
+{
+  scale = 0.;
 }
 

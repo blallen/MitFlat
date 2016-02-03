@@ -32,8 +32,10 @@ namespace flatutils {
     friend class const_iterator<C>;
 
     typedef iterator<C> self_type;
+    typedef typename C::value_type value_type;
     typedef typename C::pointer pointer;
     typedef typename C::reference& reference;
+
   public:
     iterator() {}
     iterator(void* p, UInt_t objSize) : ptr(static_cast<pointer>(p)), size(objSize) {}
@@ -49,6 +51,7 @@ namespace flatutils {
     bool operator!=(self_type const& rhs) { return ptr != rhs.ptr; }
     reference operator*() { return *ptr; }
     pointer operator->() { return ptr; }
+
   private:
     pointer ptr{0};
     UInt_t const size{0}; // needed to properly iterate over derived-class array using base-class iterator
@@ -58,8 +61,10 @@ namespace flatutils {
   class const_iterator {
     typedef const_iterator<C> self_type;
     typedef iterator<C> mutable_type;
+    typedef typename C::value_type value_type;
     typedef typename C::const_pointer pointer;
     typedef typename C::const_reference& reference;
+
   public:
     const_iterator() {}
     const_iterator(void* p, UInt_t objSize) : ptr(static_cast<pointer>(p)), size(objSize) {}
@@ -78,6 +83,7 @@ namespace flatutils {
     bool operator!=(mutable_type const& rhs) { return ptr != rhs.ptr; }
     reference operator*() { return *ptr; }
     pointer operator->() { return ptr; }
+
   private:
     pointer ptr{0};
     UInt_t const size{0}; // needed to properly iterate over derived-class array using base-class iterator

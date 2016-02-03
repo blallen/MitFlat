@@ -307,8 +307,9 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
             header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
             header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
             header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
-            header.write('\n    virtual void init();')
-        
+
+        header.write('\n    virtual void init();')
+
         if len(defs[obj].functions) != 0:
             header.write('\n')
 
@@ -460,16 +461,6 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                     src.write('  flatutils::book(_tree, name_, "' + br.name + '", "' + str(br.size) + '", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
             src.write('}\n\n')
 
-            src.write('void\n')
-            src.write(namespace + '::' + obj + '::init()\n')
-            src.write('{\n')
-            if obj in inheritance:
-                src.write('  ' + inheritance[obj] + '::init();\n\n')
-
-            src.write(initSimple(defs[obj].branches))
-
-            src.write('}\n\n')
-
         else:
             # collection elements
 
@@ -539,6 +530,16 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
             src.write('\n  ' + br.name + ' = _rhs.' + br.name + ';')
         src.write('\n')
         src.write('  return *this;\n')
+        src.write('}\n\n')
+
+        src.write('void\n')
+        src.write(namespace + '::' + obj + '::init()\n')
+        src.write('{\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + '::init();\n\n')
+
+        src.write(initSimple(defs[obj].branches))
+
         src.write('}\n\n')
 
         if len(defs[obj].statics) != 0:
@@ -626,10 +627,7 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         
         for br in treeDef.branches:
             if not isSimple(br.type):
-                if br.type.endswith('Collection'):
-                    src.write('  ' + br.name + '.clear();\n')
-                else:
-                    src.write('  ' + br.name + '.init();\n')
+                src.write('  ' + br.name + '.init();\n')
     
         src.write('}\n\n')
 
