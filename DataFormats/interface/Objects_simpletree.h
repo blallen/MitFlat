@@ -109,7 +109,6 @@ namespace simpletree {
     Float_t met{};
     Float_t phi{};
     Float_t sumEt{};
-    Float_t dPhiJetMetMin{};
   };
 
   class CorrectedMet : public Met {

@@ -37,7 +37,6 @@ LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); 
 met/F
 phi/F
 sumEt/F
-dPhiJetMetMin/F
 virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
 [CorrectedMet:Met]
