@@ -36,6 +36,23 @@ def branchType(code):
     else: # object type
         return code
 
+def initSimple(branches):
+    output = ''
+    for br in branches:
+        if br.type == 'O':
+            init = 'false'
+        elif br.type in 'FD':
+            init = '0.'
+        else:
+            init = '0'
+        
+        if br.size == 1:
+            output += '  ' + br.name + ' = ' + init + ';\n'
+        else:
+            output += '  std::fill(' + br.name + ', ' + br.name + ' + ' + str(br.size) + ', ' + init + ');\n'
+
+    return output
+
 
 argParser = ArgumentParser(description = 'Generate C++ code for a flat tree')
 argParser.add_argument('config', metavar = 'CONFIG')
@@ -290,6 +307,7 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
             header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
             header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
             header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+            header.write('\n    virtual void init();')
         
         if len(defs[obj].functions) != 0:
             header.write('\n')
@@ -345,21 +363,23 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
         header.write('\n  class ' + tree + ' {')
         header.write('\n  public:')
 
-        if len(treeDefs[tree].functions) != 0:    
-            for func in treeDefs[tree].functions:
+        treeDef = treeDefs[tree]
+
+        if len(treeDef.functions) != 0:    
+            for func in treeDef.functions:
                 header.write('\n    ' + func)
   
             header.write('\n')
 
-        if len(treeDefs[tree].branches) != 0:
-            for br in treeDefs[tree].branches:
+        if len(treeDef.branches) != 0:
+            for br in treeDef.branches:
                 if isSimple(br.type):
                     if br.size == 1:
                         header.write('\n    ' + branchType(br.type) + ' ' + br.name + '{};')
                     else:
                         header.write('\n    ' + branchType(br.type) + ' ' + br.name + '[' + str(br.size) + ']{};')
     
-            for br in treeDefs[tree].branches:
+            for br in treeDef.branches:
                 if not isSimple(br.type):
                     header.write('\n    ' + branchType(br.type) + ' ' + br.name + ' = ' + branchType(br.type) + '("' + br.name + '");')
     
@@ -368,6 +388,7 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
         header.write('\n    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
         header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
         header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+        header.write('\n    void init();')
         header.write('\n  };\n')
 
     if len(enums) != 0:
@@ -437,6 +458,16 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                     src.write('  flatutils::book(_tree, name_, "' + br.name + '", "", \'' + br.type + '\', &' + br.name + ', _branches, _whitelist);\n')
                 else:
                     src.write('  flatutils::book(_tree, name_, "' + br.name + '", "' + str(br.size) + '", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+            src.write('}\n\n')
+
+            src.write('void\n')
+            src.write(namespace + '::' + obj + '::init()\n')
+            src.write('{\n')
+            if obj in inheritance:
+                src.write('  ' + inheritance[obj] + '::init();\n\n')
+
+            src.write(initSimple(defs[obj].branches))
+
             src.write('}\n\n')
 
         else:
@@ -537,13 +568,13 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('void\n')
         src.write(namespace + '::' + tree + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
-        for br in treeDefs[tree].branches:
+        for br in treeDef.branches:
             if isSimple(br.type):
                 src.write('  flatutils::setStatus(_tree, "", "' + br.name + '", _status, _branches, _whitelist);\n')
     
         src.write('\n')
     
-        for br in treeDefs[tree].branches:
+        for br in treeDef.branches:
             if not isSimple(br.type):
                 src.write('  ' + br.name + '.setStatus(_tree, _status, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
     
@@ -552,7 +583,7 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('void\n')
         src.write(namespace + '::' + tree + '::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
-        for br in treeDefs[tree].branches:
+        for br in treeDef.branches:
             if isSimple(br.type):
                 if br.size == 1:
                     src.write('  flatutils::setStatusAndAddress(_tree, "", "' + br.name + '", &' + br.name + ', _branches, _whitelist);\n')
@@ -561,7 +592,7 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
     
         src.write('\n')
     
-        for br in treeDefs[tree].branches:
+        for br in treeDef.branches:
             if not isSimple(br.type):
                 src.write('  ' + br.name + '.setAddress(_tree, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
     
@@ -570,7 +601,7 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('void\n')
         src.write(namespace + '::' + tree + '::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
-        for br in treeDefs[tree].branches:
+        for br in treeDef.branches:
             if isSimple(br.type):
                 if br.size == 1:
                     src.write('  flatutils::book(_tree, "", "' + br.name + '", "", \'' + br.type + '\', &' + br.name + ', _branches, _whitelist);\n')
@@ -579,9 +610,26 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
     
         src.write('\n')
         
-        for br in treeDefs[tree].branches:
+        for br in treeDef.branches:
             if not isSimple(br.type):
                 src.write('  ' + br.name + '.book(_tree, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
+    
+        src.write('}\n\n')
+
+        src.write('void\n')
+        src.write(namespace + '::' + tree + '::init()\n')
+        src.write('{\n')
+
+        src.write(initSimple([br for br in treeDef.branches if isSimple(br.type)]))
+
+        src.write('\n')
+        
+        for br in treeDef.branches:
+            if not isSimple(br.type):
+                if br.type.endswith('Collection'):
+                    src.write('  ' + br.name + '.clear();\n')
+                else:
+                    src.write('  ' + br.name + '.init();\n')
     
         src.write('}\n\n')
 

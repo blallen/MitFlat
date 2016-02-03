@@ -45,6 +45,7 @@ namespace simpletree {
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void init();
   };
 
   TTree* makeHLTPathTree();

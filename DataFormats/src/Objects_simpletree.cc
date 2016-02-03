@@ -143,6 +143,14 @@ simpletree::Met::book(TTree& _tree, flatutils::BranchList const& _branches/* = {
   flatutils::book(_tree, name_, "sumEt", "", 'F', &sumEt, _branches, _whitelist);
 }
 
+void
+simpletree::Met::init()
+{
+  met = 0.;
+  phi = 0.;
+  sumEt = 0.;
+}
+
 simpletree::Met&
 simpletree::Met::operator=(Met const& _rhs)
 {
@@ -192,6 +200,17 @@ simpletree::CorrectedMet::book(TTree& _tree, flatutils::BranchList const& _branc
   flatutils::book(_tree, name_, "phiCorrUp", "", 'F', &phiCorrUp, _branches, _whitelist);
   flatutils::book(_tree, name_, "metCorrDown", "", 'F', &metCorrDown, _branches, _whitelist);
   flatutils::book(_tree, name_, "phiCorrDown", "", 'F', &phiCorrDown, _branches, _whitelist);
+}
+
+void
+simpletree::CorrectedMet::init()
+{
+  Met::init();
+
+  metCorrUp = 0.;
+  phiCorrUp = 0.;
+  metCorrDown = 0.;
+  phiCorrDown = 0.;
 }
 
 simpletree::CorrectedMet&
@@ -966,6 +985,16 @@ simpletree::MetFilters::book(TTree& _tree, flatutils::BranchList const& _branche
   flatutils::book(_tree, name_, "badsc", "", 'O', &badsc, _branches, _whitelist);
   flatutils::book(_tree, name_, "badTrack", "", 'O', &badTrack, _branches, _whitelist);
   flatutils::book(_tree, name_, "badMuonTrack", "", 'O', &badMuonTrack, _branches, _whitelist);
+}
+
+void
+simpletree::MetFilters::init()
+{
+  cschalo = false;
+  hbhe = false;
+  badsc = false;
+  badTrack = false;
+  badMuonTrack = false;
 }
 
 simpletree::MetFilters&

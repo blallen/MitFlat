@@ -83,6 +83,32 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   reweight.book(_tree, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
+void
+simpletree::Event::init()
+{
+  run = 0;
+  lumi = 0;
+  event = 0;
+  weight = 0.;
+  rho = 0.;
+  npv = 0;
+
+  partons.clear();
+  partonFinalStates.clear();
+  jets.clear();
+  genJets.clear();
+  photons.clear();
+  electrons.clear();
+  muons.clear();
+  taus.clear();
+  rawMet.init();
+  t1Met.init();
+  genMet.init();
+  hlt.clear();
+  metFilters.init();
+  reweight.clear();
+}
+
 TTree*
 simpletree::makeHLTPathTree()
 {

@@ -100,6 +100,8 @@ mithep::SimpleTreeMod::Process()
   if (fCondition && !fCondition->IsActive())
     return;
 
+  fEvent.init();
+
   auto* vertices = GetObject<mithep::VertexCol>(fVerticesName);
   auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
   auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
