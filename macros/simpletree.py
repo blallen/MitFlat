@@ -254,20 +254,20 @@ photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     IsFilterMode = False,
     InputName = baselinePhotons.GetOutputName(),
     OutputName = 'PhotonLooseId',
-    IdType = mithep.PhotonTools.kSpring15Loose50ns,
-    IsoType = mithep.PhotonTools.kSpring15Loose50nsIso
+    IdType = mithep.PhotonTools.kSpring15Loose,
+    IsoType = mithep.PhotonTools.kSpring15LooseIso
 )
 
 photonMediumId = photonLooseId.clone('PhotonMediumId',
     OutputName = 'PhotonMediumId',
-    IdType = mithep.PhotonTools.kSpring15Medium50ns,
-    IsoType = mithep.PhotonTools.kSpring15Medium50nsIso
+    IdType = mithep.PhotonTools.kSpring15Medium,
+    IsoType = mithep.PhotonTools.kSpring15MediumIso
 )
 
 photonTightId = photonLooseId.clone('PhotonTightId',
     OutputName = 'PhotonTightId',
-    IdType = mithep.PhotonTools.kSpring15Tight50ns,
-    IsoType = mithep.PhotonTools.kSpring15Tight50nsIso
+    IdType = mithep.PhotonTools.kSpring15Tight,
+    IsoType = mithep.PhotonTools.kSpring15TightIso
 )
 
 photonHighPtId = photonLooseId.clone('PhotonHighPtId',
