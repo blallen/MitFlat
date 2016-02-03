@@ -7,6 +7,7 @@
 #include "TTree.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 namespace flatutils {
 
@@ -73,6 +74,7 @@ namespace flatutils {
     reference back() { return operator[](this->base_type::size_ - 1); }
     const_reference back() const { return operator[](this->base_type::size_ - 1); }
     void push_back(const_reference);
+    void copy(self_type const& source) { resize(source.size()); std::copy(source.begin(), source.end(), begin()); }
     void resize(UInt_t size);
     void clear();
 
