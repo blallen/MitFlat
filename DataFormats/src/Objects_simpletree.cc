@@ -539,10 +539,10 @@ simpletree::Photon::init()
   matchHLT175 = false;
 }
 
-double const simpletree::Photon::chIsoCuts[2][3]{{2.44, 1.31, 0.91}, {1.84, 1.25, 0.65}};
-double const simpletree::Photon::nhIsoCuts[2][3]{{2.57, 0.60, 0.33}, {4., 1.65, 0.93}};
-double const simpletree::Photon::phIsoCuts[2][3]{{1.92, 1.33, 0.61}, {2.15, 1.02, 0.54}};
-double const simpletree::Photon::sieieCuts[2][3]{{0.0103, 0.01, 0.01}, {0.0277, 0.0267, 0.0267}};
+double const simpletree::Photon::chIsoCuts[2][3]{{3.32, 1.37, 0.76}, {1.97, 1.10, 0.56}};
+double const simpletree::Photon::nhIsoCuts[2][3]{{1.92, 1.06, 0.97}, {11.86, 2.69, 2.09}};
+double const simpletree::Photon::phIsoCuts[2][3]{{0.81, 0.28, 0.08}, {0.83, 0.39, 0.16}};
+double const simpletree::Photon::sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.0274, 0.0268, 0.0268}};
 double const simpletree::Photon::hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
 void
