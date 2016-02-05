@@ -93,10 +93,10 @@ bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
 bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
 bool passSieie(UInt_t wp) const { return sieie < sieieCuts[isEB ? 0 : 1][wp]; }
 bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
-static double const chIsoCuts[2][3]{{2.44, 1.31, 0.91}, {1.84, 1.25, 0.65}};
-static double const nhIsoCuts[2][3]{{2.57, 0.60, 0.33}, {4., 1.65, 0.93}};
-static double const phIsoCuts[2][3]{{1.92, 1.33, 0.61}, {2.15, 1.02, 0.54}};
-static double const sieieCuts[2][3]{{0.0103, 0.01, 0.01}, {0.0277, 0.0267, 0.0267}};
+static double const chIsoCuts[2][3]{{3.32, 1.37, 0.76}, {1.97, 1.10, 0.56}};
+static double const nhIsoCuts[2][3]{{1.92, 1.06, 0.97}, {11.86, 2.69, 2.09}};
+static double const phIsoCuts[2][3]{{0.81, 0.28, 0.08}, {0.83, 0.39, 0.16}};
+static double const sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.0274, 0.0268, 0.0268}};
 static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
 [Lepton:ParticleM]
