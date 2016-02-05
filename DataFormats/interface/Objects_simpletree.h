@@ -4,6 +4,7 @@
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
+#include <cmath>
 #include "TString.h"
 #include "Rtypes.h"
 class TTree;
@@ -50,6 +51,10 @@ namespace simpletree {
     virtual void init();
 
     virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+    double dEta(Particle const& p) const { return eta - p.eta; }
+    double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
+    double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
+    double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
 
   public:
     Float_t& pt;
@@ -349,6 +354,7 @@ namespace simpletree {
   public:
     struct array_data : public ParticleM::array_data {
       Bool_t decayMode[NMAX]{};
+      Short_t mode[NMAX]{};
       Float_t combIso[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -364,6 +370,7 @@ namespace simpletree {
 
   public:
     Bool_t& decayMode;
+    Short_t& mode;
     Float_t& combIso;
   };
 

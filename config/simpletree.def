@@ -2,6 +2,8 @@
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TVector2.h"
 
+#include <cmath>
+
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
 enum HLTPath {
@@ -26,6 +28,10 @@ pt/F
 eta/F
 phi/F
 virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+double dEta(Particle const& p) const { return eta - p.eta; }
+double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
+double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
+double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
 
 [ParticleM:Particle]
 mass/F
@@ -130,6 +136,7 @@ matchHLT27/O
 
 [Tau:ParticleM]
 decayMode/O
+mode/S
 combIso/F
 
 [Parton:ParticleM]
