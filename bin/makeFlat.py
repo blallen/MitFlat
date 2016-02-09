@@ -352,9 +352,9 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
             if obj in inheritance:
                 base = inheritance[obj] + 'Collection'
             elif obj in fixedSize:
-                base = 'flatutils::BaseCollection<kTRUE>'
+                base = 'flatutils::StaticCollection'
             else:
-                base = 'flatutils::BaseCollection<kFALSE>'
+                base = 'flatutils::DynamicCollection'
 
             header.write('\n  typedef flatutils::Collection<' + obj + ', ' + base + '> ' + obj + 'Collection;')
 
@@ -680,9 +680,9 @@ if args.makeLinkdef:
                 linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
             else:
                 if obj in fixedSize:
-                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::BaseCollection<kTRUE>>;\n')
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::StaticCollection>;\n')
                 else:
-                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::BaseCollection<kFALSE>>;\n')
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::DynamicCollection>;\n')
 
             linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
     
