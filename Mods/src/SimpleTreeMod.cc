@@ -65,6 +65,15 @@ fillP4_(simpletree::ParticleM& _out, mithep::FourVector const& _in)
 }
 
 void
+fillP4_(simpletree::ParticleM& _out, mithep::FourVectorM const& _in)
+{
+  _out.pt = _in.Pt();
+  _out.eta = _in.Eta();
+  _out.phi = _in.Phi();
+  _out.mass = _in.M();
+}
+
+void
 mithep::SimpleTreeMod::Process()
 {
   if (fDebug)
@@ -140,7 +149,7 @@ mithep::SimpleTreeMod::Process()
       for (unsigned iW : {1, 2, 3, 4, 6, 8})
         fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(iW);
       for (unsigned id : fPdfReweightIds)
-        fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(id);
+       fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(id);
     }
   }
 
@@ -402,25 +411,20 @@ mithep::SimpleTreeMod::Process()
 
       auto& outPhoton(fEvent.photons[nP]);
 
-      double chIso, nhIso, phIso;
-      IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
       double scEta(superCluster.AbsEta());
 
       outPhoton.isEB = (scEta < mithep::gkPhoEBEtaMax);
 
       fillP4_(outPhoton, inPhoton);
 
-      outPhoton.chIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEASpring1550ns, PhotonTools::kPhoChargedHadron03);
-      outPhoton.nhIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEASpring1550ns, PhotonTools::kPhoNeutralHadron03);
-      if (outPhoton.isEB)
-        outPhoton.nhIso -= std::exp(0.0044 * inPhoton.Pt() + 0.5809);
-      else
-        outPhoton.nhIso -= std::exp(0.004 * inPhoton.Pt() + 0.9402);
-      outPhoton.phIso = IsolationTools::PFPhotonIsolationRhoCorr(scEta, phIso, fEvent.rho, PhotonTools::kPhoEASpring1550ns, PhotonTools::kPhoPhoton03);
-      if (outPhoton.isEB)
-        outPhoton.phIso -= 0.0043 * inPhoton.Pt();
-      else
-        outPhoton.phIso -= 0.0041 * inPhoton.Pt();
+      double chIso, nhIso, phIso;
+      IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+      PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
+      PhotonTools::IsoRhoCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, chIso, nhIso, phIso);
+      outPhoton.chIso = chIso;
+      outPhoton.nhIso = nhIso;
+      outPhoton.phIso = phIso;
+
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
 
@@ -657,11 +661,12 @@ mithep::SimpleTreeMod::Process()
           
           double chIso, nhIso, phIso;
           IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
-          double scEta(inElectron.SCluster()->AbsEta());
+          PhotonTools::IsoLeakageCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), inElectron.Et(), inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
+          PhotonTools::IsoRhoCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
 
-          outElectron.chIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, chIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoChargedHadron03);
-          outElectron.nhIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, nhIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoNeutralHadron03);
-          outElectron.phIsoPh = IsolationTools::PFPhotonIsolationRhoCorr(scEta, phIso, fEvent.rho, PhotonTools::kPhoEAPhys14, PhotonTools::kPhoPhoton03);
+          outElectron.chIsoPh = chIso;
+          outElectron.nhIsoPh = nhIso;
+          outElectron.phIsoPh = phIso;
 
           outElectron.sieie = inElectron.CoviEtaiEta5x5();
           outElectron.hOverE = inElectron.HadOverEmTow();
@@ -741,6 +746,7 @@ mithep::SimpleTreeMod::Process()
       fillP4_(outTau, inTau);
 
       outTau.decayMode = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByDecayModeFinding) > 0.5;
+      outTau.mode = inTau.DecayMode();
       outTau.combIso = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits);
     }
   }
@@ -750,6 +756,8 @@ mithep::SimpleTreeMod::Process()
 
   if (fJetsName.Length() != 0) {
     auto* jets = GetObject<mithep::JetCol>(fJetsName);
+    auto* jetsCorrUp = GetObject<mithep::JetCol>(fJetsCorrUpName);
+    auto* jetsCorrDown = GetObject<mithep::JetCol>(fJetsCorrDownName);
     if (!jets) {
       SendError(kAbortAnalysis, "Process", fJetsName);
       return;
@@ -761,6 +769,13 @@ mithep::SimpleTreeMod::Process()
       auto& outJet(fEvent.jets[iJ]);
 
       fillP4_(outJet, inJet);
+
+      outJet.ptRaw = inJet.RawMom().Pt();
+
+      if (jetsCorrUp)
+        outJet.ptCorrUp = jetsCorrUp->At(iJ)->Pt();
+      if (jetsCorrDown)
+        outJet.ptCorrDown = jetsCorrDown->At(iJ)->Pt();
     }
   }
 
@@ -836,8 +851,8 @@ mithep::SimpleTreeMod::BeginRun()
         SendError(kAbortAnalysis, "BeginRun", "PDF reweight factor group " + name + " not found");
       }
 
-      if (std::find(fPdfReweightGroupIds.begin(), fPdfReweightGroupIds.end(), iG) == fPdfReweightGroupIds.end());
-      fPdfReweightGroupIds.push_back(iG);
+      if (std::find(fPdfReweightGroupIds.begin(), fPdfReweightGroupIds.end(), iG) == fPdfReweightGroupIds.end())
+        fPdfReweightGroupIds.push_back(iG);
     }
 
     fPdfReweightGroupNames.clear();
@@ -855,7 +870,5 @@ mithep::SimpleTreeMod::BeginRun()
     }
 
     fPdfReweightGroupIds.clear();
-
-    fEvent.reweight.resize(6 + fPdfReweightIds.size());
   }
 }

@@ -3,6 +3,7 @@
 
 #include "MitAna/TreeMod/interface/BaseMod.h"
 #include "MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
+#include "MitPhysics/Utils/interface/PhotonTools.h"
 
 #include "TString.h"
 #include "TTree.h"
@@ -18,7 +19,10 @@ namespace mithep {
     void SetEventTreeName(char const* n) { fEventTreeName = n; }
     void SetRhoAlgo(UInt_t a) { fRhoAlgo = a; }
     void SetJetsName(char const* n) { fJetsName = n; }
+    void SetJetsCorrUpName(char const* n) { fJetsCorrUpName = n; }
+    void SetJetsCorrDownName(char const* n) { fJetsCorrDownName = n; }
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
+    void SetPhotonIsoType(UInt_t i) { fPhotonIsoType = i; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
     void SetVetoElectronsName(char const* n) { fVetoElectronsName = n; }
     void SetLooseElectronsName(char const* n) { fLooseElectronsName = n; }
@@ -67,7 +71,10 @@ namespace mithep {
     UInt_t fRhoAlgo{0};
     TString fVerticesName{"PrimaryVertexes"};
     TString fJetsName{"AKt4PFJets"};
+    TString fJetsCorrUpName{""};
+    TString fJetsCorrDownName{""};
     TString fPhotonsName{"Photons"};
+    UInt_t fPhotonIsoType{PhotonTools::kSpring15MediumIso};
     TString fElectronsName{"Electrons"};
     TString fVetoElectronsName{"VetoElectrons"};
     TString fLooseElectronsName{"LooseElectrons"};

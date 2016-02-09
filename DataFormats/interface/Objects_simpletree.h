@@ -87,6 +87,13 @@ namespace simpletree {
   class Jet : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      Float_t ptRaw[NMAX]{};
+      Float_t ptCorrUp[NMAX]{};
+      Float_t ptCorrDown[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
     Jet(array_data&, UInt_t idx);
@@ -94,6 +101,11 @@ namespace simpletree {
     virtual ~Jet() {}
     Jet& operator=(Jet const&);
     virtual void init();
+
+  public:
+    Float_t& ptRaw;
+    Float_t& ptCorrUp;
+    Float_t& ptCorrDown;
   };
 
   class Met {
@@ -420,9 +432,9 @@ namespace simpletree {
     UShort_t& ancestor;
   };
 
-  class GenJet : public Jet {
+  class GenJet : public ParticleM {
   public:
-    struct array_data : public Jet::array_data {
+    struct array_data : public ParticleM::array_data {
     };
 
     GenJet(array_data&, UInt_t idx);

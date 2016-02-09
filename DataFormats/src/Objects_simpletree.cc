@@ -109,13 +109,49 @@ simpletree::ParticleM::init()
   mass = 0.;
 }
 
+void
+simpletree::Jet::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+
+  flatutils::setStatus(_tree, _name, "ptRaw", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptCorrUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptCorrDown", _status, _branches, _whitelist);
+}
+
+void
+simpletree::Jet::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
+
+  flatutils::setStatusAndAddress(_tree, _name, "ptRaw", ptRaw, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptCorrUp", ptCorrUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptCorrDown", ptCorrDown, _branches, _whitelist);
+}
+
+void
+simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
+
+  flatutils::book(_tree, _name, "ptRaw", _name + ".size", 'F', ptRaw, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptCorrUp", _name + ".size", 'F', ptCorrUp, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptCorrDown", _name + ".size", 'F', ptCorrDown, _branches, _whitelist);
+}
+
 simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
-  ParticleM(_data, _idx)
+  ParticleM(_data, _idx),
+  ptRaw(_data.ptRaw[_idx]),
+  ptCorrUp(_data.ptCorrUp[_idx]),
+  ptCorrDown(_data.ptCorrDown[_idx])
 {
 }
 
 simpletree::Jet::Jet(Jet const& _src) :
-  ParticleM(_src)
+  ParticleM(_src),
+  ptRaw(_src.ptRaw),
+  ptCorrUp(_src.ptCorrUp),
+  ptCorrDown(_src.ptCorrDown)
 {
 }
 
@@ -124,6 +160,9 @@ simpletree::Jet::operator=(Jet const& _rhs)
 {
   ParticleM::operator=(_rhs);
 
+  ptRaw = _rhs.ptRaw;
+  ptCorrUp = _rhs.ptCorrUp;
+  ptCorrDown = _rhs.ptCorrDown;
   return *this;
 }
 
@@ -132,6 +171,9 @@ simpletree::Jet::init()
 {
   ParticleM::init();
 
+  ptRaw = 0.;
+  ptCorrUp = 0.;
+  ptCorrDown = 0.;
 }
 
 simpletree::Met::Met(Met const& _src) :
@@ -1039,19 +1081,19 @@ simpletree::MCParticle::init()
 }
 
 simpletree::GenJet::GenJet(array_data& _data, UInt_t _idx) :
-  Jet(_data, _idx)
+  ParticleM(_data, _idx)
 {
 }
 
 simpletree::GenJet::GenJet(GenJet const& _src) :
-  Jet(_src)
+  ParticleM(_src)
 {
 }
 
 simpletree::GenJet&
 simpletree::GenJet::operator=(GenJet const& _rhs)
 {
-  Jet::operator=(_rhs);
+  ParticleM::operator=(_rhs);
 
   return *this;
 }
@@ -1059,7 +1101,7 @@ simpletree::GenJet::operator=(GenJet const& _rhs)
 void
 simpletree::GenJet::init()
 {
-  Jet::init();
+  ParticleM::init();
 
 }
 
@@ -1180,7 +1222,7 @@ simpletree::ReweightScale::array_data::setAddress(TTree& _tree, TString const& _
 void
 simpletree::ReweightScale::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::book(_tree, _name, "scale", _name + ".size", 'F', scale, _branches, _whitelist);
+  flatutils::book(_tree, _name, "scale", TString::Format("%d", 256), 'F', scale, _branches, _whitelist);
 }
 
 simpletree::ReweightScale::ReweightScale(array_data& _data, UInt_t _idx) :

@@ -38,6 +38,9 @@ mass/F
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
 [Jet:ParticleM]
+ptRaw/F
+ptCorrUp/F
+ptCorrDown/F
 
 [Met:SINGLE]
 met/F
@@ -148,7 +151,7 @@ frixIso/O
 pid/I
 ancestor/s
 
-[GenJet:Jet]
+[GenJet:ParticleM]
 
 [HLT:SIZE=nHLTPaths]
 pass/O
@@ -161,7 +164,7 @@ badTrack/O
 badMuonTrack/O
 virtual bool pass() const { return !cschalo && !hbhe && !badsc && !badTrack && !badMuonTrack; }
 
-[ReweightScale:MAX=256]
+[ReweightScale:SIZE=256]
 scale/F
 
 {Event}

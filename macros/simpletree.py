@@ -108,7 +108,7 @@ looseJets = mithep.JetIdMod('JetId',
     InputName = jetCorrection.GetOutputName(),
     OutputName = 'GoodJets',
     PFId = mithep.JetTools.kPFLoose,
-    PtMin = 30.,
+    PtMin = 20.,
     EtaMax = 5.
 )
 if run == 2:
@@ -122,6 +122,18 @@ if run == 2:
     looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
 else:
     looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
+
+jetUncertaintyUp = mithep.JetCorrectionMod('JetUncertaintyUp',
+    InputName = looseJets.GetOutputName(),
+    CorrectedJetsName = 'JetUncertaintyUp',
+    UncertaintySigma = 1.
+)
+
+jetUncertaintyDown = mithep.JetCorrectionMod('JetUncertaintyDown',
+    InputName = looseJets.GetOutputName(),
+    CorrectedJetsName = 'JetUncertaintyDown',
+    UncertaintySigma = -1.
+)
 
 metCorrection = mithep.MetCorrectionMod('MetCorrection',
     InputName = 'PFMet',
@@ -156,6 +168,8 @@ for level in jecLevels:
 repl = {'level': 'Uncertainty', 'jettype': 'AK4PFchs'}
 metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
 metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
+jetUncertaintyUp.AddCorrectionFromFile(jecPattern.format(**repl))
+jetUncertaintyDown.AddCorrectionFromFile(jecPattern.format(**repl))
 
 ###########################
 ### LEPTON & PHOTON IDS ###
@@ -281,7 +295,10 @@ ntuples = mithep.SimpleTreeMod(
     EventTreeName = 'events',
     RhoAlgo = rhoAlgo,
     JetsName = looseJets.GetOutputName(),
+    JetsCorrUpName = jetUncertaintyUp.GetOutputName(),
+    JetsCorrDownName = jetUncertaintyDown.GetOutputName(),
     PhotonsName = baselinePhotons.GetOutputName(),
+    PhotonIsoType = mithep.PhotonTools.kSpring15MediumIso,
     ElectronsName = baselineElectrons.GetOutputName(),
     VetoElectronsName = vetoElectronId.GetOutputName(),
     LooseElectronsName = looseElectronId.GetOutputName(),
@@ -350,7 +367,7 @@ else:
         ConeSize = switchRun(0.4, 0.5),
         NoActiveArea = True,
         ParticleMinPt = 0.,
-        JetMinPt = 3.
+        JetMinPt = 10.
     )
 
     recoChain += [
@@ -392,10 +409,12 @@ recoChain += [
     photonTightId,
     photonHighPtId,
     jetCorrection,
-    looseJets
+    looseJets,
+    jetUncertaintyUp,
+    jetUncertaintyDown
 ]
 
-baselinePhotons.SetMinOutput(1)
+#baselinePhotons.SetMinOutput(1)
 #looseJets.SetMinOutput(2)
 ntuples.SetCondition(recoChain[-1])
 
