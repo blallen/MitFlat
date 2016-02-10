@@ -892,7 +892,6 @@ simpletree::Tau::array_data::setStatus(TTree& _tree, TString const& _name, Bool_
   ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "decayMode", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "mode", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "combIso", _status, _branches, _whitelist);
 }
 
@@ -902,7 +901,6 @@ simpletree::Tau::array_data::setAddress(TTree& _tree, TString const& _name, flat
   ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "decayMode", decayMode, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "mode", mode, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "combIso", combIso, _branches, _whitelist);
 }
 
@@ -912,14 +910,12 @@ simpletree::Tau::array_data::book(TTree& _tree, TString const& _name, flatutils:
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
   flatutils::book(_tree, _name, "decayMode", _name + ".size", 'O', decayMode, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mode", _name + ".size", 'S', mode, _branches, _whitelist);
   flatutils::book(_tree, _name, "combIso", _name + ".size", 'F', combIso, _branches, _whitelist);
 }
 
 simpletree::Tau::Tau(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx),
   decayMode(_data.decayMode[_idx]),
-  mode(_data.mode[_idx]),
   combIso(_data.combIso[_idx])
 {
 }
@@ -927,7 +923,6 @@ simpletree::Tau::Tau(array_data& _data, UInt_t _idx) :
 simpletree::Tau::Tau(Tau const& _src) :
   ParticleM(_src),
   decayMode(_src.decayMode),
-  mode(_src.mode),
   combIso(_src.combIso)
 {
 }
@@ -938,7 +933,6 @@ simpletree::Tau::operator=(Tau const& _rhs)
   ParticleM::operator=(_rhs);
 
   decayMode = _rhs.decayMode;
-  mode = _rhs.mode;
   combIso = _rhs.combIso;
   return *this;
 }
@@ -949,7 +943,6 @@ simpletree::Tau::init()
   ParticleM::init();
 
   decayMode = false;
-  mode = 0;
   combIso = 0.;
 }
 

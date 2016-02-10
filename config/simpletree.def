@@ -139,7 +139,6 @@ matchHLT27/O
 
 [Tau:ParticleM]
 decayMode/O
-mode/S
 combIso/F
 
 [Parton:ParticleM]

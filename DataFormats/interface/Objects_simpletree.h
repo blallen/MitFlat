@@ -366,7 +366,6 @@ namespace simpletree {
   public:
     struct array_data : public ParticleM::array_data {
       Bool_t decayMode[NMAX]{};
-      Short_t mode[NMAX]{};
       Float_t combIso[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -382,7 +381,6 @@ namespace simpletree {
 
   public:
     Bool_t& decayMode;
-    Short_t& mode;
     Float_t& combIso;
   };
 

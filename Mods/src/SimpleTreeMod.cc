@@ -746,7 +746,6 @@ mithep::SimpleTreeMod::Process()
       fillP4_(outTau, inTau);
 
       outTau.decayMode = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByDecayModeFinding) > 0.5;
-      outTau.mode = inTau.DecayMode();
       outTau.combIso = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits);
     }
   }
