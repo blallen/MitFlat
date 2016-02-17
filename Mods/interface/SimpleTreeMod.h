@@ -36,6 +36,7 @@ namespace mithep {
     void SetMediumPhotonName(char const* n) { fMediumPhotonName = n; }
     void SetTightPhotonName(char const* n) { fTightPhotonName = n; }
     void SetHighPtPhotonName(char const* n) { fHighPtPhotonName = n; }
+    void SetPileupCandsName(char const* n) { fPileupCandsName = n; }
     void SetRawMetName(char const* n) { fRawMetName = n; }
     void SetT1MetName(char const* n) { fT1MetName = n; }
     void SetCorrUpMetName(char const* n) { fCorrUpMetName = n; }
@@ -87,6 +88,7 @@ namespace mithep {
     TString fMediumPhotonName{"MediumPhotons"};
     TString fTightPhotonName{"TightPhotons"};
     TString fHighPtPhotonName{"HighPtPhotons"};
+    TString fPileupCandsName{"PileupCandidates"};
     TString fRawMetName{"PFMet"};
     TString fT1MetName{""};
     TString fCorrUpMetName{""};

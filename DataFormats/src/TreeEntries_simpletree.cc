@@ -16,7 +16,7 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   flatutils::setStatus(_tree, "", "npv", _status, _branches, _whitelist);
 
   partons.setStatus(_tree, _status, flatutils::subBranchList(_branches, "partons"), _whitelist);
-  partonFinalStates.setStatus(_tree, _status, flatutils::subBranchList(_branches, "partonFinalStates"), _whitelist);
+  promptFinalStates.setStatus(_tree, _status, flatutils::subBranchList(_branches, "promptFinalStates"), _whitelist);
   jets.setStatus(_tree, _status, flatutils::subBranchList(_branches, "jets"), _whitelist);
   genJets.setStatus(_tree, _status, flatutils::subBranchList(_branches, "genJets"), _whitelist);
   photons.setStatus(_tree, _status, flatutils::subBranchList(_branches, "photons"), _whitelist);
@@ -42,7 +42,7 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   flatutils::setStatusAndAddress(_tree, "", "npv", &npv, _branches, _whitelist);
 
   partons.setAddress(_tree, flatutils::subBranchList(_branches, "partons"), _whitelist);
-  partonFinalStates.setAddress(_tree, flatutils::subBranchList(_branches, "partonFinalStates"), _whitelist);
+  promptFinalStates.setAddress(_tree, flatutils::subBranchList(_branches, "promptFinalStates"), _whitelist);
   jets.setAddress(_tree, flatutils::subBranchList(_branches, "jets"), _whitelist);
   genJets.setAddress(_tree, flatutils::subBranchList(_branches, "genJets"), _whitelist);
   photons.setAddress(_tree, flatutils::subBranchList(_branches, "photons"), _whitelist);
@@ -68,7 +68,7 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   flatutils::book(_tree, "", "npv", "", 's', &npv, _branches, _whitelist);
 
   partons.book(_tree, flatutils::subBranchList(_branches, "partons"), _whitelist);
-  partonFinalStates.book(_tree, flatutils::subBranchList(_branches, "partonFinalStates"), _whitelist);
+  promptFinalStates.book(_tree, flatutils::subBranchList(_branches, "promptFinalStates"), _whitelist);
   jets.book(_tree, flatutils::subBranchList(_branches, "jets"), _whitelist);
   genJets.book(_tree, flatutils::subBranchList(_branches, "genJets"), _whitelist);
   photons.book(_tree, flatutils::subBranchList(_branches, "photons"), _whitelist);
@@ -94,7 +94,7 @@ simpletree::Event::init()
   npv = 0;
 
   partons.init();
-  partonFinalStates.init();
+  promptFinalStates.init();
   jets.init();
   genJets.init();
   photons.init();

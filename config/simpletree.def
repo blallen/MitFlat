@@ -57,6 +57,7 @@ virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2
 
 [Photon:Particle]
 chIso/F
+chWorstIso/F
 nhIso/F
 phIso/F
 sieie/F
@@ -132,6 +133,7 @@ bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 
 bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
 [Muon:Lepton]
+combRelIso/F
 matchHLT20/O
 matchHLTTrk20/O
 matchHLT24/O
@@ -158,10 +160,11 @@ pass/O
 [MetFilters:SINGLE]
 cschalo/O
 hbhe/O
+hbheIso/O
 badsc/O
 badTrack/O
 badMuonTrack/O
-virtual bool pass() const { return !cschalo && !hbhe && !badsc && !badTrack && !badMuonTrack; }
+virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
 [ReweightScale:SIZE=256]
 scale/F
@@ -174,7 +177,7 @@ weight/D
 rho/D
 npv/s
 partons/PartonCollection
-partonFinalStates/MCParticleCollection
+promptFinalStates/MCParticleCollection
 jets/JetCollection
 genJets/GenJetCollection
 photons/PhotonCollection

@@ -116,8 +116,7 @@ mithep::SimpleTreeMod::Process()
   auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
   auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
   std::vector<mithep::MCParticle const*> finalState;
-  typedef std::pair<mithep::MCParticle const*, mithep::MCParticle const*> ParticlePair;
-  std::vector<ParticlePair> partonFinalState;
+  std::vector<mithep::MCParticle const*> promptFinalState;
   TVector3 genVertex;
 
   auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
@@ -161,22 +160,27 @@ mithep::SimpleTreeMod::Process()
 
     fEvent.metFilters.cschalo = false;
     fEvent.metFilters.hbhe = false;
+    fEvent.metFilters.hbheIso = false;
     fEvent.metFilters.badsc = false;
     fEvent.metFilters.badTrack = false;
     fEvent.metFilters.badMuonTrack = false;
 
     for (unsigned iF(0); iF != filterResults->GetEntries(); ++iF) {
       TString name(filterNames->At(iF)->GetName());
-      if (name == "CSCBeamHalo")
+      if (name == "CSCTightHaloFilter")
         fEvent.metFilters.cschalo |= filterResults->At(iF);
-      else if (name == "HBHENoise")
+      else if (name == "HBHENoiseFilter")
         fEvent.metFilters.hbhe |= filterResults->At(iF);
-      else if (name == "EEBadSc")
+      else if (name == "HBHENoiseIsoFilter")
+        fEvent.metFilters.hbheIso |= filterResults->At(iF);
+      else if (name == "EEBadScFilter")
         fEvent.metFilters.badsc |= filterResults->At(iF);
-      else if (name == "BadResolutionTrack")
+      else if (name == "CHTrackResolutionFilter")
         fEvent.metFilters.badTrack |= filterResults->At(iF);
-      else if (name == "MuonBadTrack")
+      else if (name == "MuBadTrackFilter")
         fEvent.metFilters.badMuonTrack |= filterResults->At(iF);
+      else
+        SendError(kWarning, "Process", "MET filter " + name + " is not supported");
     }
   }
 
@@ -239,61 +243,50 @@ mithep::SimpleTreeMod::Process()
 
     for (auto* mcp : finalState) {
       auto const* mother(mcp);
-      // status 23: outgoing from hardest process
-      while (mother && mother->Status() != 23 && mother->Status() != 22)
+
+      while (mother) {
+        if ((mother->Status() == 2 || (mother->Status() > 70 && mother->Status() < 100)) && ((mother->AbsPdgId() / 100) % 10 != 0 || mother->AbsPdgId() == 13 || mother->AbsPdgId() == 15)) {
+          // mother is a decaying lepton or hadron
+          auto* copy = mother;
+          while (true) {
+            auto* daughter = copy->FindDaughter(copy->PdgId(), true);
+            if (daughter)
+              copy = daughter;
+            else
+              break;
+          }
+          if (copy == mother) {
+            // mother is the last copy
+            break;
+          }
+        }
+
         mother = mother->Mother();
+      }
 
-      if (!mother)
+      if (mother) // is a decay product
         continue;
 
-      unsigned motherId(std::abs(mother->PdgId()));
-      if (motherId < 6 || motherId == 21)
-        continue;
+      fEvent.promptFinalStates.resize(fEvent.promptFinalStates.size() + 1);
+      promptFinalState.push_back(mcp);
 
-      partonFinalState.emplace_back(mcp, mother);
-    }
-
-    // highest pt first
-    auto ptOrdering([](ParticlePair const& lhs, ParticlePair const& rhs)->bool {
-        return lhs.first->Pt() > rhs.first->Pt();
-      });
-
-    std::sort(partonFinalState.begin(), partonFinalState.end(), ptOrdering);
-
-    unsigned nF(0);
-    for (auto& pp : partonFinalState) {
-      auto* mcp(pp.first);
-      auto* parton(pp.second);
-
-      auto& outFS(fEvent.partonFinalStates[nF++]);
+      auto& outFS(fEvent.promptFinalStates.back());
 
       fillP4_(outFS, *mcp);
       outFS.pid = mcp->PdgId();
 
       outFS.ancestor = -1;
-      double dRMin(-1.);
-
-      if (parton->PdgId() != mcp->PdgId()) {
-        auto* daughter = parton->FindDaughter(mcp->PdgId(), true);
-        if (daughter)
-          parton = daughter;
-      }
-
-      for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
-        if (mcEvent->PartonStatus(iP) != 1)
+      for (unsigned iP(0); iP != fEvent.partons.size(); ++iP) {
+        auto& parton(fEvent.partons[iP]);
+        if (parton.status != 1)
           continue;
 
-        double dR(mithep::MathUtils::DeltaR(*parton, *mcEvent->PartonMom(iP)));
-        if (dRMin < 0. || dR < dRMin) {
-          outFS.ancestor = partonMap[iP];
-          dRMin = dR;
+        if (parton.dR2(outFS) < 0.0225) {
+          outFS.ancestor = iP;
+          break;
         }
       }
-
-      if (nF == simpletree::Particle::array_data::NMAX)
-        break;
     }
-    fEvent.partonFinalStates.resize(nF);
   }
 
   // gen jet
@@ -425,6 +418,24 @@ mithep::SimpleTreeMod::Process()
       outPhoton.nhIso = nhIso;
       outPhoton.phIso = phIso;
 
+      double chIsoMax(chIso);
+      for (unsigned iV(0); iV != vertices->GetEntries(); ++iV) {
+        IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(iV), pfCandidates, 0.3, chIso, nhIso, phIso);
+        PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
+        // Bhawna's measurements https://indico.cern.ch/event/497362/contribution/0/attachments/1229353/1801307/Monophoton_checks_meeting16Feb.pdf
+        if (scEta < 1.)
+          chIso -= 0.078 * fEvent.rho;
+        else if (scEta < 1.5)
+          chIso -= 0.089 * fEvent.rho;
+
+        if (chIso < 0.)
+          chIso = 0.;
+
+        if (chIso > chIsoMax)
+          chIsoMax = chIso;
+      }
+      outPhoton.chWorstIso = chIsoMax;
+
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
 
@@ -507,8 +518,8 @@ mithep::SimpleTreeMod::Process()
 
         mithep::MCParticle const* matched(0);
 
-        for (unsigned iFS(0); iFS != fEvent.partonFinalStates.size(); ++iFS) {
-          auto& fs(fEvent.partonFinalStates[iFS]);
+        for (unsigned iFS(0); iFS != fEvent.promptFinalStates.size(); ++iFS) {
+          auto& fs(fEvent.promptFinalStates[iFS]);
           if (fs.pid != 22)
             continue;
           if (fs.ancestor >= fEvent.partons.size())
@@ -520,7 +531,7 @@ mithep::SimpleTreeMod::Process()
 
           auto&& partP4(fs.p4());
           if (caloDir.DeltaR(TVector3(partP4.X(), partP4.Y(), partP4.Z())) < 0.1) {
-            matched = partonFinalState[iFS].first;
+            matched = promptFinalState[iFS];
             outPhoton.matchedGen = -22;
             break;
           }
@@ -626,100 +637,110 @@ mithep::SimpleTreeMod::Process()
     Info("Process", "Fill leptons");
 
   for (unsigned iC(0); iC != 2; ++iC) {
-    if (inputLeptonName[iC]->Length() != 0) {
-      auto* leptons = GetObject<mithep::ParticleCol>(*inputLeptonName[iC]);
-      if (!leptons) {
-        SendError(kAbortAnalysis, "Process", *inputLeptonName[iC]);
-        return;
-      }
+    if (inputLeptonName[iC]->Length() == 0)
+      continue;
 
-      mithep::NFArrBool* vetoMask = 0;
-      mithep::NFArrBool* looseMask = 0;
-      auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
+    auto* leptons = GetObject<mithep::ParticleCol>(*inputLeptonName[iC]);
+    if (!leptons) {
+      SendError(kAbortAnalysis, "Process", *inputLeptonName[iC]);
+      return;
+    }
+
+    mithep::NFArrBool const* vetoMask = 0;
+    mithep::NFArrBool const* looseMask = 0;
+    mithep::PFCandidateCol const* pileupCands = 0;
+    auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
+    if (iC == 0) {
+      vetoMask = GetObject<mithep::NFArrBool>(fVetoElectronsName);
+      looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
+    }
+    else {
+      pileupCands = GetObject<mithep::PFCandidateCol>(fPileupCandsName);
+    }
+
+    outputCollection[iC]->resize(leptons->GetEntries());
+
+    for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
+      auto& inLepton(*leptons->At(iL));
+      auto& outLepton((*outputCollection[iC])[iL]);
+
+      fillP4_(outLepton, inLepton);
+
+      outLepton.positive = inLepton.Charge() > 0.;
+      outLepton.tight = tightMask->At(iL);
+
       if (iC == 0) {
-        vetoMask = GetObject<mithep::NFArrBool>(fVetoElectronsName);
-        looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
+        auto& inElectron(static_cast<mithep::Electron&>(inLepton));
+        auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
+
+        outElectron.veto = vetoMask->At(iL);
+        outElectron.loose = looseMask->At(iL);
+        outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
+          
+        double chIso, nhIso, phIso;
+        IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+        PhotonTools::IsoLeakageCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), inElectron.Et(), inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
+        PhotonTools::IsoRhoCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
+
+        outElectron.chIsoPh = chIso;
+        outElectron.nhIsoPh = nhIso;
+        outElectron.phIsoPh = phIso;
+
+        outElectron.sieie = inElectron.CoviEtaiEta5x5();
+        outElectron.hOverE = inElectron.HadOverEmTow();
+      }
+      else {
+        auto& inMuon(static_cast<mithep::Muon&>(inLepton));
+        auto& outMuon(static_cast<simpletree::Muon&>(outLepton));
+
+        outMuon.loose = true;
+        outMuon.combRelIso = IsolationTools::BetaMwithPUCorrection(pfCandidates, pileupCands, &inMuon, 0.4) / outMuon.pt;
       }
 
-      outputCollection[iC]->resize(leptons->GetEntries());
-      for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
-        auto& inLepton(*leptons->At(iL));
-        auto& outLepton((*outputCollection[iC])[iL]);
+      for (unsigned iT(0); iT != nHLTPaths[iC]; ++iT) {
+        simpletree::HLTPath iPath(hltPaths[iC][iT]);
+        if (!toLists[iPath]) {
+          hltMatch[iC][iT][iL] = false;
+          continue;
+        }
 
-        fillP4_(outLepton, inLepton);
+        int iO(0);
+        for (; iO != toLists[iPath]->GetEntries(); ++iO) {
+          auto& obj(*static_cast<mithep::TriggerObject*>(toLists[iPath]->At(iO)));
+          if (mithep::MathUtils::DeltaR(inLepton, obj) < 0.1)
+            break;
+        }
+        hltMatch[iC][iT][iL] = (iO != toLists[iPath]->GetEntries());
+      }
 
-        outLepton.positive = inLepton.Charge() > 0.;
-        outLepton.tight = tightMask->At(iL);
+      if (fIsMC) {
+        outLepton.matchedGen = 0;
 
-        if (iC == 0) {
-          auto& inElectron(static_cast<mithep::Electron&>(inLepton));
-          auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
+        double minDR(-1.);
+        mithep::MCParticle const* matched(0);
 
-          outElectron.veto = vetoMask->At(iL);
-          outElectron.loose = looseMask->At(iL);
-          outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
-          
-          double chIso, nhIso, phIso;
-          IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
-          PhotonTools::IsoLeakageCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), inElectron.Et(), inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
-          PhotonTools::IsoRhoCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
+        for (auto* part : finalState) {
+          double dR(mithep::MathUtils::DeltaR(inLepton, *part));
+          if (dR < 0.05 && (minDR < 0. || dR < minDR)) {
+            outLepton.matchedGen = part->PdgId();
 
-          outElectron.chIsoPh = chIso;
-          outElectron.nhIsoPh = nhIso;
-          outElectron.phIsoPh = phIso;
+            minDR = dR;
+            matched = part;
+          }
+        }
 
-          outElectron.sieie = inElectron.CoviEtaiEta5x5();
-          outElectron.hOverE = inElectron.HadOverEmTow();
+        if (matched) {
+          auto* mother(matched->DistinctMother());
+          if ((mother->PdgId() == 2212 && !mother->HasMother()) || mother->StatusFlag(11)) // kFromHardProcessBeforeFSR
+            outLepton.tauDecay = outLepton.hadDecay = false;
+          else {
+            unsigned motherId(std::abs(mother->PdgId()));
+            outLepton.tauDecay = (motherId == 15);
+            outLepton.hadDecay = (motherId == 21 || motherId > 25);
+          }
         }
         else {
-          outLepton.loose = true;
-        }
-
-        for (unsigned iT(0); iT != nHLTPaths[iC]; ++iT) {
-          simpletree::HLTPath iPath(hltPaths[iC][iT]);
-          if (!toLists[iPath]) {
-            hltMatch[iC][iT][iL] = false;
-            continue;
-          }
-
-          int iO(0);
-          for (; iO != toLists[iPath]->GetEntries(); ++iO) {
-            auto& obj(*static_cast<mithep::TriggerObject*>(toLists[iPath]->At(iO)));
-            if (mithep::MathUtils::DeltaR(inLepton, obj) < 0.1)
-              break;
-          }
-          hltMatch[iC][iT][iL] = (iO != toLists[iPath]->GetEntries());
-        }
-
-        if (fIsMC) {
-          outLepton.matchedGen = 0;
-
-          double minDR(-1.);
-          mithep::MCParticle const* matched(0);
-
-          for (auto* part : finalState) {
-            double dR(mithep::MathUtils::DeltaR(inLepton, *part));
-            if (dR < 0.05 && (minDR < 0. || dR < minDR)) {
-              outLepton.matchedGen = part->PdgId();
-
-              minDR = dR;
-              matched = part;
-            }
-          }
-
-          if (matched) {
-            auto* mother(matched->DistinctMother());
-            if ((mother->PdgId() == 2212 && !mother->HasMother()) || mother->StatusFlag(11)) // kFromHardProcessBeforeFSR
-              outLepton.tauDecay = outLepton.hadDecay = false;
-            else {
-              unsigned motherId(std::abs(mother->PdgId()));
-              outLepton.tauDecay = (motherId == 15);
-              outLepton.hadDecay = (motherId == 21 || motherId > 25);
-            }
-          }
-          else {
-            outLepton.tauDecay = outLepton.hadDecay = false;
-          }
+          outLepton.tauDecay = outLepton.hadDecay = false;
         }
       }
     }

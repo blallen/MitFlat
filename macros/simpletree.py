@@ -226,8 +226,8 @@ looseMuons = mithep.MuonIdMod('LooseMuons',
     OutputName = 'LooseMuons',
     IdType = mithep.MuonTools.kLoose,
     IsoType = mithep.MuonTools.kNoIso,
-    PFNoPileupCandidatesName = 'pfNoPU',
-    PFPileupCandidatesName = 'pfPU',
+    PFNoPileupCandidatesName = separatePileUpMod.GetPFNoPileUpName(),
+    PFPileupCandidatesName = separatePileUpMod.GetPFPileUpName(),
     ApplyD0Cut = True,
     ApplyDZCut = True,
     PtMin = 10.,
@@ -312,6 +312,7 @@ ntuples = mithep.SimpleTreeMod(
     MediumPhotonName = photonMediumId.GetOutputName(),
     TightPhotonName = photonTightId.GetOutputName(),
     HighPtPhotonName = photonHighPtId.GetOutputName(),
+    PileupCandsName = separatePileUpMod.GetPFPileUpName(),
     RawMetName = 'PFMet',
     T1MetName = metCorrection.GetOutputName(),
     CorrUpMetName = metCorrectionJESUp.GetOutputName(),
@@ -333,12 +334,13 @@ if analysis.isRealData:
         FillHist = True,
         TaggingMode = True
     )
-    badEventsFilterMod.SetFilter('HBHENoise')
-    badEventsFilterMod.SetFilter('EEBadSc')
-    badEventsFilterMod.AddEventList('CSCBeamHalo', '/scratch5/yiiyama/eventlist/csc2015_Dec01.txt')
-    badEventsFilterMod.AddEventList('EEBadSc', '/scratch5/yiiyama/eventlist/ecalscn1043093_Dec01.txt')
-    badEventsFilterMod.AddEventList('BadResolutionTrack', '/scratch5/yiiyama/eventlist/badResolutionTrack_Jan13.txt')
-    badEventsFilterMod.AddEventList('MuonBadTrack', '/scratch5/yiiyama/eventlist/muonBadTrack_Jan13.txt')
+    badEventsFilterMod.SetFilter('HBHENoiseFilter')
+    badEventsFilterMod.SetFilter('EEBadScFilter')
+    badEventsFilterMod.AddEventList('CSCTightHaloFilter', '/scratch5/yiiyama/eventlist/csc2015_Dec01.txt')
+    badEventsFilterMod.AddEventList('EEBadScFilter', '/scratch5/yiiyama/eventlist/ecalscn1043093_Dec01.txt')
+    badEventsFilterMod.AddEventList('CHTrackResolutionFilter', '/scratch5/yiiyama/eventlist/badResolutionTrack_Jan13.txt')
+    badEventsFilterMod.AddEventList('MuBadTrackFilter', '/scratch5/yiiyama/eventlist/muonBadTrack_Jan13.txt')
+    badEventsFilterMod.AddEventList('HBHENoiseIsoFilter', '/scratch5/yiiyama/eventlist/hbheiso_Jan13.txt')
 
     recoChain.append(badEventsFilterMod)
 

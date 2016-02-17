@@ -164,6 +164,7 @@ namespace simpletree {
 
     struct array_data : public Particle::array_data {
       Float_t chIso[NMAX]{};
+      Float_t chWorstIso[NMAX]{};
       Float_t nhIso[NMAX]{};
       Float_t phIso[NMAX]{};
       Float_t sieie[NMAX]{};
@@ -218,6 +219,7 @@ namespace simpletree {
 
   public:
     Float_t& chIso;
+    Float_t& chWorstIso;
     Float_t& nhIso;
     Float_t& phIso;
     Float_t& sieie;
@@ -339,6 +341,7 @@ namespace simpletree {
   class Muon : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
+      Float_t combRelIso[NMAX]{};
       Bool_t matchHLT20[NMAX]{};
       Bool_t matchHLTTrk20[NMAX]{};
       Bool_t matchHLT24[NMAX]{};
@@ -356,6 +359,7 @@ namespace simpletree {
     virtual void init();
 
   public:
+    Float_t& combRelIso;
     Bool_t& matchHLT20;
     Bool_t& matchHLTTrk20;
     Bool_t& matchHLT24;
@@ -477,7 +481,7 @@ namespace simpletree {
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
-    virtual bool pass() const { return !cschalo && !hbhe && !badsc && !badTrack && !badMuonTrack; }
+    virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
   protected:
     TString name_;
@@ -485,6 +489,7 @@ namespace simpletree {
   public:
     Bool_t cschalo{};
     Bool_t hbhe{};
+    Bool_t hbheIso{};
     Bool_t badsc{};
     Bool_t badTrack{};
     Bool_t badMuonTrack{};
