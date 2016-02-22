@@ -177,6 +177,7 @@ weight/D
 rho/D
 npv/s
 partons/PartonCollection
+partonFinalStates/MCParticleCollection
 promptFinalStates/MCParticleCollection
 jets/JetCollection
 genJets/GenJetCollection
