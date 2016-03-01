@@ -330,17 +330,19 @@ recoChain = [hltMod]
 recoChain.append(goodPVFilterMod)
 
 if analysis.isRealData:
+    eventlistDir = '/cvmfs/cvmfs.cmsaf.mit.edu/hidsk0001/cmsprod/cms/MitPhysics/data/eventfilter'
+
     badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
         FillHist = True,
         TaggingMode = True
     )
     badEventsFilterMod.SetFilter('HBHENoiseFilter')
     badEventsFilterMod.SetFilter('EEBadScFilter')
-    badEventsFilterMod.AddEventList('CSCTightHaloFilter', '/scratch5/yiiyama/eventlist/csc2015_Dec01.txt')
-    badEventsFilterMod.AddEventList('EEBadScFilter', '/scratch5/yiiyama/eventlist/ecalscn1043093_Dec01.txt')
-    badEventsFilterMod.AddEventList('CHTrackResolutionFilter', '/scratch5/yiiyama/eventlist/badResolutionTrack_Jan13.txt')
-    badEventsFilterMod.AddEventList('MuBadTrackFilter', '/scratch5/yiiyama/eventlist/muonBadTrack_Jan13.txt')
-    badEventsFilterMod.AddEventList('HBHENoiseIsoFilter', '/scratch5/yiiyama/eventlist/hbheiso_Jan13.txt')
+    badEventsFilterMod.AddEventList('CSCTightHaloFilter', eventlistDir + '/csc2015_Dec01.txt')
+    badEventsFilterMod.AddEventList('EEBadScFilter', eventlistDir + '/ecalscn1043093_Dec01.txt')
+    badEventsFilterMod.AddEventList('CHTrackResolutionFilter', eventlistDir + '/badResolutionTrack_Jan13.txt')
+    badEventsFilterMod.AddEventList('MuBadTrackFilter', eventlistDir + '/muonBadTrack_Jan13.txt')
+    badEventsFilterMod.AddEventList('HBHENoiseIsoFilter', eventlistDir + '/hbheiso_Jan13.txt')
 
     recoChain.append(badEventsFilterMod)
 

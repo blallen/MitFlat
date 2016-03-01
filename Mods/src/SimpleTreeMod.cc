@@ -167,6 +167,7 @@ mithep::SimpleTreeMod::Process()
 
     for (unsigned iF(0); iF != filterResults->GetEntries(); ++iF) {
       TString name(filterNames->At(iF)->GetName());
+
       if (name == "CSCTightHaloFilter")
         fEvent.metFilters.cschalo |= filterResults->At(iF);
       else if (name == "HBHENoiseFilter")
@@ -245,7 +246,8 @@ mithep::SimpleTreeMod::Process()
       auto const* mother(mcp);
 
       while (mother) {
-        if ((mother->Status() == 2 || (mother->Status() > 70 && mother->Status() < 100)) && ((mother->AbsPdgId() / 100) % 10 != 0 || mother->AbsPdgId() == 13 || mother->AbsPdgId() == 15)) {
+        unsigned mId(mother->AbsPdgId());
+        if ((mother->Status() == 2 || (mother->Status() > 30 && mother->Status() < 100)) && ((mId / 100) % 10 != 0 || mId < 7 || mId == 21 || mId == 13 || mId == 15)) {
           // mother is a decaying lepton or hadron
           auto* copy = mother;
           while (true) {
@@ -419,7 +421,7 @@ mithep::SimpleTreeMod::Process()
       outPhoton.phIso = phIso;
 
       double chIsoMax(chIso);
-      for (unsigned iV(0); iV != vertices->GetEntries(); ++iV) {
+      for (unsigned iV(0); iV < vertices->GetEntries(); ++iV) {
         IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(iV), pfCandidates, 0.3, chIso, nhIso, phIso);
         PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
         // Bhawna's measurements https://indico.cern.ch/event/497362/contribution/0/attachments/1229353/1801307/Monophoton_checks_meeting16Feb.pdf
