@@ -415,27 +415,32 @@ mithep::SimpleTreeMod::Process()
       double chIso, nhIso, phIso;
       IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
       PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
+
+      // save the chIso without rho correction
+      double chIsoMax(chIso);
+
       PhotonTools::IsoRhoCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, chIso, nhIso, phIso);
       outPhoton.chIso = chIso;
       outPhoton.nhIso = nhIso;
       outPhoton.phIso = phIso;
 
-      double chIsoMax(chIso);
-      for (unsigned iV(0); iV < vertices->GetEntries(); ++iV) {
+      // compare to the chIso without rho correction using other vertices
+      for (unsigned iV(1); iV < vertices->GetEntries(); ++iV) {
         IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(iV), pfCandidates, 0.3, chIso, nhIso, phIso);
         PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
-        // Bhawna's measurements https://indico.cern.ch/event/497362/contribution/0/attachments/1229353/1801307/Monophoton_checks_meeting16Feb.pdf
-        if (scEta < 1.)
-          chIso -= 0.078 * fEvent.rho;
-        else if (scEta < 1.5)
-          chIso -= 0.089 * fEvent.rho;
-
-        if (chIso < 0.)
-          chIso = 0.;
-
         if (chIso > chIsoMax)
           chIsoMax = chIso;
       }
+
+      // Bhawna's measurements https://indico.cern.ch/event/497362/contribution/0/attachments/1229353/1801307/Monophoton_checks_meeting16Feb.pdf
+      if (scEta < 1.)
+        chIsoMax -= 0.078 * fEvent.rho;
+      else if (scEta < 1.5)
+        chIsoMax -= 0.089 * fEvent.rho;
+
+      if (chIsoMax < 0.)
+        chIsoMax = 0.;
+
       outPhoton.chWorstIso = chIsoMax;
 
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
