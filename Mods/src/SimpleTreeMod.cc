@@ -247,7 +247,7 @@ mithep::SimpleTreeMod::Process()
 
       while (mother) {
         unsigned mId(mother->AbsPdgId());
-        if ((mother->Status() == 2 || (mother->Status() > 30 && mother->Status() < 100)) && ((mId / 100) % 10 != 0 || mId < 7 || mId == 21 || mId == 13 || mId == 15)) {
+        if ((mother->Status() == 2 || (mother->Status() > 70 && mother->Status() < 100)) && ((mId / 100) % 10 != 0 || mId < 7 || mId == 21 || mId == 13 || mId == 15)) {
           // mother is a decaying lepton or hadron
           auto* copy = mother;
           while (true) {
@@ -415,33 +415,21 @@ mithep::SimpleTreeMod::Process()
       double chIso, nhIso, phIso;
       IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
       PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
-
-      // save the chIso without rho correction
-      double chIsoMax(chIso);
-
       PhotonTools::IsoRhoCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, chIso, nhIso, phIso);
       outPhoton.chIso = chIso;
       outPhoton.nhIso = nhIso;
       outPhoton.phIso = phIso;
 
-      // compare to the chIso without rho correction using other vertices
-      for (unsigned iV(1); iV < vertices->GetEntries(); ++iV) {
-        IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(iV), pfCandidates, 0.3, chIso, nhIso, phIso);
-        PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
-        if (chIso > chIsoMax)
-          chIsoMax = chIso;
-      }
+      // PFWorst iso is not done quite right, but we'll play along
+      double chWorstIso = IsolationTools::PFChargedIsolation(&inPhoton, 0, 0.3, 0., pfCandidates, 0, vertices);
 
       // Bhawna's measurements https://indico.cern.ch/event/497362/contribution/0/attachments/1229353/1801307/Monophoton_checks_meeting16Feb.pdf
       if (scEta < 1.)
-        chIsoMax -= 0.078 * fEvent.rho;
+        chWorstIso -= 0.078 * fEvent.rho;
       else if (scEta < 1.5)
-        chIsoMax -= 0.089 * fEvent.rho;
+        chWorstIso -= 0.089 * fEvent.rho;
 
-      if (chIsoMax < 0.)
-        chIsoMax = 0.;
-
-      outPhoton.chWorstIso = chIsoMax;
+      outPhoton.chWorstIso = std::max(chWorstIso, 0.);
 
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
