@@ -4,7 +4,7 @@
 #include "MitAna/DataTree/interface/MCRunInfo.h"
 #include "MitAna/DataTree/interface/ParticleCol.h"
 #include "MitAna/DataTree/interface/MetCol.h"
-#include "MitAna/DataTree/interface/JetCol.h"
+#include "MitAna/DataTree/interface/PFJetCol.h"
 #include "MitAna/DataTree/interface/PhotonCol.h"
 #include "MitAna/DataTree/interface/PFTauCol.h"
 #include "MitAna/DataTree/interface/DecayParticleCol.h"
@@ -415,10 +415,24 @@ mithep::SimpleTreeMod::Process()
       double chIso, nhIso, phIso;
       IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
       PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
+
+      // save the maximum iso with no rho correction
+      double chIsoMax(chIso);
+
       PhotonTools::IsoRhoCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, chIso, nhIso, phIso);
       outPhoton.chIso = chIso;
       outPhoton.nhIso = nhIso;
       outPhoton.phIso = phIso;
+
+      // compare to the chIso without rho correction using other vertices
+      for (unsigned iV(1); iV < vertices->GetEntries(); ++iV) {
+        IsolationTools::PFEGIsoFootprintRemoved(&inPhoton, vertices->At(iV), pfCandidates, 0.3, chIso, nhIso, phIso);
+        PhotonTools::IsoLeakageCorrection(&inPhoton, PhotonTools::EPhIsoType(fPhotonIsoType), chIso, nhIso, phIso);
+        if (chIso > chIsoMax)
+          chIsoMax = chIso;
+      }
+
+      outPhoton.chIsoMax = chIsoMax;
 
       // PFWorst iso is not done quite right, but we'll play along
       double chWorstIso = IsolationTools::PFChargedIsolation(&inPhoton, 0, 0.3, 0., pfCandidates, 0, vertices);
@@ -770,9 +784,9 @@ mithep::SimpleTreeMod::Process()
     Info("Process", "Fill jets");
 
   if (fJetsName.Length() != 0) {
-    auto* jets = GetObject<mithep::JetCol>(fJetsName);
-    auto* jetsCorrUp = GetObject<mithep::JetCol>(fJetsCorrUpName);
-    auto* jetsCorrDown = GetObject<mithep::JetCol>(fJetsCorrDownName);
+    auto* jets = GetObject<mithep::PFJetCol>(fJetsName);
+    auto* jetsCorrUp = GetObject<mithep::PFJetCol>(fJetsCorrUpName);
+    auto* jetsCorrDown = GetObject<mithep::PFJetCol>(fJetsCorrDownName);
     if (!jets) {
       SendError(kAbortAnalysis, "Process", fJetsName);
       return;
@@ -785,7 +799,12 @@ mithep::SimpleTreeMod::Process()
 
       fillP4_(outJet, inJet);
 
-      outJet.ptRaw = inJet.RawMom().Pt();
+      auto&& pRaw(inJet.RawMom());
+
+      outJet.ptRaw = pRaw.Pt();
+      
+      double eRaw(pRaw.E());
+      outJet.mjid = (inJet.NeutralHadronEnergy() / eRaw < 0.8 && inJet.ChargedHadronEnergy() / eRaw > 0.1);
 
       if (jetsCorrUp)
         outJet.ptCorrUp = jetsCorrUp->At(iJ)->Pt();

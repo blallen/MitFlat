@@ -38,6 +38,7 @@ mass/F
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
 [Jet:ParticleM]
+mjid/O
 ptRaw/F
 ptCorrUp/F
 ptCorrDown/F
@@ -58,6 +59,7 @@ virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2
 [Photon:Particle]
 chIso/F
 chWorstIso/F
+chIsoMax/F
 nhIso/F
 phIso/F
 sieie/F

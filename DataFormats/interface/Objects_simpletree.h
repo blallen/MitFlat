@@ -87,6 +87,7 @@ namespace simpletree {
   class Jet : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      Bool_t mjid[NMAX]{};
       Float_t ptRaw[NMAX]{};
       Float_t ptCorrUp[NMAX]{};
       Float_t ptCorrDown[NMAX]{};
@@ -103,6 +104,7 @@ namespace simpletree {
     virtual void init();
 
   public:
+    Bool_t& mjid;
     Float_t& ptRaw;
     Float_t& ptCorrUp;
     Float_t& ptCorrDown;
@@ -165,6 +167,7 @@ namespace simpletree {
     struct array_data : public Particle::array_data {
       Float_t chIso[NMAX]{};
       Float_t chWorstIso[NMAX]{};
+      Float_t chIsoMax[NMAX]{};
       Float_t nhIso[NMAX]{};
       Float_t phIso[NMAX]{};
       Float_t sieie[NMAX]{};
@@ -220,6 +223,7 @@ namespace simpletree {
   public:
     Float_t& chIso;
     Float_t& chWorstIso;
+    Float_t& chIsoMax;
     Float_t& nhIso;
     Float_t& phIso;
     Float_t& sieie;

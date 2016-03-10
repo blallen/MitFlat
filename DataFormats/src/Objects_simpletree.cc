@@ -114,6 +114,7 @@ simpletree::Jet::array_data::setStatus(TTree& _tree, TString const& _name, Bool_
 {
   ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
+  flatutils::setStatus(_tree, _name, "mjid", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ptRaw", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ptCorrUp", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ptCorrDown", _status, _branches, _whitelist);
@@ -124,6 +125,7 @@ simpletree::Jet::array_data::setAddress(TTree& _tree, TString const& _name, flat
 {
   ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
+  flatutils::setStatusAndAddress(_tree, _name, "mjid", mjid, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ptRaw", ptRaw, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ptCorrUp", ptCorrUp, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ptCorrDown", ptCorrDown, _branches, _whitelist);
@@ -134,6 +136,7 @@ simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils:
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
+  flatutils::book(_tree, _name, "mjid", _name + ".size", 'O', mjid, _branches, _whitelist);
   flatutils::book(_tree, _name, "ptRaw", _name + ".size", 'F', ptRaw, _branches, _whitelist);
   flatutils::book(_tree, _name, "ptCorrUp", _name + ".size", 'F', ptCorrUp, _branches, _whitelist);
   flatutils::book(_tree, _name, "ptCorrDown", _name + ".size", 'F', ptCorrDown, _branches, _whitelist);
@@ -141,6 +144,7 @@ simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils:
 
 simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx),
+  mjid(_data.mjid[_idx]),
   ptRaw(_data.ptRaw[_idx]),
   ptCorrUp(_data.ptCorrUp[_idx]),
   ptCorrDown(_data.ptCorrDown[_idx])
@@ -149,6 +153,7 @@ simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
 
 simpletree::Jet::Jet(Jet const& _src) :
   ParticleM(_src),
+  mjid(_src.mjid),
   ptRaw(_src.ptRaw),
   ptCorrUp(_src.ptCorrUp),
   ptCorrDown(_src.ptCorrDown)
@@ -160,6 +165,7 @@ simpletree::Jet::operator=(Jet const& _rhs)
 {
   ParticleM::operator=(_rhs);
 
+  mjid = _rhs.mjid;
   ptRaw = _rhs.ptRaw;
   ptCorrUp = _rhs.ptCorrUp;
   ptCorrDown = _rhs.ptCorrDown;
@@ -171,6 +177,7 @@ simpletree::Jet::init()
 {
   ParticleM::init();
 
+  mjid = false;
   ptRaw = 0.;
   ptCorrUp = 0.;
   ptCorrDown = 0.;
@@ -297,6 +304,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
 
   flatutils::setStatus(_tree, _name, "chIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "chWorstIso", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "chIsoMax", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "nhIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "phIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
@@ -340,6 +348,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
 
   flatutils::setStatusAndAddress(_tree, _name, "chIso", chIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "chWorstIso", chWorstIso, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "chIsoMax", chIsoMax, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "nhIso", nhIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "phIso", phIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
@@ -383,6 +392,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
 
   flatutils::book(_tree, _name, "chIso", _name + ".size", 'F', chIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "chWorstIso", _name + ".size", 'F', chWorstIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "chIsoMax", _name + ".size", 'F', chIsoMax, _branches, _whitelist);
   flatutils::book(_tree, _name, "nhIso", _name + ".size", 'F', nhIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "phIso", _name + ".size", 'F', phIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
@@ -423,6 +433,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   Particle(_data, _idx),
   chIso(_data.chIso[_idx]),
   chWorstIso(_data.chWorstIso[_idx]),
+  chIsoMax(_data.chIsoMax[_idx]),
   nhIso(_data.nhIso[_idx]),
   phIso(_data.phIso[_idx]),
   sieie(_data.sieie[_idx]),
@@ -464,6 +475,7 @@ simpletree::Photon::Photon(Photon const& _src) :
   Particle(_src),
   chIso(_src.chIso),
   chWorstIso(_src.chWorstIso),
+  chIsoMax(_src.chIsoMax),
   nhIso(_src.nhIso),
   phIso(_src.phIso),
   sieie(_src.sieie),
@@ -508,6 +520,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
 
   chIso = _rhs.chIso;
   chWorstIso = _rhs.chWorstIso;
+  chIsoMax = _rhs.chIsoMax;
   nhIso = _rhs.nhIso;
   phIso = _rhs.phIso;
   sieie = _rhs.sieie;
@@ -552,6 +565,7 @@ simpletree::Photon::init()
 
   chIso = 0.;
   chWorstIso = 0.;
+  chIsoMax = 0.;
   nhIso = 0.;
   phIso = 0.;
   sieie = 0.;
