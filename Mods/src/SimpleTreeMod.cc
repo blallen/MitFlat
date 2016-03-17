@@ -4,7 +4,8 @@
 #include "MitAna/DataTree/interface/MCRunInfo.h"
 #include "MitAna/DataTree/interface/ParticleCol.h"
 #include "MitAna/DataTree/interface/MetCol.h"
-#include "MitAna/DataTree/interface/PFJetCol.h"
+#include "MitAna/DataTree/interface/JetCol.h"
+#include "MitAna/DataTree/interface/PFJet.h"
 #include "MitAna/DataTree/interface/PhotonCol.h"
 #include "MitAna/DataTree/interface/PFTauCol.h"
 #include "MitAna/DataTree/interface/DecayParticleCol.h"
@@ -784,9 +785,9 @@ mithep::SimpleTreeMod::Process()
     Info("Process", "Fill jets");
 
   if (fJetsName.Length() != 0) {
-    auto* jets = GetObject<mithep::PFJetCol>(fJetsName);
-    auto* jetsCorrUp = GetObject<mithep::PFJetCol>(fJetsCorrUpName);
-    auto* jetsCorrDown = GetObject<mithep::PFJetCol>(fJetsCorrDownName);
+    auto* jets = GetObject<mithep::JetCol>(fJetsName);
+    auto* jetsCorrUp = GetObject<mithep::JetCol>(fJetsCorrUpName);
+    auto* jetsCorrDown = GetObject<mithep::JetCol>(fJetsCorrDownName);
     if (!jets) {
       SendError(kAbortAnalysis, "Process", fJetsName);
       return;
@@ -802,9 +803,12 @@ mithep::SimpleTreeMod::Process()
       auto&& pRaw(inJet.RawMom());
 
       outJet.ptRaw = pRaw.Pt();
-      
-      double eRaw(pRaw.E());
-      outJet.mjid = (inJet.NeutralHadronEnergy() / eRaw < 0.8 && inJet.ChargedHadronEnergy() / eRaw > 0.1);
+
+      if (inJet.ObjType() == mithep::kPFJet) {
+        auto& inPFJet(static_cast<PFJet const&>(inJet));
+        double eRaw(pRaw.E());
+        outJet.mjid = (inPFJet.NeutralHadronEnergy() / eRaw < 0.8 && inPFJet.ChargedHadronEnergy() / eRaw > 0.1);
+      }
 
       if (jetsCorrUp)
         outJet.ptCorrUp = jetsCorrUp->At(iJ)->Pt();
