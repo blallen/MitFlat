@@ -371,7 +371,7 @@ else:
         ConeSize = switchRun(0.4, 0.5),
         NoActiveArea = True,
         ParticleMinPt = 0.,
-        JetMinPt = 10.
+        JetMinPt = 20.
     )
 
     recoChain += [

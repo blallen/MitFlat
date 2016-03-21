@@ -303,9 +303,6 @@ mithep::SimpleTreeMod::Process()
 
     for (unsigned iJ(0); iJ != genJets->GetEntries(); ++iJ) {
       auto& inJet(*genJets->At(iJ));
-      if (inJet.Pt() < 20.)
-        continue;
-
       auto& outJet(fEvent.genJets[iJ]);
 
       fillP4_(outJet, inJet);
