@@ -3,6 +3,7 @@
 #include "Utils.h"
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
+#include "TLorentzVector.h"
 #include "TVector2.h"
 #include <cmath>
 #include "TString.h"
@@ -51,6 +52,7 @@ namespace simpletree {
     virtual void init();
 
     virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+    virtual TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
     double dEta(Particle const& p) const { return eta - p.eta; }
     double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
     double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
@@ -79,6 +81,7 @@ namespace simpletree {
     virtual void init();
 
     LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
+    TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
 
   public:
     Float_t& mass;
@@ -154,6 +157,10 @@ namespace simpletree {
     Float_t phiCorrUp{};
     Float_t metCorrDown{};
     Float_t phiCorrDown{};
+    Float_t metUnclUp{};
+    Float_t phiUnclUp{};
+    Float_t metUnclDown{};
+    Float_t phiUnclDown{};
   };
 
   class Photon : public Particle {

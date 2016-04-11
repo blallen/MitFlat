@@ -237,7 +237,11 @@ simpletree::CorrectedMet::CorrectedMet(CorrectedMet const& _src) :
   metCorrUp(_src.metCorrUp),
   phiCorrUp(_src.phiCorrUp),
   metCorrDown(_src.metCorrDown),
-  phiCorrDown(_src.phiCorrDown)
+  phiCorrDown(_src.phiCorrDown),
+  metUnclUp(_src.metUnclUp),
+  phiUnclUp(_src.phiUnclUp),
+  metUnclDown(_src.metUnclDown),
+  phiUnclDown(_src.phiUnclDown)
 {
 }
 
@@ -250,6 +254,10 @@ simpletree::CorrectedMet::setStatus(TTree& _tree, Bool_t _status, flatutils::Bra
   flatutils::setStatus(_tree, name_, "phiCorrUp", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "metCorrDown", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "phiCorrDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metUnclUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiUnclUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metUnclDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiUnclDown", _status, _branches, _whitelist);
 }
 
 void
@@ -261,6 +269,10 @@ simpletree::CorrectedMet::setAddress(TTree& _tree, flatutils::BranchList const& 
   flatutils::setStatusAndAddress(_tree, name_, "phiCorrUp", &phiCorrUp, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "metCorrDown", &metCorrDown, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "phiCorrDown", &phiCorrDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metUnclUp", &metUnclUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiUnclUp", &phiUnclUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metUnclDown", &metUnclDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiUnclDown", &phiUnclDown, _branches, _whitelist);
 }
 
 void
@@ -272,6 +284,10 @@ simpletree::CorrectedMet::book(TTree& _tree, flatutils::BranchList const& _branc
   flatutils::book(_tree, name_, "phiCorrUp", "", 'F', &phiCorrUp, _branches, _whitelist);
   flatutils::book(_tree, name_, "metCorrDown", "", 'F', &metCorrDown, _branches, _whitelist);
   flatutils::book(_tree, name_, "phiCorrDown", "", 'F', &phiCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metUnclUp", "", 'F', &metUnclUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiUnclUp", "", 'F', &phiUnclUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metUnclDown", "", 'F', &metUnclDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiUnclDown", "", 'F', &phiUnclDown, _branches, _whitelist);
 }
 
 simpletree::CorrectedMet&
@@ -283,6 +299,10 @@ simpletree::CorrectedMet::operator=(CorrectedMet const& _rhs)
   phiCorrUp = _rhs.phiCorrUp;
   metCorrDown = _rhs.metCorrDown;
   phiCorrDown = _rhs.phiCorrDown;
+  metUnclUp = _rhs.metUnclUp;
+  phiUnclUp = _rhs.phiUnclUp;
+  metUnclDown = _rhs.metUnclDown;
+  phiUnclDown = _rhs.phiUnclDown;
   return *this;
 }
 
@@ -295,6 +315,10 @@ simpletree::CorrectedMet::init()
   phiCorrUp = 0.;
   metCorrDown = 0.;
   phiCorrDown = 0.;
+  metUnclUp = 0.;
+  phiUnclUp = 0.;
+  metUnclDown = 0.;
+  phiUnclDown = 0.;
 }
 
 void

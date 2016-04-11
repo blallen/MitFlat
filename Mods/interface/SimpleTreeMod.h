@@ -41,6 +41,8 @@ namespace mithep {
     void SetT1MetName(char const* n) { fT1MetName = n; }
     void SetCorrUpMetName(char const* n) { fCorrUpMetName = n; }
     void SetCorrDownMetName(char const* n) { fCorrDownMetName = n; }
+    void SetUnclUpMetName(char const* n) { fUnclUpMetName = n; }
+    void SetUnclDownMetName(char const* n) { fUnclDownMetName = n; }
     void SetGenMetName(char const* n) { fGenMetName = n; }
     void SetGenJetsName(char const* n) { fGenJetsName = n; }
     void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
@@ -93,6 +95,8 @@ namespace mithep {
     TString fT1MetName{""};
     TString fCorrUpMetName{""};
     TString fCorrDownMetName{""};
+    TString fUnclUpMetName{""};
+    TString fUnclDownMetName{""};
     TString fGenMetName{""};
     TString fGenJetsName{""};
     std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};

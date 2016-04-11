@@ -158,12 +158,25 @@ metCorrectionJESDown = metCorrection.clone('MetCorrectionJESDown',
     JESUncertaintySigma = -1.
 )
 
+metCorrectionUnclUp = metCorrection.clone('MetCorrectionUnclUp',
+    OutputName = 'PFType1CorrectedMetUnclUp',
+    UnclusteredVariation = 0.1
+)
+metCorrectionUnclUp.ApplyUnclustered(True)
+
+metCorrectionUnclDown = metCorrectionUnclUp.clone('MetCorrectionUnclDown',
+    OutputName = 'PFType1CorrectedMetUnclDown',
+    UnclusteredVariation = -0.1
+)
+
 for level in jecLevels:
     repl = {'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
     jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
     metCorrection.AddJetCorrectionFromFile(jecPattern.format(**repl))
     metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
     metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
+    metCorrectionUnclUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
+    metCorrectionUnclDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
 
 repl = {'level': 'Uncertainty', 'jettype': 'AK4PFchs'}
 metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
@@ -317,6 +330,8 @@ ntuples = mithep.SimpleTreeMod(
     T1MetName = metCorrection.GetOutputName(),
     CorrUpMetName = metCorrectionJESUp.GetOutputName(),
     CorrDownMetName = metCorrectionJESDown.GetOutputName(),
+    UnclUpMetName = metCorrectionUnclUp.GetOutputName(),
+    UnclDownMetName = metCorrectionUnclDown.GetOutputName(),
     IsMC = not analysis.isRealData
 )
 
@@ -408,6 +423,8 @@ recoChain += [
     metCorrection,
     metCorrectionJESUp,
     metCorrectionJESDown,
+    metCorrectionUnclUp,
+    metCorrectionUnclDown,
     photonLooseId,
     photonMediumId,
     photonTightId,

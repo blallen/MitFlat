@@ -1,5 +1,6 @@
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
+#include "TLorentzVector.h"
 #include "TVector2.h"
 
 #include <cmath>
@@ -28,6 +29,7 @@ pt/F
 eta/F
 phi/F
 virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+virtual TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
 double dEta(Particle const& p) const { return eta - p.eta; }
 double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
 double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
@@ -36,6 +38,7 @@ double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
 [ParticleM:Particle]
 mass/F
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
+TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
 
 [Jet:ParticleM]
 mjid/O
@@ -54,6 +57,10 @@ metCorrUp/F
 phiCorrUp/F
 metCorrDown/F
 phiCorrDown/F
+metUnclUp/F
+phiUnclUp/F
+metUnclDown/F
+phiUnclDown/F
 virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
 [Photon:Particle]

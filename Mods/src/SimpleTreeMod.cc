@@ -379,6 +379,28 @@ mithep::SimpleTreeMod::Process()
     fEvent.t1Met.phiCorrDown = inMet.Phi();
   }
 
+  if (fUnclUpMetName.Length() != 0) {
+    auto* mets = GetObject<mithep::MetCol>(fUnclUpMetName);
+    if (!mets) {
+      SendError(kAbortAnalysis, "Process", fUnclUpMetName);
+      return;
+    }
+    auto& inMet(*mets->At(0));
+    fEvent.t1Met.metUnclUp = inMet.Pt();
+    fEvent.t1Met.phiUnclUp = inMet.Phi();
+  }
+
+  if (fUnclDownMetName.Length() != 0) {
+    auto* mets = GetObject<mithep::MetCol>(fUnclDownMetName);
+    if (!mets) {
+      SendError(kAbortAnalysis, "Process", fUnclDownMetName);
+      return;
+    }
+    auto& inMet(*mets->At(0));
+    fEvent.t1Met.metUnclDown = inMet.Pt();
+    fEvent.t1Met.phiUnclDown = inMet.Phi();
+  }
+
   if (fDebug)
     Info("Process", "Fill photons");
 
