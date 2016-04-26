@@ -138,7 +138,7 @@ jetUncertaintyDown = mithep.JetCorrectionMod('JetUncertaintyDown',
 metCorrection = mithep.MetCorrectionMod('MetCorrection',
     InputName = 'PFMet',
     OutputName = 'PFType1Met',
-    JetsName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
+    JetsName = jetCorrection.GetOutputName(),
     RhoAlgo = rhoAlgo,
     MaxEMFraction = 0.9,
     SkipMuons = True,
@@ -151,9 +151,10 @@ metCorrection.IsData(analysis.isRealData)
 
 metCorrectionJESUp = metCorrection.clone('MetCorrectionJESUp',
     OutputName = 'PFType1CorrectedMetJESUp',
+    JetsName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
     JESUncertaintySigma = 1.
 )
-metCorrectionJESDown = metCorrection.clone('MetCorrectionJESDown',
+metCorrectionJESDown = metCorrectionJESUp.clone('MetCorrectionJESDown',
     OutputName = 'PFType1CorrectedMetJESDown',
     JESUncertaintySigma = -1.
 )
@@ -172,11 +173,8 @@ metCorrectionUnclDown = metCorrectionUnclUp.clone('MetCorrectionUnclDown',
 for level in jecLevels:
     repl = {'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
     jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
-    metCorrection.AddJetCorrectionFromFile(jecPattern.format(**repl))
     metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
     metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
-    metCorrectionUnclUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
-    metCorrectionUnclDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
 
 repl = {'level': 'Uncertainty', 'jettype': 'AK4PFchs'}
 metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
@@ -420,6 +418,7 @@ recoChain += [
     looseMuons,
     tightMuonId,
     looseTaus,
+    jetCorrection,
     metCorrection,
     metCorrectionJESUp,
     metCorrectionJESDown,
@@ -429,7 +428,6 @@ recoChain += [
     photonMediumId,
     photonTightId,
     photonHighPtId,
-    jetCorrection,
     looseJets,
     jetUncertaintyUp,
     jetUncertaintyDown
