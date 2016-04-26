@@ -575,11 +575,13 @@ mithep::SimpleTreeMod::Process()
             if (dR > 0.1)
               continue;
 
-            if (minDR < 0. || (dR < minDR && !leptonMatched)) {
+            bool isLepton(part->AbsPdgId() == 11 || part->AbsPdgId() == 13);
+
+            if (minDR < 0. || isLepton || (dR < minDR && !leptonMatched)) {
               outPhoton.matchedGen = part->PdgId();
 
               minDR = dR;
-              if (std::abs(outPhoton.matchedGen) == 11 || std::abs(outPhoton.matchedGen) == 13)
+              if (isLepton)
                 leptonMatched = true;
 
               matched = part;
