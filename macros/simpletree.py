@@ -67,6 +67,10 @@ if run == 2:
         ('Photon135_PFMET100_JetIdCleaned', ['hltEG135HEFilter']),
         ('Photon165_HE10', ['hltEG165HE10Filter']),
         ('Photon175', ['hltEG175HEFilter']),
+        ('Photon50_R9Id90_HE10_Iso40_EBOnly_VBF', ['hltEG50R9Id90HE10Iso40EBOnlyTrackIsoFilter']),
+        ('Photon75_R9Id90_HE10_Iso40_EBOnly_VBF', ['hltEG75R9Id90HE10Iso40EBOnlyTrackIsoFilter']),
+        ('Photon90_R9Id90_HE10_Iso40_EBOnly_VBF', ['hltEG90R9Id90HE10Iso40EBOnlyTrackIsoFilter']),
+        ('Photon120_R9Id90_HE10_Iso40_EBOnly_VBF', ['hltEG120R9Id90HE10Iso40EBOnlyTrackIsoFilter']),
         ('Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele22_eta2p1_WP75_Gsf', ['hltEle23WPLooseGsfTrackIsoFilter']),
         ('Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf', ['hltEle27WPLooseGsfTrackIsoFilter']), # filter only matches data
         ('IsoMu20', ['hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09']),

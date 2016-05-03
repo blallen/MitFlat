@@ -355,6 +355,7 @@ mithep::SimpleTreeMod::Process()
     outMet.met = inMet.Pt();
     outMet.phi = inMet.Phi();
     outMet.sumEt = inMet.SumEt();
+    outMet.et = inMet.Et();
   }
 
   if (fCorrUpMetName.Length() != 0) {
@@ -505,20 +506,27 @@ mithep::SimpleTreeMod::Process()
         &outPhoton.matchHLT120,
         &outPhoton.matchHLT135MET100,
         &outPhoton.matchHLT165HE10,
-        &outPhoton.matchHLT175
+        &outPhoton.matchHLT175,
+        &outPhoton.matchHLT50VBF,
+        &outPhoton.matchHLT75VBF,
+        &outPhoton.matchHLT90VBF,
+        &outPhoton.matchHLT120VBF
       };
       simpletree::HLTPath hltPaths[] = {
         simpletree::kPhoton120,
         simpletree::kPhoton135MET100,
         simpletree::kPhoton165HE10,
-        simpletree::kPhoton175
+        simpletree::kPhoton175,
+        simpletree::kPhoton50VBF,
+        simpletree::kPhoton75VBF,
+        simpletree::kPhoton90VBF,
+        simpletree::kPhoton120VBF
       };
 
       for (unsigned iT(0); iT != sizeof(hltMatch) / sizeof(bool*); ++iT) {
         simpletree::HLTPath iPath(hltPaths[iT]);
         if (!toLists[iPath]) {
-          *hltMatch[iT] = false;
-          continue;
+          *hltMatch[iT] = false;          continue;
         }
 
         int iO(0);
@@ -835,6 +843,8 @@ mithep::SimpleTreeMod::Process()
         outJet.ptCorrUp = jetsCorrUp->At(iJ)->Pt();
       if (jetsCorrDown)
         outJet.ptCorrDown = jetsCorrDown->At(iJ)->Pt();
+
+      outJet.cisv = inJet.BJetTagsDisc(mithep::Jet::kCombinedInclusiveSecondaryVertexV2);
     }
   }
 

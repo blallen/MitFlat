@@ -19,6 +19,10 @@ namespace simpletree {
     kPhoton135MET100,
     kPhoton165HE10,
     kPhoton175,
+    kPhoton50VBF,
+    kPhoton75VBF,
+    kPhoton90VBF,
+    kPhoton120VBF,
     kEle23Loose,
     kEle27Loose,
     kMu20,
@@ -94,6 +98,7 @@ namespace simpletree {
       Float_t ptRaw[NMAX]{};
       Float_t ptCorrUp[NMAX]{};
       Float_t ptCorrDown[NMAX]{};
+      Float_t cisv[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -111,6 +116,7 @@ namespace simpletree {
     Float_t& ptRaw;
     Float_t& ptCorrUp;
     Float_t& ptCorrDown;
+    Float_t& cisv;
   };
 
   class Met {
@@ -135,6 +141,7 @@ namespace simpletree {
     Float_t met{};
     Float_t phi{};
     Float_t sumEt{};
+    Float_t et{};
   };
 
   class CorrectedMet : public Met {
@@ -209,6 +216,10 @@ namespace simpletree {
       Bool_t matchHLT135MET100[NMAX]{};
       Bool_t matchHLT165HE10[NMAX]{};
       Bool_t matchHLT175[NMAX]{};
+      Bool_t matchHLT50VBF[NMAX]{};
+      Bool_t matchHLT75VBF[NMAX]{};
+      Bool_t matchHLT90VBF[NMAX]{};
+      Bool_t matchHLT120VBF[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -265,6 +276,10 @@ namespace simpletree {
     Bool_t& matchHLT135MET100;
     Bool_t& matchHLT165HE10;
     Bool_t& matchHLT175;
+    Bool_t& matchHLT50VBF;
+    Bool_t& matchHLT75VBF;
+    Bool_t& matchHLT90VBF;
+    Bool_t& matchHLT120VBF;
   };
 
   class Lepton : public ParticleM {
@@ -460,7 +475,7 @@ namespace simpletree {
   class HLT {
   public:
     struct array_data {
-      static UInt_t const NMAX{13};
+      static UInt_t const NMAX{17};
 
       Bool_t pass[NMAX]{};
 

@@ -12,6 +12,10 @@ enum HLTPath {
   kPhoton135MET100,
   kPhoton165HE10,
   kPhoton175,
+  kPhoton50VBF,
+  kPhoton75VBF,
+  kPhoton90VBF,
+  kPhoton120VBF,
   kEle23Loose,
   kEle27Loose,
   kMu20,
@@ -45,11 +49,13 @@ mjid/O
 ptRaw/F
 ptCorrUp/F
 ptCorrDown/F
+cisv/F
 
 [Met:SINGLE]
 met/F
 phi/F
 sumEt/F
+et/F
 virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
 [CorrectedMet:Met]
@@ -101,6 +107,10 @@ matchHLT120/O
 matchHLT135MET100/O
 matchHLT165HE10/O
 matchHLT175/O
+matchHLT50VBF/O
+matchHLT75VBF/O
+matchHLT90VBF/O
+matchHLT120VBF/O
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
 bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
