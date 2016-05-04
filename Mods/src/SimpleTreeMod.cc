@@ -317,8 +317,7 @@ mithep::SimpleTreeMod::Process()
   for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
     if (fHLTIds[iH] != -1) {
       fEvent.hlt[iH].pass = triggerMask->At(fHLTIds[iH]);
-      if (fEvent.hlt[iH].pass)
-        toLists[iH] = toTable->GetList(fHLTIds[iH]);
+      toLists[iH] = toTable->GetList(fHLTIds[iH]);
     }
     else
       fEvent.hlt[iH].pass = false;
@@ -526,7 +525,8 @@ mithep::SimpleTreeMod::Process()
       for (unsigned iT(0); iT != sizeof(hltMatch) / sizeof(bool*); ++iT) {
         simpletree::HLTPath iPath(hltPaths[iT]);
         if (!toLists[iPath]) {
-          *hltMatch[iT] = false;          continue;
+          *hltMatch[iT] = false;
+          continue;
         }
 
         int iO(0);
