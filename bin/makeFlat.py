@@ -56,13 +56,16 @@ def initSimple(branches):
 
 argParser = ArgumentParser(description = 'Generate C++ code for a flat tree')
 argParser.add_argument('config', metavar = 'CONFIG')
-argParser.add_argument('-p', '--package', metavar = 'DIR', default = os.environ['CMSSW_BASE'] + '/src/MitFlat/DataFormats')
+argParser.add_argument('-p', '--package', metavar = 'DIR', default = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/DataFormats')
 argParser.add_argument('-L', '--linkdef', action = 'store_true', dest = 'makeLinkdef')
 
 args = argParser.parse_args()
 
+print args.package
+sys.exit(0)
+
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
-brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[[0-9]+\\])/(.+)$')
+brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[.+\\])/(.+)$')
 fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\}$')
 statPat = re.compile('^static .+$')
 incPat = re.compile('#include [^ ]+$')
@@ -142,9 +145,13 @@ with open(args.config) as configFile:
             matches = brnPat.match(line)
             brName, arrSize, brType = [matches.group(i) for i in range(1, 4)]
             if arrSize:
-                size = int(arrSize[1:len(arrSize) - 1])
+                try:
+                    size = int(arrSize[1:len(arrSize) - 1])
+                except ValueError:
+                    size = arrSize[1:len(arrSize) - 1] # constant / enum
             else:
                 size = 1
+
             if currentObj:
                 defs[currentObj].branches.append(BranchDef(brName, brType, size))
             elif currentTree:
@@ -207,8 +214,8 @@ if not os.path.isdir(args.package + '/src'):
     os.makedirs(args.package + '/src')
 
 isCMSSW = False
-if os.path.exists(args.package + '../../../.SCRAM/Environment'):
-    with open(args.package + '../../../.SCRAM/Environment') as environment:
+if os.path.exists(args.package + '/../../.SCRAM/Environment'):
+    with open(args.package + '/../../.SCRAM/Environment') as environment:
         isCMSSW = 'CMSSW' in environment.readline()
 
 if isCMSSW and not os.path.exists(args.package + '/BuildFile.xml'):
@@ -330,7 +337,10 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
                 else:
                     header.write('\n    ' + branchType(br.type) + ' ' + br.name + '[' + str(br.size) + ']{};')
             else:
-                header.write('\n    ' + branchType(br.type) + '& ' + br.name + ';')
+                if br.size == 1:
+                    header.write('\n    ' + branchType(br.type) + '& ' + br.name + ';')
+                else:
+                    header.write('\n    ' + branchType(br.type) + '* ' + br.name + '; //[' + str(br.size) + ']')
 
         header.write('\n  };\n')
 
@@ -406,6 +416,7 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
     src.write('#include "../interface/Objects_' + namespace + '.h"\n')
 
     src.write('#include "TTree.h"\n\n')
+    src.write('#include <algorithm>\n\n')
 
     for obj in objs:
         if obj in singleObjs:
@@ -418,11 +429,20 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 src.write('  name_(_src.name_)')
             if len(defs[obj].branches) != 0:
                 src.write(',')
+
+            initializers = []
             for br in defs[obj].branches:
-                src.write('\n  ' + br.name + '(_src.' + br.name + ')')
-                if br.name != defs[obj].branches[-1].name:
-                    src.write(',')
-            src.write('\n{\n}\n\n')
+                if br.size == 1:
+                    initializers.append(br.name + '(_src.' + br.name + ')')
+
+            src.write('\n  ' + ',\n  '.join(initializers))
+            src.write('\n{')
+
+            for br in defs[obj].branches:
+                if br.size != 1:
+                    src.write('\n  std::copy_n(_src.' + br.name + ', ' + str(br.size) + ', ' + br.name + ');')
+
+            src.write('\n}\n\n')
 
             src.write('void\n')
             src.write(namespace + '::' + obj + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
@@ -458,7 +478,7 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 if br.size == 1:
                     src.write('  flatutils::book(_tree, name_, "' + br.name + '", "", \'' + br.type + '\', &' + br.name + ', _branches, _whitelist);\n')
                 else:
-                    src.write('  flatutils::book(_tree, name_, "' + br.name + '", "' + str(br.size) + '", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+                    src.write('  flatutils::book(_tree, name_, "' + br.name + '", TString::Format("[%d]", ' + str(br.size) + '), \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
             src.write('}\n\n')
 
         else:
@@ -493,10 +513,17 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
     
                 if obj in fixedSize:
                     for br in defs[obj].branches:
-                        src.write('  flatutils::book(_tree, _name, "' + br.name + '", TString::Format("%d", ' + str(sizes[obj]) + '), \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+                        if br.size == 1:
+                            src.write('  flatutils::book(_tree, _name, "' + br.name + '", TString::Format("[%d]", ' + str(sizes[obj]) + '), \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+                        else:
+                            src.write('  flatutils::book(_tree, _name, "' + br.name + '", TString::Format("[%d][%d]", ' + str(sizes[obj]) + ', ' + str(br.size) + '), \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
                 else:
                     for br in defs[obj].branches:
-                        src.write('  flatutils::book(_tree, _name, "' + br.name + '", _name + ".size", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+                        if br.size == 1:
+                            src.write('  flatutils::book(_tree, _name, "' + br.name + '", "[" + _name + ".size]", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+                        else:
+                            src.write('  flatutils::book(_tree, _name, "' + br.name + '", TString::Format("[" + _name + ".size][%d]", ' + str(br.size) + '), \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+
                 src.write('}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(array_data& _data, UInt_t _idx) :')
@@ -515,11 +542,20 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 src.write('\n  ' + inheritance[obj] + '(_src)')
                 if len(defs[obj].branches) != 0:
                     src.write(',')
+
+            initializers = []
             for br in defs[obj].branches:
-                src.write('\n  ' + br.name + '(_src.' + br.name + ')')
-                if br.name != defs[obj].branches[-1].name:
-                    src.write(',')
-            src.write('\n{\n}\n\n')
+                if br.size == 1:
+                    initializers.append(br.name + '(_src.' + br.name + ')')
+
+            src.write('\n  ' + ',\n  '.join(initializers))
+            src.write('\n{')
+            
+            for br in defs[obj].branches:
+                if br.size != 1:
+                    src.write('\n  std::copy_n(_src.' + br.name + ', ' + str(br.size) + ', ' + br.name + ');')
+
+            src.write('\n}\n\n')
 
         src.write(namespace + '::' + obj + '&\n')
         src.write(namespace + '::' + obj + '::operator=(' + obj + ' const& _rhs)\n')
@@ -527,7 +563,11 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
         if obj in inheritance:
             src.write('\n  ' + inheritance[obj] + '::operator=(_rhs);\n')
         for br in defs[obj].branches:
-            src.write('\n  ' + br.name + ' = _rhs.' + br.name + ';')
+            if br.size == 1:
+                src.write('\n  ' + br.name + ' = _rhs.' + br.name + ';')
+            else:
+                src.write('\n  std::copy_n(_rhs.' + br.name + ', ' + str(br.size) + ', ' + br.name + ');')
+
         src.write('\n')
         src.write('  return *this;\n')
         src.write('}\n\n')
@@ -607,7 +647,7 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
                 if br.size == 1:
                     src.write('  flatutils::book(_tree, "", "' + br.name + '", "", \'' + br.type + '\', &' + br.name + ', _branches, _whitelist);\n')
                 else:
-                    src.write('  flatutils::book(_tree, "", "' + br.name + '", "' + str(br.size) + '", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+                    src.write('  flatutils::book(_tree, "", "' + br.name + '", "[' + str(br.size) + ']", \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
     
         src.write('\n')
         
@@ -654,13 +694,24 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('}\n\n')
 
 if args.makeLinkdef:
-    with open(args.package + '/interface/' + namespace + '_LinkDef.h', 'w') as linkdef:
-        linkdef.write('#include "TreeEntries_' + namespace + '.h"\n\n')
+    try:
+        os.makedirs(args.package + '/dict')
+    except OSError:
+        pass
+
+    if isCMSSW:
+        incname = args.package[args.package.rfind('/src/') + 5:] + '/interface'
+    else:
+        incname = args.package + '/interface'
+
+    with open(args.package + '/dict/' + namespace + '_LinkDef.h', 'w') as linkdef:
+        linkdef.write('#include "' + incname + '/TreeEntries_' + namespace + '.h"\n\n')
     
         linkdef.write('#ifdef __CLING__\n')
         linkdef.write('#pragma link off all globals;\n')
         linkdef.write('#pragma link off all classes;\n')
         linkdef.write('#pragma link off all functions;\n')
+
         linkdef.write('#pragma link C++ nestedclass;\n')
         linkdef.write('#pragma link C++ nestedtypedef;\n')
         linkdef.write('#pragma link C++ namespace flatutils;\n')

@@ -45,7 +45,10 @@ namespace mithep {
     void SetUnclDownMetName(char const* n) { fUnclDownMetName = n; }
     void SetGenMetName(char const* n) { fGenMetName = n; }
     void SetGenJetsName(char const* n) { fGenJetsName = n; }
-    void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
+    void SetUseTrigger(Bool_t b) { fUseTrigger = b; }
+    void SetPhotonTriggerModuleName(UInt_t p, char const* n) { fPhotonTriggerModuleName[p] = n; }
+    void SetElectronTriggerModuleName(UInt_t p, char const* n) { fElectronTriggerModuleName[p] = n; }
+    void SetMuonTriggerModuleName(UInt_t p, char const* n) { fMuonTriggerModuleName[p] = n; }
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
     void AddPdfReweightGroup(char const* n) { fPdfReweightGroupNames.push_back(n); }
     void AddPdfReweightId(UInt_t id) { fPdfReweightGroupIds.push_back(id); }
@@ -99,7 +102,10 @@ namespace mithep {
     TString fUnclDownMetName{""};
     TString fGenMetName{""};
     TString fGenJetsName{""};
-    std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};
+    Bool_t fUseTrigger{kTRUE};
+    TString fPhotonTriggerModuleName[simpletree::nPhotonHLTObjects]{};
+    TString fElectronTriggerModuleName[simpletree::nElectronHLTObjects]{};
+    TString fMuonTriggerModuleName[simpletree::nMuonHLTObjects]{};
     TString fTriggerPathName[simpletree::nHLTPaths]{};
     std::vector<TString> fPdfReweightGroupNames{};
     std::vector<UInt_t> fPdfReweightGroupIds{};

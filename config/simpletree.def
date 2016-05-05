@@ -12,9 +12,17 @@ enum HLTPath {
   kPhoton135MET100,
   kPhoton165HE10,
   kPhoton175,
+  kPhoton22MET40,
+  kPhoton22VBF,
+  kPhoton36MET40,
+  kPhoton36VBF,
+  kPhoton50MET40,
   kPhoton50VBF,
+  kPhoton75MET40,
   kPhoton75VBF,
+  kPhoton90MET40,
   kPhoton90VBF,
+  kPhoton120MET40,
   kPhoton120VBF,
   kEle23Loose,
   kEle27Loose,
@@ -26,6 +34,44 @@ enum HLTPath {
   kMETNoMu90MHTNoMu90,
   kMETNoMu120MHTNoMu120,
   nHLTPaths
+};
+
+enum PhotonHLTObject {
+  fPh120,
+  fPh135,
+  fPh165HE10,
+  fPh175,
+  fPh22EBR9Iso,
+  fPh36EBR9Iso,
+  fPh50EBR9Iso,
+  fPh75EBR9Iso,
+  fPh90EBR9Iso,
+  fPh120EBR9Iso,
+  nPhotonHLTObjects
+};
+
+enum ElectronHLTObject {
+  fEl23Loose,
+  fEl27Loose,
+  fEl120Ph,
+  fEl135Ph,
+  fEl165HE10Ph,
+  fEl175Ph,
+  fEl22EBR9IsoPh,
+  fEl36EBR9IsoPh,
+  fEl50EBR9IsoPh,
+  fEl75EBR9IsoPh,
+  fEl90EBR9IsoPh,
+  fEl120EBR9IsoPh,
+  nElectronHLTObjects
+};
+
+enum MuonHLTObject {
+  fMu20,
+  fMuTrk20,
+  fMu24,
+  fMu27,
+  nMuonHLTObjects
 };
 
 [Particle:MAX=256]
@@ -103,14 +149,8 @@ loose/O
 medium/O
 tight/O
 highpt/O
-matchHLT120/O
-matchHLT135MET100/O
-matchHLT165HE10/O
-matchHLT175/O
-matchHLT50VBF/O
-matchHLT75VBF/O
-matchHLT90VBF/O
-matchHLT120VBF/O
+matchHLT[nPhotonHLTObjects]/O
+
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
 bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
@@ -139,12 +179,8 @@ sieie/F
 hOverE/F
 isEB/O
 veto/O
-matchHLT23Loose/O
-matchHLT27Loose/O
-matchHLT120Ph/O
-matchHLT135MET100Ph/O
-matchHLT165HE10Ph/O
-matchHLT175Ph/O
+matchHLT[nElectronHLTObjects]/O
+
 bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
 bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
@@ -153,10 +189,7 @@ bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0
 
 [Muon:Lepton]
 combRelIso/F
-matchHLT20/O
-matchHLTTrk20/O
-matchHLT24/O
-matchHLT27/O
+matchHLT[nMuonHLTObjects]/O
 
 [Tau:ParticleM]
 decayMode/O

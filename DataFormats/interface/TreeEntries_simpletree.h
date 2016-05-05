@@ -50,6 +50,9 @@ namespace simpletree {
   };
 
   TTree* makeHLTPathTree();
+  TTree* makePhotonHLTObjectTree();
+  TTree* makeElectronHLTObjectTree();
+  TTree* makeMuonHLTObjectTree();
 
 }
 
