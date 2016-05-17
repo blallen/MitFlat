@@ -171,9 +171,7 @@ flatutils::book(TTree& _tree, TString const& _objName, TString const& _bName, TS
   if (_objName.Length() != 0)
     bFullName.Prepend(_objName + ".");
 
-  TString lExpr(_bName);
-  if (_size.Length() != 0)
-    lExpr += "[" + _size + "]";
+  TString lExpr(_bName + _size);
 
   lExpr += "/";
   lExpr += _lType;

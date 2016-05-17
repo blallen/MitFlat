@@ -307,22 +307,48 @@ mithep::SimpleTreeMod::Process()
 
   // triggers
 
-  TList const* toLists[simpletree::nHLTPaths]{};
+  std::vector<mithep::TriggerObject const*> photonHLTObjects[simpletree::nPhotonHLTObjects];
+  std::vector<mithep::TriggerObject const*> electronHLTObjects[simpletree::nElectronHLTObjects];
+  std::vector<mithep::TriggerObject const*> muonHLTObjects[simpletree::nMuonHLTObjects];
 
   if (fUseTrigger) {
     if (fDebug)
       Info("Process", "Fill triggers");
 
     auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
-    auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
 
     for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
-      if (fHLTIds[iH] != -1) {
+      if (fHLTIds[iH] != -1)
         fEvent.hlt[iH].pass = triggerMask->At(fHLTIds[iH]);
-        toLists[iH] = toTable->GetList(fHLTIds[iH]);
-      }
       else
         fEvent.hlt[iH].pass = false;
+    }
+
+    auto* triggerObjects = GetObject<mithep::TriggerObjectCol>(TString(Names::gkHltObjBrn) + "Arr");
+
+    for (unsigned iO(0); iO != triggerObjects->GetEntries(); ++iO) {
+      auto& obj(*triggerObjects->At(iO));
+
+      for (unsigned iF(0); iF != simpletree::nPhotonHLTObjects; ++iF) {
+        if (fPhotonTriggerModuleName[iF] == obj.ModuleName()) {
+          photonHLTObjects[iF].push_back(&obj);
+          break;
+        }
+      }
+
+      for (unsigned iF(0); iF != simpletree::nElectronHLTObjects; ++iF) {
+        if (fElectronTriggerModuleName[iF] == obj.ModuleName()) {
+          electronHLTObjects[iF].push_back(&obj);
+          break;
+        }
+      }
+
+      for (unsigned iF(0); iF != simpletree::nMuonHLTObjects; ++iF) {
+        if (fMuonTriggerModuleName[iF] == obj.ModuleName()) {
+          muonHLTObjects[iF].push_back(&obj);
+          break;
+        }
+      }
     }
   }
 
@@ -506,43 +532,19 @@ mithep::SimpleTreeMod::Process()
 
       auto&& caloPos(inPhoton.CaloPos());
 
-      bool* hltMatch[] = {
-        &outPhoton.matchHLT120,
-        &outPhoton.matchHLT135MET100,
-        &outPhoton.matchHLT165HE10,
-        &outPhoton.matchHLT175,
-        &outPhoton.matchHLT50VBF,
-        &outPhoton.matchHLT75VBF,
-        &outPhoton.matchHLT90VBF,
-        &outPhoton.matchHLT120VBF
-      };
-      simpletree::HLTPath hltPaths[] = {
-        simpletree::kPhoton120,
-        simpletree::kPhoton135MET100,
-        simpletree::kPhoton165HE10,
-        simpletree::kPhoton175,
-        simpletree::kPhoton50VBF,
-        simpletree::kPhoton75VBF,
-        simpletree::kPhoton90VBF,
-        simpletree::kPhoton120VBF
-      };
+      if (fUseTrigger) {
+        for (unsigned iF(0); iF != simpletree::nPhotonHLTObjects; ++iF) {
+          outPhoton.matchHLT[iF] = false;
 
-      for (unsigned iT(0); iT != sizeof(hltMatch) / sizeof(bool*); ++iT) {
-        simpletree::HLTPath iPath(hltPaths[iT]);
-        if (!toLists[iPath]) {
-          *hltMatch[iT] = false;
-          continue;
+          for (auto* obj : photonHLTObjects[iF]) {
+            double dEta(caloPos.Eta() - obj->Eta());
+            double dPhi(TVector2::Phi_mpi_pi(caloPos.Phi() - obj->Phi()));
+            if (dEta * dEta + dPhi * dPhi < 0.0225) {
+              outPhoton.matchHLT[iF] = true;
+              break;
+            }
+          }
         }
-
-        int iO(0);
-        for (; iO != toLists[iPath]->GetEntries(); ++iO) {
-          auto& trigObj(*static_cast<mithep::TriggerObject*>(toLists[iPath]->At(iO)));
-          double dEta(caloPos.Eta() - trigObj.Eta());
-          double dPhi(TVector2::Phi_mpi_pi(caloPos.Phi() - trigObj.Phi()));
-          if (dEta * dEta + dPhi * dPhi < 0.0225)
-            break;
-        }
-        *hltMatch[iT] = (iO != toLists[iPath]->GetEntries());
       }
 
       outPhoton.matchedGen = 0;
@@ -622,152 +624,125 @@ mithep::SimpleTreeMod::Process()
     }
   }
 
-  TString* inputLeptonName[2] = {
-    &fElectronsName,
-    &fMuonsName
-  };
+  if (fElectronsName.Length() != 0) {
+    if (fDebug)
+      Info("Process", "Fill electrons");
 
-  TString* tightMaskName[2] = {
-    &fTightElectronsName,
-    &fTightMuonsName
-  };
-
-  simpletree::LeptonCollection* outputCollection[2] = {
-    &fEvent.electrons,
-    &fEvent.muons
-  };
-
-  bool* eleHLTMatch[] = {
-    fEvent.electrons.data.matchHLT23Loose,
-    fEvent.electrons.data.matchHLT27Loose,
-    fEvent.electrons.data.matchHLT120Ph,
-    fEvent.electrons.data.matchHLT135MET100Ph,
-    fEvent.electrons.data.matchHLT165HE10Ph,
-    fEvent.electrons.data.matchHLT175Ph
-  };
-  bool* muHLTMatch[] = {
-    fEvent.muons.data.matchHLT20,
-    fEvent.muons.data.matchHLTTrk20,
-    fEvent.muons.data.matchHLT24,
-    fEvent.muons.data.matchHLT27
-  };
-
-  bool** hltMatch[2] = {eleHLTMatch, muHLTMatch};
-
-  simpletree::HLTPath eleHLTPaths[] = {
-    simpletree::kEle23Loose,
-    simpletree::kEle27Loose,
-    simpletree::kPhoton120,
-    simpletree::kPhoton135MET100,
-    simpletree::kPhoton165HE10,
-    simpletree::kPhoton175
-  };
-  simpletree::HLTPath muHLTPaths[] = {
-    simpletree::kMu20,
-    simpletree::kTrkMu20,
-    simpletree::kMu24eta2p1,
-    simpletree::kMu27
-  };
-
-  simpletree::HLTPath* hltPaths[2] = {eleHLTPaths, muHLTPaths};
-
-  unsigned nHLTPaths[2] = {sizeof(eleHLTPaths) / sizeof(simpletree::HLTPath), sizeof(muHLTPaths) / sizeof(simpletree::HLTPath)};
-
-  if (fDebug)
-    Info("Process", "Fill leptons");
-
-  for (unsigned iC(0); iC != 2; ++iC) {
-    if (inputLeptonName[iC]->Length() == 0)
-      continue;
-
-    auto* leptons = GetObject<mithep::ParticleCol>(*inputLeptonName[iC]);
-    if (!leptons) {
-      SendError(kAbortAnalysis, "Process", *inputLeptonName[iC]);
+    auto* electrons = GetObject<mithep::ElectronCol>(fElectronsName);
+    if (!electrons) {
+      SendError(kAbortAnalysis, "Process", fElectronsName);
       return;
     }
 
-    mithep::NFArrBool const* vetoMask = 0;
-    mithep::NFArrBool const* looseMask = 0;
-    mithep::PFCandidateCol const* pileupCands = 0;
-    auto* tightMask = GetObject<mithep::NFArrBool>(*tightMaskName[iC]);
-    if (iC == 0) {
-      vetoMask = GetObject<mithep::NFArrBool>(fVetoElectronsName);
-      looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
-    }
-    else {
-      pileupCands = GetObject<mithep::PFCandidateCol>(fPileupCandsName);
-    }
+    auto* vetoMask = GetObject<mithep::NFArrBool>(fVetoElectronsName);
+    auto* looseMask = GetObject<mithep::NFArrBool>(fLooseElectronsName);
+    auto* tightMask = GetObject<mithep::NFArrBool>(fTightElectronsName);
 
-    outputCollection[iC]->resize(leptons->GetEntries());
+    fEvent.electrons.resize(electrons->GetEntries());
 
-    for (unsigned iL = 0; iL != leptons->GetEntries(); ++iL) {
-      auto& inLepton(*leptons->At(iL));
-      auto& outLepton((*outputCollection[iC])[iL]);
+    for (unsigned iE = 0; iE != electrons->GetEntries(); ++iE) {
+      auto& inElectron(*electrons->At(iE));
+      auto& outElectron(fEvent.electrons[iE]);
 
-      fillP4_(outLepton, inLepton);
+      fillP4_(outElectron, inElectron);
 
-      outLepton.positive = inLepton.Charge() > 0.;
-      outLepton.tight = tightMask->At(iL);
+      outElectron.positive = inElectron.Charge() > 0.;
+      outElectron.tight = tightMask->At(iE);
 
-      if (iC == 0) {
-        auto& inElectron(static_cast<mithep::Electron&>(inLepton));
-        auto& outElectron(static_cast<simpletree::Electron&>(outLepton));
-
-        outElectron.veto = vetoMask->At(iL);
-        outElectron.loose = looseMask->At(iL);
-        outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
-
-        outElectron.chIso = inElectron.PFChargedHadronIso();
-        outElectron.nhIso = inElectron.PFNeutralHadronIso();
-        outElectron.phIso = inElectron.PFPhotonIso();
+      outElectron.veto = vetoMask->At(iE);
+      outElectron.loose = looseMask->At(iE);
+      outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
           
-        double chIso, nhIso, phIso;
-        IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
-        PhotonTools::IsoLeakageCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), inElectron.Et(), inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
-        PhotonTools::IsoRhoCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
+      double chIso, nhIso, phIso;
+      IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+      PhotonTools::IsoLeakageCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), inElectron.Et(), inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
+      PhotonTools::IsoRhoCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
 
-        outElectron.chIsoPh = chIso;
-        outElectron.nhIsoPh = nhIso;
-        outElectron.phIsoPh = phIso;
-        
-        outElectron.ecalIso = inElectron.EcalPFClusterIso();
-        outElectron.hcalIso = inElectron.HcalPFClusterIso();
+      outElectron.chIsoPh = chIso;
+      outElectron.nhIsoPh = nhIso;
+      outElectron.phIsoPh = phIso;
 
-        outElectron.sieie = inElectron.CoviEtaiEta5x5();
-        outElectron.hOverE = inElectron.HadOverEmTow();
-      }
-      else {
-        auto& inMuon(static_cast<mithep::Muon&>(inLepton));
-        auto& outMuon(static_cast<simpletree::Muon&>(outLepton));
+      outElectron.ecalIso = inElectron.EcalPFClusterIso();
+      outElectron.hcalIso = inElectron.HcalPFClusterIso();
 
-        outMuon.loose = true;
-        outMuon.combRelIso = IsolationTools::BetaMwithPUCorrection(pfCandidates, pileupCands, &inMuon, 0.4) / outMuon.pt;
-      }
+      outElectron.sieie = inElectron.CoviEtaiEta5x5();
+      outElectron.hOverE = inElectron.HadOverEmTow();
 
-      for (unsigned iT(0); iT != nHLTPaths[iC]; ++iT) {
-        simpletree::HLTPath iPath(hltPaths[iC][iT]);
-        if (!toLists[iPath]) {
-          hltMatch[iC][iT][iL] = false;
-          continue;
+      if (fUseTrigger) {
+        for (unsigned iF(0); iF != simpletree::nElectronHLTObjects; ++iF) {
+          outElectron.matchHLT[iF] = false;
+
+          for (auto* obj : electronHLTObjects[iF]) {
+            double dEta(outElectron.eta - obj->Eta());
+            double dPhi(TVector2::Phi_mpi_pi(outElectron.phi - obj->Phi()));
+            if (dEta * dEta + dPhi * dPhi < 0.0225) {
+              outElectron.matchHLT[iF] = true;
+              break;
+            }
+          }
         }
-
-        int iO(0);
-        for (; iO != toLists[iPath]->GetEntries(); ++iO) {
-          auto& obj(*static_cast<mithep::TriggerObject*>(toLists[iPath]->At(iO)));
-          if (mithep::MathUtils::DeltaR(inLepton, obj) < 0.1)
-            break;
-        }
-        hltMatch[iC][iT][iL] = (iO != toLists[iPath]->GetEntries());
       }
+    }
+  }
 
-      if (fIsMC) {
+  if (fMuonsName.Length() != 0) {
+    if (fDebug)
+      Info("Process", "Fill muons");
+
+    auto* muons = GetObject<mithep::MuonCol>(fMuonsName);
+    if (!muons) {
+      SendError(kAbortAnalysis, "Process", fMuonsName);
+      return;
+    }
+
+    auto* tightMask = GetObject<mithep::NFArrBool>(fTightMuonsName);
+    auto* pileupCands = GetObject<mithep::PFCandidateCol>(fPileupCandsName);
+
+    fEvent.muons.resize(muons->GetEntries());
+
+    for (unsigned iM = 0; iM != muons->GetEntries(); ++iM) {
+      auto& inMuon(*muons->At(iM));
+      auto& outMuon(fEvent.muons[iM]);
+
+      fillP4_(outMuon, inMuon);
+
+      outMuon.positive = inMuon.Charge() > 0.;
+      outMuon.tight = tightMask->At(iM);
+
+      outMuon.loose = true;
+      outMuon.combRelIso = IsolationTools::BetaMwithPUCorrection(pfCandidates, pileupCands, &inMuon, 0.4) / outMuon.pt;
+
+      if (fUseTrigger) {
+        for (unsigned iF(0); iF != simpletree::nMuonHLTObjects; ++iF) {
+          outMuon.matchHLT[iF] = false;
+
+          for (auto* obj : muonHLTObjects[iF]) {
+            double dEta(outMuon.eta - obj->Eta());
+            double dPhi(TVector2::Phi_mpi_pi(outMuon.phi - obj->Phi()));
+            if (dEta * dEta + dPhi * dPhi < 0.0225) {
+              outMuon.matchHLT[iF] = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (fIsMC) {
+    simpletree::LeptonCollection* leptonCollections[] = {&fEvent.electrons, &fEvent.muons};
+    for (auto* leptons : leptonCollections) {
+      for (auto& outLepton : *leptons) {
         outLepton.matchedGen = 0;
 
         double minDR(-1.);
         mithep::MCParticle const* matched(0);
 
         for (auto* part : finalState) {
-          double dR(mithep::MathUtils::DeltaR(inLepton, *part));
+          double dEta(part->Eta() - outLepton.eta);
+          double dPhi(TVector2::Phi_mpi_pi(part->Phi() - outLepton.phi));
+          double dR(std::sqrt(dEta * dEta + dPhi * dPhi));
+
           if (dR < 0.05 && (minDR < 0. || dR < minDR)) {
             outLepton.matchedGen = part->PdgId();
 
@@ -806,8 +781,6 @@ mithep::SimpleTreeMod::Process()
     unsigned nT(0);
     for (unsigned iT(0); iT != taus->GetEntries(); ++iT) {
       auto& inTau(*taus->At(iT));
-      // std::cout << iT << " " << inTau.PFTauIdentifier(mithep::PFTau::iDecayModeFindingNewDMs) << " "
-      //           << inTau.PFTauDiscriminator(mithep::PFTau::iDecayModeFindingNewDMs) << std::endl;
 
       if (!inTau.PFTauIdentifier(mithep::PFTau::iDecayModeFindingNewDMs))
         continue;

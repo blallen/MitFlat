@@ -1,6 +1,8 @@
 #include "../interface/Objects_simpletree.h"
 #include "TTree.h"
 
+#include <algorithm>
+
 void
 simpletree::Particle::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
@@ -20,9 +22,9 @@ simpletree::Particle::array_data::setAddress(TTree& _tree, TString const& _name,
 void
 simpletree::Particle::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::book(_tree, _name, "pt", _name + ".size", 'F', pt, _branches, _whitelist);
-  flatutils::book(_tree, _name, "eta", _name + ".size", 'F', eta, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phi", _name + ".size", 'F', phi, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pt", "[" + _name + ".size]", 'F', pt, _branches, _whitelist);
+  flatutils::book(_tree, _name, "eta", "[" + _name + ".size]", 'F', eta, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phi", "[" + _name + ".size]", 'F', phi, _branches, _whitelist);
 }
 
 simpletree::Particle::Particle(array_data& _data, UInt_t _idx) :
@@ -77,7 +79,7 @@ simpletree::ParticleM::array_data::book(TTree& _tree, TString const& _name, flat
 {
   Particle::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "mass", _name + ".size", 'F', mass, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mass", "[" + _name + ".size]", 'F', mass, _branches, _whitelist);
 }
 
 simpletree::ParticleM::ParticleM(array_data& _data, UInt_t _idx) :
@@ -138,11 +140,11 @@ simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils:
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "mjid", _name + ".size", 'O', mjid, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptRaw", _name + ".size", 'F', ptRaw, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptCorrUp", _name + ".size", 'F', ptCorrUp, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptCorrDown", _name + ".size", 'F', ptCorrDown, _branches, _whitelist);
-  flatutils::book(_tree, _name, "cisv", _name + ".size", 'F', cisv, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mjid", "[" + _name + ".size]", 'O', mjid, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptRaw", "[" + _name + ".size]", 'F', ptRaw, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptCorrUp", "[" + _name + ".size]", 'F', ptCorrUp, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptCorrDown", "[" + _name + ".size]", 'F', ptCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, _name, "cisv", "[" + _name + ".size]", 'F', cisv, _branches, _whitelist);
 }
 
 simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
@@ -374,14 +376,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "medium", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "tight", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "highpt", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT120", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT135MET100", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT165HE10", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT175", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT50VBF", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT75VBF", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT90VBF", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT120VBF", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchHLT", _status, _branches, _whitelist);
 }
 
 void
@@ -424,14 +419,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "medium", medium, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "tight", tight, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "highpt", highpt, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT120", matchHLT120, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT135MET100", matchHLT135MET100, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT165HE10", matchHLT165HE10, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT175", matchHLT175, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT50VBF", matchHLT50VBF, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT75VBF", matchHLT75VBF, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT90VBF", matchHLT90VBF, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT120VBF", matchHLT120VBF, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchHLT", matchHLT, _branches, _whitelist);
 }
 
 void
@@ -439,49 +427,42 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   Particle::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "chIso", _name + ".size", 'F', chIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "chWorstIso", _name + ".size", 'F', chWorstIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "chIsoMax", _name + ".size", 'F', chIsoMax, _branches, _whitelist);
-  flatutils::book(_tree, _name, "nhIso", _name + ".size", 'F', nhIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phIso", _name + ".size", 'F', phIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ecalIso", _name + ".size", 'F', ecalIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "hcalIso", _name + ".size", 'F', hcalIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
-  flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches, _whitelist);
-  flatutils::book(_tree, _name, "genIso", _name + ".size", 'F', genIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mipEnergy", _name + ".size", 'F', mipEnergy, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mipChi2", _name + ".size", 'F', mipChi2, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mipSlope", _name + ".size", 'F', mipSlope, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mipIntercept", _name + ".size", 'F', mipIntercept, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mipNhitCone", _name + ".size", 's', mipNhitCone, _branches, _whitelist);
-  flatutils::book(_tree, _name, "mipIsHalo", _name + ".size", 'O', mipIsHalo, _branches, _whitelist);
-  flatutils::book(_tree, _name, "e15", _name + ".size", 'F', e15, _branches, _whitelist);
-  flatutils::book(_tree, _name, "e25", _name + ".size", 'F', e25, _branches, _whitelist);
-  flatutils::book(_tree, _name, "e33", _name + ".size", 'F', e33, _branches, _whitelist);
-  flatutils::book(_tree, _name, "e55", _name + ".size", 'F', e55, _branches, _whitelist);
-  flatutils::book(_tree, _name, "r9", _name + ".size", 'F', r9, _branches, _whitelist);
-  flatutils::book(_tree, _name, "etaWidth", _name + ".size", 'F', etaWidth, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phiWidth", _name + ".size", 'F', phiWidth, _branches, _whitelist);
-  flatutils::book(_tree, _name, "s4", _name + ".size", 'F', s4, _branches, _whitelist);
-  flatutils::book(_tree, _name, "time", _name + ".size", 'F', time, _branches, _whitelist);
-  flatutils::book(_tree, _name, "timeSpan", _name + ".size", 'F', timeSpan, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches, _whitelist);
-  flatutils::book(_tree, _name, "isEB", _name + ".size", 'O', isEB, _branches, _whitelist);
-  flatutils::book(_tree, _name, "pixelVeto", _name + ".size", 'O', pixelVeto, _branches, _whitelist);
-  flatutils::book(_tree, _name, "electronVeto", _name + ".size", 'O', electronVeto, _branches, _whitelist);
-  flatutils::book(_tree, _name, "csafeVeto", _name + ".size", 'O', csafeVeto, _branches, _whitelist);
-  flatutils::book(_tree, _name, "loose", _name + ".size", 'O', loose, _branches, _whitelist);
-  flatutils::book(_tree, _name, "medium", _name + ".size", 'O', medium, _branches, _whitelist);
-  flatutils::book(_tree, _name, "tight", _name + ".size", 'O', tight, _branches, _whitelist);
-  flatutils::book(_tree, _name, "highpt", _name + ".size", 'O', highpt, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT120", _name + ".size", 'O', matchHLT120, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT135MET100", _name + ".size", 'O', matchHLT135MET100, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT165HE10", _name + ".size", 'O', matchHLT165HE10, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT175", _name + ".size", 'O', matchHLT175, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT50VBF", _name + ".size", 'O', matchHLT50VBF, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT75VBF", _name + ".size", 'O', matchHLT75VBF, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT90VBF", _name + ".size", 'O', matchHLT90VBF, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT120VBF", _name + ".size", 'O', matchHLT120VBF, _branches, _whitelist);
+  flatutils::book(_tree, _name, "chIso", "[" + _name + ".size]", 'F', chIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "chWorstIso", "[" + _name + ".size]", 'F', chWorstIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "chIsoMax", "[" + _name + ".size]", 'F', chIsoMax, _branches, _whitelist);
+  flatutils::book(_tree, _name, "nhIso", "[" + _name + ".size]", 'F', nhIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phIso", "[" + _name + ".size]", 'F', phIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ecalIso", "[" + _name + ".size]", 'F', ecalIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "hcalIso", "[" + _name + ".size]", 'F', hcalIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sieie", "[" + _name + ".size]", 'F', sieie, _branches, _whitelist);
+  flatutils::book(_tree, _name, "hOverE", "[" + _name + ".size]", 'F', hOverE, _branches, _whitelist);
+  flatutils::book(_tree, _name, "genIso", "[" + _name + ".size]", 'F', genIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipEnergy", "[" + _name + ".size]", 'F', mipEnergy, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipChi2", "[" + _name + ".size]", 'F', mipChi2, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipSlope", "[" + _name + ".size]", 'F', mipSlope, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipIntercept", "[" + _name + ".size]", 'F', mipIntercept, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipNhitCone", "[" + _name + ".size]", 's', mipNhitCone, _branches, _whitelist);
+  flatutils::book(_tree, _name, "mipIsHalo", "[" + _name + ".size]", 'O', mipIsHalo, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e15", "[" + _name + ".size]", 'F', e15, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e25", "[" + _name + ".size]", 'F', e25, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e33", "[" + _name + ".size]", 'F', e33, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e55", "[" + _name + ".size]", 'F', e55, _branches, _whitelist);
+  flatutils::book(_tree, _name, "r9", "[" + _name + ".size]", 'F', r9, _branches, _whitelist);
+  flatutils::book(_tree, _name, "etaWidth", "[" + _name + ".size]", 'F', etaWidth, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phiWidth", "[" + _name + ".size]", 'F', phiWidth, _branches, _whitelist);
+  flatutils::book(_tree, _name, "s4", "[" + _name + ".size]", 'F', s4, _branches, _whitelist);
+  flatutils::book(_tree, _name, "time", "[" + _name + ".size]", 'F', time, _branches, _whitelist);
+  flatutils::book(_tree, _name, "timeSpan", "[" + _name + ".size]", 'F', timeSpan, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
+  flatutils::book(_tree, _name, "isEB", "[" + _name + ".size]", 'O', isEB, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pixelVeto", "[" + _name + ".size]", 'O', pixelVeto, _branches, _whitelist);
+  flatutils::book(_tree, _name, "electronVeto", "[" + _name + ".size]", 'O', electronVeto, _branches, _whitelist);
+  flatutils::book(_tree, _name, "csafeVeto", "[" + _name + ".size]", 'O', csafeVeto, _branches, _whitelist);
+  flatutils::book(_tree, _name, "loose", "[" + _name + ".size]", 'O', loose, _branches, _whitelist);
+  flatutils::book(_tree, _name, "medium", "[" + _name + ".size]", 'O', medium, _branches, _whitelist);
+  flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
+  flatutils::book(_tree, _name, "highpt", "[" + _name + ".size]", 'O', highpt, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nPhotonHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
 simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
@@ -521,14 +502,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   medium(_data.medium[_idx]),
   tight(_data.tight[_idx]),
   highpt(_data.highpt[_idx]),
-  matchHLT120(_data.matchHLT120[_idx]),
-  matchHLT135MET100(_data.matchHLT135MET100[_idx]),
-  matchHLT165HE10(_data.matchHLT165HE10[_idx]),
-  matchHLT175(_data.matchHLT175[_idx]),
-  matchHLT50VBF(_data.matchHLT50VBF[_idx]),
-  matchHLT75VBF(_data.matchHLT75VBF[_idx]),
-  matchHLT90VBF(_data.matchHLT90VBF[_idx]),
-  matchHLT120VBF(_data.matchHLT120VBF[_idx])
+  matchHLT(_data.matchHLT[_idx])
 {
 }
 
@@ -568,16 +542,9 @@ simpletree::Photon::Photon(Photon const& _src) :
   loose(_src.loose),
   medium(_src.medium),
   tight(_src.tight),
-  highpt(_src.highpt),
-  matchHLT120(_src.matchHLT120),
-  matchHLT135MET100(_src.matchHLT135MET100),
-  matchHLT165HE10(_src.matchHLT165HE10),
-  matchHLT175(_src.matchHLT175),
-  matchHLT50VBF(_src.matchHLT50VBF),
-  matchHLT75VBF(_src.matchHLT75VBF),
-  matchHLT90VBF(_src.matchHLT90VBF),
-  matchHLT120VBF(_src.matchHLT120VBF)
+  highpt(_src.highpt)
 {
+  std::copy_n(_src.matchHLT, nPhotonHLTObjects, matchHLT);
 }
 
 simpletree::Photon&
@@ -620,14 +587,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
   medium = _rhs.medium;
   tight = _rhs.tight;
   highpt = _rhs.highpt;
-  matchHLT120 = _rhs.matchHLT120;
-  matchHLT135MET100 = _rhs.matchHLT135MET100;
-  matchHLT165HE10 = _rhs.matchHLT165HE10;
-  matchHLT175 = _rhs.matchHLT175;
-  matchHLT50VBF = _rhs.matchHLT50VBF;
-  matchHLT75VBF = _rhs.matchHLT75VBF;
-  matchHLT90VBF = _rhs.matchHLT90VBF;
-  matchHLT120VBF = _rhs.matchHLT120VBF;
+  std::copy_n(_rhs.matchHLT, nPhotonHLTObjects, matchHLT);
   return *this;
 }
 
@@ -671,14 +631,7 @@ simpletree::Photon::init()
   medium = false;
   tight = false;
   highpt = false;
-  matchHLT120 = false;
-  matchHLT135MET100 = false;
-  matchHLT165HE10 = false;
-  matchHLT175 = false;
-  matchHLT50VBF = false;
-  matchHLT75VBF = false;
-  matchHLT90VBF = false;
-  matchHLT120VBF = false;
+  std::fill(matchHLT, matchHLT + nPhotonHLTObjects, false);
 }
 
 double const simpletree::Photon::chIsoCuts[2][3]{{3.32, 1.37, 0.76}, {1.97, 1.10, 0.56}};
@@ -718,12 +671,12 @@ simpletree::Lepton::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "matchedGen", _name + ".size", 'I', matchedGen, _branches, _whitelist);
-  flatutils::book(_tree, _name, "tauDecay", _name + ".size", 'O', tauDecay, _branches, _whitelist);
-  flatutils::book(_tree, _name, "hadDecay", _name + ".size", 'O', hadDecay, _branches, _whitelist);
-  flatutils::book(_tree, _name, "positive", _name + ".size", 'O', positive, _branches, _whitelist);
-  flatutils::book(_tree, _name, "loose", _name + ".size", 'O', loose, _branches, _whitelist);
-  flatutils::book(_tree, _name, "tight", _name + ".size", 'O', tight, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
+  flatutils::book(_tree, _name, "tauDecay", "[" + _name + ".size]", 'O', tauDecay, _branches, _whitelist);
+  flatutils::book(_tree, _name, "hadDecay", "[" + _name + ".size]", 'O', hadDecay, _branches, _whitelist);
+  flatutils::book(_tree, _name, "positive", "[" + _name + ".size]", 'O', positive, _branches, _whitelist);
+  flatutils::book(_tree, _name, "loose", "[" + _name + ".size]", 'O', loose, _branches, _whitelist);
+  flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
 }
 
 simpletree::Lepton::Lepton(array_data& _data, UInt_t _idx) :
@@ -792,12 +745,7 @@ simpletree::Electron::array_data::setStatus(TTree& _tree, TString const& _name, 
   flatutils::setStatus(_tree, _name, "hOverE", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "veto", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT23Loose", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT27Loose", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT120Ph", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT135MET100Ph", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT165HE10Ph", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT175Ph", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchHLT", _status, _branches, _whitelist);
 }
 
 void
@@ -817,12 +765,7 @@ simpletree::Electron::array_data::setAddress(TTree& _tree, TString const& _name,
   flatutils::setStatusAndAddress(_tree, _name, "hOverE", hOverE, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "veto", veto, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT23Loose", matchHLT23Loose, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT27Loose", matchHLT27Loose, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT120Ph", matchHLT120Ph, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT135MET100Ph", matchHLT135MET100Ph, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT165HE10Ph", matchHLT165HE10Ph, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT175Ph", matchHLT175Ph, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchHLT", matchHLT, _branches, _whitelist);
 }
 
 void
@@ -830,24 +773,19 @@ simpletree::Electron::array_data::book(TTree& _tree, TString const& _name, flatu
 {
   Lepton::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "chIso", _name + ".size", 'F', chIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "nhIso", _name + ".size", 'F', nhIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phIso", _name + ".size", 'F', phIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "chIsoPh", _name + ".size", 'F', chIsoPh, _branches, _whitelist);
-  flatutils::book(_tree, _name, "nhIsoPh", _name + ".size", 'F', nhIsoPh, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phIsoPh", _name + ".size", 'F', phIsoPh, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ecalIso", _name + ".size", 'F', ecalIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "hcalIso", _name + ".size", 'F', hcalIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "sieie", _name + ".size", 'F', sieie, _branches, _whitelist);
-  flatutils::book(_tree, _name, "hOverE", _name + ".size", 'F', hOverE, _branches, _whitelist);
-  flatutils::book(_tree, _name, "isEB", _name + ".size", 'O', isEB, _branches, _whitelist);
-  flatutils::book(_tree, _name, "veto", _name + ".size", 'O', veto, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT23Loose", _name + ".size", 'O', matchHLT23Loose, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT27Loose", _name + ".size", 'O', matchHLT27Loose, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT120Ph", _name + ".size", 'O', matchHLT120Ph, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT135MET100Ph", _name + ".size", 'O', matchHLT135MET100Ph, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT165HE10Ph", _name + ".size", 'O', matchHLT165HE10Ph, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT175Ph", _name + ".size", 'O', matchHLT175Ph, _branches, _whitelist);
+  flatutils::book(_tree, _name, "chIso", "[" + _name + ".size]", 'F', chIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "nhIso", "[" + _name + ".size]", 'F', nhIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phIso", "[" + _name + ".size]", 'F', phIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "chIsoPh", "[" + _name + ".size]", 'F', chIsoPh, _branches, _whitelist);
+  flatutils::book(_tree, _name, "nhIsoPh", "[" + _name + ".size]", 'F', nhIsoPh, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phIsoPh", "[" + _name + ".size]", 'F', phIsoPh, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ecalIso", "[" + _name + ".size]", 'F', ecalIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "hcalIso", "[" + _name + ".size]", 'F', hcalIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sieie", "[" + _name + ".size]", 'F', sieie, _branches, _whitelist);
+  flatutils::book(_tree, _name, "hOverE", "[" + _name + ".size]", 'F', hOverE, _branches, _whitelist);
+  flatutils::book(_tree, _name, "isEB", "[" + _name + ".size]", 'O', isEB, _branches, _whitelist);
+  flatutils::book(_tree, _name, "veto", "[" + _name + ".size]", 'O', veto, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nElectronHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
 simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
@@ -864,12 +802,7 @@ simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
   hOverE(_data.hOverE[_idx]),
   isEB(_data.isEB[_idx]),
   veto(_data.veto[_idx]),
-  matchHLT23Loose(_data.matchHLT23Loose[_idx]),
-  matchHLT27Loose(_data.matchHLT27Loose[_idx]),
-  matchHLT120Ph(_data.matchHLT120Ph[_idx]),
-  matchHLT135MET100Ph(_data.matchHLT135MET100Ph[_idx]),
-  matchHLT165HE10Ph(_data.matchHLT165HE10Ph[_idx]),
-  matchHLT175Ph(_data.matchHLT175Ph[_idx])
+  matchHLT(_data.matchHLT[_idx])
 {
 }
 
@@ -886,14 +819,9 @@ simpletree::Electron::Electron(Electron const& _src) :
   sieie(_src.sieie),
   hOverE(_src.hOverE),
   isEB(_src.isEB),
-  veto(_src.veto),
-  matchHLT23Loose(_src.matchHLT23Loose),
-  matchHLT27Loose(_src.matchHLT27Loose),
-  matchHLT120Ph(_src.matchHLT120Ph),
-  matchHLT135MET100Ph(_src.matchHLT135MET100Ph),
-  matchHLT165HE10Ph(_src.matchHLT165HE10Ph),
-  matchHLT175Ph(_src.matchHLT175Ph)
+  veto(_src.veto)
 {
+  std::copy_n(_src.matchHLT, nElectronHLTObjects, matchHLT);
 }
 
 simpletree::Electron&
@@ -913,12 +841,7 @@ simpletree::Electron::operator=(Electron const& _rhs)
   hOverE = _rhs.hOverE;
   isEB = _rhs.isEB;
   veto = _rhs.veto;
-  matchHLT23Loose = _rhs.matchHLT23Loose;
-  matchHLT27Loose = _rhs.matchHLT27Loose;
-  matchHLT120Ph = _rhs.matchHLT120Ph;
-  matchHLT135MET100Ph = _rhs.matchHLT135MET100Ph;
-  matchHLT165HE10Ph = _rhs.matchHLT165HE10Ph;
-  matchHLT175Ph = _rhs.matchHLT175Ph;
+  std::copy_n(_rhs.matchHLT, nElectronHLTObjects, matchHLT);
   return *this;
 }
 
@@ -939,12 +862,7 @@ simpletree::Electron::init()
   hOverE = 0.;
   isEB = false;
   veto = false;
-  matchHLT23Loose = false;
-  matchHLT27Loose = false;
-  matchHLT120Ph = false;
-  matchHLT135MET100Ph = false;
-  matchHLT165HE10Ph = false;
-  matchHLT175Ph = false;
+  std::fill(matchHLT, matchHLT + nElectronHLTObjects, false);
 }
 
 void
@@ -953,10 +871,7 @@ simpletree::Muon::array_data::setStatus(TTree& _tree, TString const& _name, Bool
   Lepton::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "combRelIso", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT20", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLTTrk20", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT24", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT27", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchHLT", _status, _branches, _whitelist);
 }
 
 void
@@ -965,10 +880,7 @@ simpletree::Muon::array_data::setAddress(TTree& _tree, TString const& _name, fla
   Lepton::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "combRelIso", combRelIso, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT20", matchHLT20, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLTTrk20", matchHLTTrk20, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT24", matchHLT24, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT27", matchHLT27, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchHLT", matchHLT, _branches, _whitelist);
 }
 
 void
@@ -976,31 +888,22 @@ simpletree::Muon::array_data::book(TTree& _tree, TString const& _name, flatutils
 {
   Lepton::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "combRelIso", _name + ".size", 'F', combRelIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT20", _name + ".size", 'O', matchHLT20, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLTTrk20", _name + ".size", 'O', matchHLTTrk20, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT24", _name + ".size", 'O', matchHLT24, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT27", _name + ".size", 'O', matchHLT27, _branches, _whitelist);
+  flatutils::book(_tree, _name, "combRelIso", "[" + _name + ".size]", 'F', combRelIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nMuonHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
 simpletree::Muon::Muon(array_data& _data, UInt_t _idx) :
   Lepton(_data, _idx),
   combRelIso(_data.combRelIso[_idx]),
-  matchHLT20(_data.matchHLT20[_idx]),
-  matchHLTTrk20(_data.matchHLTTrk20[_idx]),
-  matchHLT24(_data.matchHLT24[_idx]),
-  matchHLT27(_data.matchHLT27[_idx])
+  matchHLT(_data.matchHLT[_idx])
 {
 }
 
 simpletree::Muon::Muon(Muon const& _src) :
   Lepton(_src),
-  combRelIso(_src.combRelIso),
-  matchHLT20(_src.matchHLT20),
-  matchHLTTrk20(_src.matchHLTTrk20),
-  matchHLT24(_src.matchHLT24),
-  matchHLT27(_src.matchHLT27)
+  combRelIso(_src.combRelIso)
 {
+  std::copy_n(_src.matchHLT, nMuonHLTObjects, matchHLT);
 }
 
 simpletree::Muon&
@@ -1009,10 +912,7 @@ simpletree::Muon::operator=(Muon const& _rhs)
   Lepton::operator=(_rhs);
 
   combRelIso = _rhs.combRelIso;
-  matchHLT20 = _rhs.matchHLT20;
-  matchHLTTrk20 = _rhs.matchHLTTrk20;
-  matchHLT24 = _rhs.matchHLT24;
-  matchHLT27 = _rhs.matchHLT27;
+  std::copy_n(_rhs.matchHLT, nMuonHLTObjects, matchHLT);
   return *this;
 }
 
@@ -1022,10 +922,7 @@ simpletree::Muon::init()
   Lepton::init();
 
   combRelIso = 0.;
-  matchHLT20 = false;
-  matchHLTTrk20 = false;
-  matchHLT24 = false;
-  matchHLT27 = false;
+  std::fill(matchHLT, matchHLT + nMuonHLTObjects, false);
 }
 
 void
@@ -1051,8 +948,8 @@ simpletree::Tau::array_data::book(TTree& _tree, TString const& _name, flatutils:
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "decayMode", _name + ".size", 'O', decayMode, _branches, _whitelist);
-  flatutils::book(_tree, _name, "combIso", _name + ".size", 'F', combIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "decayMode", "[" + _name + ".size]", 'O', decayMode, _branches, _whitelist);
+  flatutils::book(_tree, _name, "combIso", "[" + _name + ".size]", 'F', combIso, _branches, _whitelist);
 }
 
 simpletree::Tau::Tau(array_data& _data, UInt_t _idx) :
@@ -1113,9 +1010,9 @@ simpletree::Parton::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "pid", _name + ".size", 'I', pid, _branches, _whitelist);
-  flatutils::book(_tree, _name, "status", _name + ".size", 'S', status, _branches, _whitelist);
-  flatutils::book(_tree, _name, "frixIso", _name + ".size", 'O', frixIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pid", "[" + _name + ".size]", 'I', pid, _branches, _whitelist);
+  flatutils::book(_tree, _name, "status", "[" + _name + ".size]", 'S', status, _branches, _whitelist);
+  flatutils::book(_tree, _name, "frixIso", "[" + _name + ".size]", 'O', frixIso, _branches, _whitelist);
 }
 
 simpletree::Parton::Parton(array_data& _data, UInt_t _idx) :
@@ -1178,8 +1075,8 @@ simpletree::MCParticle::array_data::book(TTree& _tree, TString const& _name, fla
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "pid", _name + ".size", 'I', pid, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ancestor", _name + ".size", 's', ancestor, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pid", "[" + _name + ".size]", 'I', pid, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ancestor", "[" + _name + ".size]", 's', ancestor, _branches, _whitelist);
 }
 
 simpletree::MCParticle::MCParticle(array_data& _data, UInt_t _idx) :
@@ -1222,6 +1119,7 @@ simpletree::GenJet::GenJet(array_data& _data, UInt_t _idx) :
 
 simpletree::GenJet::GenJet(GenJet const& _src) :
   ParticleM(_src)
+  
 {
 }
 
@@ -1255,7 +1153,7 @@ simpletree::HLT::array_data::setAddress(TTree& _tree, TString const& _name, flat
 void
 simpletree::HLT::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::book(_tree, _name, "pass", TString::Format("%d", 17), 'O', pass, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pass", TString::Format("[%d]", 25), 'O', pass, _branches, _whitelist);
 }
 
 simpletree::HLT::HLT(array_data& _data, UInt_t _idx) :
@@ -1363,7 +1261,7 @@ simpletree::ReweightScale::array_data::setAddress(TTree& _tree, TString const& _
 void
 simpletree::ReweightScale::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::book(_tree, _name, "scale", TString::Format("%d", 256), 'F', scale, _branches, _whitelist);
+  flatutils::book(_tree, _name, "scale", TString::Format("[%d]", 256), 'F', scale, _branches, _whitelist);
 }
 
 simpletree::ReweightScale::ReweightScale(array_data& _data, UInt_t _idx) :

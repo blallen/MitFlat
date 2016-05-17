@@ -19,9 +19,17 @@ namespace simpletree {
     kPhoton135MET100,
     kPhoton165HE10,
     kPhoton175,
+    kPhoton22MET40,
+    kPhoton22VBF,
+    kPhoton36MET40,
+    kPhoton36VBF,
+    kPhoton50MET40,
     kPhoton50VBF,
+    kPhoton75MET40,
     kPhoton75VBF,
+    kPhoton90MET40,
     kPhoton90VBF,
+    kPhoton120MET40,
     kPhoton120VBF,
     kEle23Loose,
     kEle27Loose,
@@ -33,6 +41,44 @@ namespace simpletree {
     kMETNoMu90MHTNoMu90,
     kMETNoMu120MHTNoMu120,
     nHLTPaths
+  };
+
+  enum PhotonHLTObject {
+    fPh120,
+    fPh135,
+    fPh165HE10,
+    fPh175,
+    fPh22EBR9Iso,
+    fPh36EBR9Iso,
+    fPh50EBR9Iso,
+    fPh75EBR9Iso,
+    fPh90EBR9Iso,
+    fPh120EBR9Iso,
+    nPhotonHLTObjects
+  };
+
+  enum ElectronHLTObject {
+    fEl23Loose,
+    fEl27Loose,
+    fEl120Ph,
+    fEl135Ph,
+    fEl165HE10Ph,
+    fEl175Ph,
+    fEl22EBR9IsoPh,
+    fEl36EBR9IsoPh,
+    fEl50EBR9IsoPh,
+    fEl75EBR9IsoPh,
+    fEl90EBR9IsoPh,
+    fEl120EBR9IsoPh,
+    nElectronHLTObjects
+  };
+
+  enum MuonHLTObject {
+    fMu20,
+    fMuTrk20,
+    fMu24,
+    fMu27,
+    nMuonHLTObjects
   };
 
   class Particle {
@@ -214,14 +260,7 @@ namespace simpletree {
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
-      Bool_t matchHLT120[NMAX]{};
-      Bool_t matchHLT135MET100[NMAX]{};
-      Bool_t matchHLT165HE10[NMAX]{};
-      Bool_t matchHLT175[NMAX]{};
-      Bool_t matchHLT50VBF[NMAX]{};
-      Bool_t matchHLT75VBF[NMAX]{};
-      Bool_t matchHLT90VBF[NMAX]{};
-      Bool_t matchHLT120VBF[NMAX]{};
+      Bool_t matchHLT[NMAX][nPhotonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -276,14 +315,7 @@ namespace simpletree {
     Bool_t& medium;
     Bool_t& tight;
     Bool_t& highpt;
-    Bool_t& matchHLT120;
-    Bool_t& matchHLT135MET100;
-    Bool_t& matchHLT165HE10;
-    Bool_t& matchHLT175;
-    Bool_t& matchHLT50VBF;
-    Bool_t& matchHLT75VBF;
-    Bool_t& matchHLT90VBF;
-    Bool_t& matchHLT120VBF;
+    Bool_t* matchHLT; //[nPhotonHLTObjects]
   };
 
   class Lepton : public ParticleM {
@@ -333,12 +365,7 @@ namespace simpletree {
       Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t veto[NMAX]{};
-      Bool_t matchHLT23Loose[NMAX]{};
-      Bool_t matchHLT27Loose[NMAX]{};
-      Bool_t matchHLT120Ph[NMAX]{};
-      Bool_t matchHLT135MET100Ph[NMAX]{};
-      Bool_t matchHLT165HE10Ph[NMAX]{};
-      Bool_t matchHLT175Ph[NMAX]{};
+      Bool_t matchHLT[NMAX][nElectronHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -370,22 +397,14 @@ namespace simpletree {
     Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& veto;
-    Bool_t& matchHLT23Loose;
-    Bool_t& matchHLT27Loose;
-    Bool_t& matchHLT120Ph;
-    Bool_t& matchHLT135MET100Ph;
-    Bool_t& matchHLT165HE10Ph;
-    Bool_t& matchHLT175Ph;
+    Bool_t* matchHLT; //[nElectronHLTObjects]
   };
 
   class Muon : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
       Float_t combRelIso[NMAX]{};
-      Bool_t matchHLT20[NMAX]{};
-      Bool_t matchHLTTrk20[NMAX]{};
-      Bool_t matchHLT24[NMAX]{};
-      Bool_t matchHLT27[NMAX]{};
+      Bool_t matchHLT[NMAX][nMuonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -400,10 +419,7 @@ namespace simpletree {
 
   public:
     Float_t& combRelIso;
-    Bool_t& matchHLT20;
-    Bool_t& matchHLTTrk20;
-    Bool_t& matchHLT24;
-    Bool_t& matchHLT27;
+    Bool_t* matchHLT; //[nMuonHLTObjects]
   };
 
   class Tau : public ParticleM {
@@ -489,7 +505,7 @@ namespace simpletree {
   class HLT {
   public:
     struct array_data {
-      static UInt_t const NMAX{17};
+      static UInt_t const NMAX{25};
 
       Bool_t pass[NMAX]{};
 

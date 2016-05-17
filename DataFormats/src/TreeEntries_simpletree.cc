@@ -125,9 +125,17 @@ simpletree::makeHLTPathTree()
     "kPhoton135MET100",
     "kPhoton165HE10",
     "kPhoton175",
+    "kPhoton22MET40",
+    "kPhoton22VBF",
+    "kPhoton36MET40",
+    "kPhoton36VBF",
+    "kPhoton50MET40",
     "kPhoton50VBF",
+    "kPhoton75MET40",
     "kPhoton75VBF",
+    "kPhoton90MET40",
     "kPhoton90VBF",
+    "kPhoton120MET40",
     "kPhoton120VBF",
     "kEle23Loose",
     "kEle27Loose",
@@ -139,6 +147,92 @@ simpletree::makeHLTPathTree()
     "kMETNoMu90MHTNoMu90",
     "kMETNoMu120MHTNoMu120",
     "nHLTPaths"
+  };
+
+  for (auto&& n : names) {
+    std::strcpy(name, n.Data());
+    tree->Fill();
+  }
+
+  tree->ResetBranchAddresses();
+  return tree;
+}
+
+TTree*
+simpletree::makePhotonHLTObjectTree()
+{
+  auto* tree(new TTree("PhotonHLTObject", "PhotonHLTObject"));
+  char name[1024];
+  tree->Branch("name", name, "name/C");
+
+  TString names[] = {
+    "fPh120",
+    "fPh135",
+    "fPh165HE10",
+    "fPh175",
+    "fPh22EBR9Iso",
+    "fPh36EBR9Iso",
+    "fPh50EBR9Iso",
+    "fPh75EBR9Iso",
+    "fPh90EBR9Iso",
+    "fPh120EBR9Iso",
+    "nPhotonHLTObjects"
+  };
+
+  for (auto&& n : names) {
+    std::strcpy(name, n.Data());
+    tree->Fill();
+  }
+
+  tree->ResetBranchAddresses();
+  return tree;
+}
+
+TTree*
+simpletree::makeElectronHLTObjectTree()
+{
+  auto* tree(new TTree("ElectronHLTObject", "ElectronHLTObject"));
+  char name[1024];
+  tree->Branch("name", name, "name/C");
+
+  TString names[] = {
+    "fEl23Loose",
+    "fEl27Loose",
+    "fEl120Ph",
+    "fEl135Ph",
+    "fEl165HE10Ph",
+    "fEl175Ph",
+    "fEl22EBR9IsoPh",
+    "fEl36EBR9IsoPh",
+    "fEl50EBR9IsoPh",
+    "fEl75EBR9IsoPh",
+    "fEl90EBR9IsoPh",
+    "fEl120EBR9IsoPh",
+    "nElectronHLTObjects"
+  };
+
+  for (auto&& n : names) {
+    std::strcpy(name, n.Data());
+    tree->Fill();
+  }
+
+  tree->ResetBranchAddresses();
+  return tree;
+}
+
+TTree*
+simpletree::makeMuonHLTObjectTree()
+{
+  auto* tree(new TTree("MuonHLTObject", "MuonHLTObject"));
+  char name[1024];
+  tree->Branch("name", name, "name/C");
+
+  TString names[] = {
+    "fMu20",
+    "fMuTrk20",
+    "fMu24",
+    "fMu27",
+    "nMuonHLTObjects"
   };
 
   for (auto&& n : names) {
