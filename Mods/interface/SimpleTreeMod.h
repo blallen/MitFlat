@@ -45,6 +45,7 @@ namespace mithep {
     void SetUnclDownMetName(char const* n) { fUnclDownMetName = n; }
     void SetGenMetName(char const* n) { fGenMetName = n; }
     void SetGenJetsName(char const* n) { fGenJetsName = n; }
+    void SetUseTrigger(Bool_t b) { fUseTrigger = b; }
     void AddTriggerFilterName(UInt_t p, char const* n) { fTriggerFilterName[p].emplace_back(n); }
     void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
     void AddPdfReweightGroup(char const* n) { fPdfReweightGroupNames.push_back(n); }
@@ -99,6 +100,7 @@ namespace mithep {
     TString fUnclDownMetName{""};
     TString fGenMetName{""};
     TString fGenJetsName{""};
+    Bool_t fUseTrigger{kTRUE};
     std::vector<TString> fTriggerFilterName[simpletree::nHLTPaths]{};
     TString fTriggerPathName[simpletree::nHLTPaths]{};
     std::vector<TString> fPdfReweightGroupNames{};

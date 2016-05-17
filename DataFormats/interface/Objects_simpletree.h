@@ -184,6 +184,8 @@ namespace simpletree {
       Float_t chIsoMax[NMAX]{};
       Float_t nhIso[NMAX]{};
       Float_t phIso[NMAX]{};
+      Float_t ecalIso[NMAX]{};
+      Float_t hcalIso[NMAX]{};
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
       Float_t genIso[NMAX]{};
@@ -244,6 +246,8 @@ namespace simpletree {
     Float_t& chIsoMax;
     Float_t& nhIso;
     Float_t& phIso;
+    Float_t& ecalIso;
+    Float_t& hcalIso;
     Float_t& sieie;
     Float_t& hOverE;
     Float_t& genIso;
@@ -317,9 +321,14 @@ namespace simpletree {
   class Electron : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
+      Float_t chIso[NMAX]{};
+      Float_t nhIso[NMAX]{};
+      Float_t phIso[NMAX]{};
       Float_t chIsoPh[NMAX]{};
       Float_t nhIsoPh[NMAX]{};
       Float_t phIsoPh[NMAX]{};
+      Float_t ecalIso[NMAX]{};
+      Float_t hcalIso[NMAX]{};
       Float_t sieie[NMAX]{};
       Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
@@ -349,9 +358,14 @@ namespace simpletree {
     bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
   public:
+    Float_t& chIso;
+    Float_t& nhIso;
+    Float_t& phIso;
     Float_t& chIsoPh;
     Float_t& nhIsoPh;
     Float_t& phIsoPh;
+    Float_t& ecalIso;
+    Float_t& hcalIso;
     Float_t& sieie;
     Float_t& hOverE;
     Bool_t& isEB;

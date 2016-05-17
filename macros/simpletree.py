@@ -265,8 +265,8 @@ looseTaus = mithep.PFTauIdMod('LooseTaus',
     PtMin = 18.,
     EtaMax = 2.3
 )
-looseTaus.AddDiscriminator(mithep.PFTau.kDiscriminationByDecayModeFinding)
-looseTaus.AddCutDiscriminator(mithep.PFTau.kDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits, 5., False)
+looseTaus.AddDiscriminator(mithep.PFTau.iDecayModeFinding)
+looseTaus.AddCutDiscriminator(mithep.PFTau.dByCombinedIsolationDeltaBetaCorrRaw3Hits, 5., False)
 
 ### PHOTONS
 
@@ -337,12 +337,18 @@ ntuples = mithep.SimpleTreeMod(
     IsMC = not analysis.isRealData
 )
 
-for iP, (path, filters) in enumerate(hltPaths):
-    for f in filters:
-        ntuples.AddTriggerFilterName(iP, f)
-    ntuples.SetTriggerPathName(iP, path)
+if not analysis.book.endswith('044'):
+    for iP, (path, filters) in enumerate(hltPaths):
+        for f in filters:
+            ntuples.AddTriggerFilterName(iP, f)
+        ntuples.SetTriggerPathName(iP, path)
+    
+        recoChain = [hltMod]
 
-recoChain = [hltMod]
+else:
+    analysis.SetUseHLT(False)
+    ntuples.SetUseTrigger(False)
+    recoChain = []
 
 recoChain.append(goodPVFilterMod)
 

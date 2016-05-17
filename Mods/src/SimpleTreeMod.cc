@@ -115,13 +115,9 @@ mithep::SimpleTreeMod::Process()
   auto* vertices = GetObject<mithep::VertexCol>(fVerticesName);
   auto* pfCandidates = GetObject<mithep::PFCandidateCol>(Names::gkPFCandidatesBrn);
   auto* energyDensity = GetObject<mithep::PileupEnergyDensityCol>(mithep::Names::gkPileupEnergyDensityBrn);
-  auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
   std::vector<mithep::MCParticle const*> finalState;
   std::vector<mithep::MCParticle const*> promptFinalState;
   TVector3 genVertex;
-
-  auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
-  TList const* toLists[simpletree::nHLTPaths]{};
 
   // basic event info
 
@@ -311,16 +307,23 @@ mithep::SimpleTreeMod::Process()
 
   // triggers
 
-  if (fDebug)
-    Info("Process", "Fill triggers");
+  TList const* toLists[simpletree::nHLTPaths]{};
 
-  for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
-    if (fHLTIds[iH] != -1) {
-      fEvent.hlt[iH].pass = triggerMask->At(fHLTIds[iH]);
-      toLists[iH] = toTable->GetList(fHLTIds[iH]);
+  if (fUseTrigger) {
+    if (fDebug)
+      Info("Process", "Fill triggers");
+
+    auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
+    auto* toTable = GetObject<mithep::TriggerObjectsTable>(TString(Names::gkHltObjBrn) + "Fwk");
+
+    for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
+      if (fHLTIds[iH] != -1) {
+        fEvent.hlt[iH].pass = triggerMask->At(fHLTIds[iH]);
+        toLists[iH] = toTable->GetList(fHLTIds[iH]);
+      }
+      else
+        fEvent.hlt[iH].pass = false;
     }
-    else
-      fEvent.hlt[iH].pass = false;
   }
 
   // MET
@@ -414,8 +417,6 @@ mithep::SimpleTreeMod::Process()
     auto* tightMask = GetObject<mithep::NFArrBool>(fTightPhotonName);
     auto* highPtMask = GetObject<mithep::NFArrBool>(fHighPtPhotonName);
 
-    fEvent.photons.resize(photons->GetEntries());
-
     unsigned nP(0);
     for (unsigned iP(0); iP != photons->GetEntries(); ++iP) {
       auto& inPhoton(*photons->At(iP));
@@ -424,7 +425,8 @@ mithep::SimpleTreeMod::Process()
 
       auto& superCluster(*inPhoton.SCluster());
 
-      auto& outPhoton(fEvent.photons[nP]);
+      fEvent.photons.resize(nP + 1);
+      auto& outPhoton(fEvent.photons[nP++]);
 
       double scEta(superCluster.AbsEta());
 
@@ -453,6 +455,9 @@ mithep::SimpleTreeMod::Process()
       }
 
       outPhoton.chIsoMax = chIsoMax;
+
+      outPhoton.ecalIso = inPhoton.EcalPFClusterIso();
+      outPhoton.hcalIso = inPhoton.HcalPFClusterIso();
 
       // PFWorst iso is not done quite right, but we'll play along
       double chWorstIso = IsolationTools::PFChargedIsolation(&inPhoton, 0, 0.3, 0., pfCandidates, 0, vertices);
@@ -614,11 +619,7 @@ mithep::SimpleTreeMod::Process()
           }
         }
       }
-
-      ++nP;
     }
-
-    fEvent.photons.resize(nP);
   }
 
   TString* inputLeptonName[2] = {
@@ -715,6 +716,10 @@ mithep::SimpleTreeMod::Process()
         outElectron.veto = vetoMask->At(iL);
         outElectron.loose = looseMask->At(iL);
         outElectron.isEB = inElectron.SCluster()->AbsEta() < mithep::gkEleEBEtaMax;
+
+        outElectron.chIso = inElectron.PFChargedHadronIso();
+        outElectron.nhIso = inElectron.PFNeutralHadronIso();
+        outElectron.phIso = inElectron.PFPhotonIso();
           
         double chIso, nhIso, phIso;
         IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
@@ -724,6 +729,9 @@ mithep::SimpleTreeMod::Process()
         outElectron.chIsoPh = chIso;
         outElectron.nhIsoPh = nhIso;
         outElectron.phIsoPh = phIso;
+        
+        outElectron.ecalIso = inElectron.EcalPFClusterIso();
+        outElectron.hcalIso = inElectron.HcalPFClusterIso();
 
         outElectron.sieie = inElectron.CoviEtaiEta5x5();
         outElectron.hOverE = inElectron.HadOverEmTow();
@@ -785,9 +793,6 @@ mithep::SimpleTreeMod::Process()
     }
   }
 
-  if (fDebug)
-    Info("Process", "Fill taus");
-
   if (fTausName.Length() != 0) {
     auto* taus = GetObject<mithep::PFTauCol>(fTausName);
     if (!taus) {
@@ -795,18 +800,25 @@ mithep::SimpleTreeMod::Process()
       return;
     }
 
-    fEvent.taus.resize(taus->GetEntries());
+    if (fDebug)
+      Info("Process", "Fill taus: input %d", taus->GetEntries());
+
+    unsigned nT(0);
     for (unsigned iT(0); iT != taus->GetEntries(); ++iT) {
       auto& inTau(*taus->At(iT));
-      if (inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByDecayModeFindingNewDMs) < 0.5)
+      // std::cout << iT << " " << inTau.PFTauIdentifier(mithep::PFTau::iDecayModeFindingNewDMs) << " "
+      //           << inTau.PFTauDiscriminator(mithep::PFTau::iDecayModeFindingNewDMs) << std::endl;
+
+      if (!inTau.PFTauIdentifier(mithep::PFTau::iDecayModeFindingNewDMs))
         continue;
 
-      auto& outTau(fEvent.taus[iT]);
+      fEvent.taus.resize(nT + 1);
+      auto& outTau(fEvent.taus[nT++]);
 
       fillP4_(outTau, inTau);
 
-      outTau.decayMode = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByDecayModeFinding) > 0.5;
-      outTau.combIso = inTau.PFTauDiscriminator(mithep::PFTau::kDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits);
+      outTau.decayMode = inTau.PFTauIdentifier(mithep::PFTau::iDecayModeFinding);
+      outTau.combIso = inTau.PFTauDiscriminant(mithep::PFTau::dByCombinedIsolationDeltaBetaCorrRaw3Hits);
     }
   }
 
@@ -896,14 +908,20 @@ mithep::SimpleTreeMod::SlaveTerminate()
 void
 mithep::SimpleTreeMod::BeginRun()
 {
-  auto* hltTable = GetObject<mithep::TriggerTable>(TString::Format("%sFwk", mithep::Names::gkHltTableBrn));
-  mithep::TriggerName const* triggerName(0);
+  if (fUseTrigger) {
+    auto* hltTable = GetObject<mithep::TriggerTable>(TString::Format("%sFwk", mithep::Names::gkHltTableBrn));
+    mithep::TriggerName const* triggerName(0);
 
-  for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
-    triggerName = hltTable->GetWildcard("HLT_" + fTriggerPathName[iH] + "_v");
-    if (triggerName)
-      fHLTIds[iH] = triggerName->Id();
-    else
+    for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
+      triggerName = hltTable->GetWildcard("HLT_" + fTriggerPathName[iH] + "_v");
+      if (triggerName)
+        fHLTIds[iH] = triggerName->Id();
+      else
+        fHLTIds[iH] = -1;
+    }
+  }
+  else {
+    for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH)
       fHLTIds[iH] = -1;
   }
 
