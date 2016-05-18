@@ -128,10 +128,10 @@ namespace simpletree {
     ParticleM(ParticleM const&);
     virtual ~ParticleM() {}
     ParticleM& operator=(ParticleM const&);
-    virtual void init();
+    void init() override;
 
     LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
-    TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
+    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
 
   public:
     Float_t& mass;
@@ -155,7 +155,7 @@ namespace simpletree {
     Jet(Jet const&);
     virtual ~Jet() {}
     Jet& operator=(Jet const&);
-    virtual void init();
+    void init() override;
 
   public:
     Bool_t& mjid;
@@ -196,12 +196,10 @@ namespace simpletree {
     CorrectedMet(CorrectedMet const&);
     virtual ~CorrectedMet() {}
     CorrectedMet& operator=(CorrectedMet const&);
-
-    void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    virtual void init();
+    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void init() override;
 
     virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
@@ -271,7 +269,7 @@ namespace simpletree {
     Photon(Photon const&);
     virtual ~Photon() {}
     Photon& operator=(Photon const&);
-    virtual void init();
+    void init() override;
 
     bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -337,7 +335,7 @@ namespace simpletree {
     Lepton(Lepton const&);
     virtual ~Lepton() {}
     Lepton& operator=(Lepton const&);
-    virtual void init();
+    void init() override;
 
     int charge() const { return positive ? 1 : -1; }
 
@@ -376,7 +374,7 @@ namespace simpletree {
     Electron(Electron const&);
     virtual ~Electron() {}
     Electron& operator=(Electron const&);
-    virtual void init();
+    void init() override;
 
     bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -415,7 +413,7 @@ namespace simpletree {
     Muon(Muon const&);
     virtual ~Muon() {}
     Muon& operator=(Muon const&);
-    virtual void init();
+    void init() override;
 
   public:
     Float_t& combRelIso;
@@ -437,7 +435,7 @@ namespace simpletree {
     Tau(Tau const&);
     virtual ~Tau() {}
     Tau& operator=(Tau const&);
-    virtual void init();
+    void init() override;
 
   public:
     Bool_t& decayMode;
@@ -460,7 +458,7 @@ namespace simpletree {
     Parton(Parton const&);
     virtual ~Parton() {}
     Parton& operator=(Parton const&);
-    virtual void init();
+    void init() override;
 
   public:
     Int_t& pid;
@@ -483,7 +481,7 @@ namespace simpletree {
     MCParticle(MCParticle const&);
     virtual ~MCParticle() {}
     MCParticle& operator=(MCParticle const&);
-    virtual void init();
+    void init() override;
 
   public:
     Int_t& pid;
@@ -499,7 +497,7 @@ namespace simpletree {
     GenJet(GenJet const&);
     virtual ~GenJet() {}
     GenJet& operator=(GenJet const&);
-    virtual void init();
+    void init() override;
   };
 
   class HLT {

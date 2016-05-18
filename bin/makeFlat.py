@@ -308,12 +308,20 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
         header.write('\n    ' + obj + '& operator=(' + obj + ' const&);')
 
         if obj in singleObjs:
-            header.write('\n\n    void setName(TString const& name) { name_ = name; }')
-            header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
-            header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
-            header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+            if obj in inheritance:
+                header.write('\n    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+            else:
+                header.write('\n\n    void setName(TString const& name) { name_ = name; }')
+                header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
 
-        header.write('\n    virtual void init();')
+        if obj in inheritance:
+            header.write('\n    void init() override;')
+        else:
+            header.write('\n    virtual void init();')
 
         if len(defs[obj].functions) != 0:
             header.write('\n')

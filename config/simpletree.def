@@ -88,7 +88,7 @@ double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
 [ParticleM:Particle]
 mass/F
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
-TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
+TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
 
 [Jet:ParticleM]
 mjid/O

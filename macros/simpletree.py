@@ -388,7 +388,7 @@ ntuples = mithep.SimpleTreeMod(
     IsMC = not analysis.isRealData
 )
 
-if not analysis.book.endswith('044'):
+if analysis.book.endswith('044') or ('usehlt' in analysis.custom and not analysis.custom['usehlt']):
     recoChain = [hltMod]
 
     for iPath, path in hltPaths:
