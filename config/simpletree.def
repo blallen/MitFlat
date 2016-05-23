@@ -122,6 +122,8 @@ chIsoMax/F
 nhIso/F
 phIso/F
 sieie/F
+sipip/F
+sieip/F
 hOverE/F
 genIso/F
 mipEnergy/F
@@ -176,6 +178,8 @@ chIsoPh/F
 nhIsoPh/F
 phIsoPh/F
 sieie/F
+sipip/F
+sieip/F
 hOverE/F
 isEB/O
 veto/O
@@ -229,7 +233,6 @@ weight/D
 rho/D
 npv/s
 partons/PartonCollection
-partonFinalStates/MCParticleCollection
 promptFinalStates/MCParticleCollection
 jets/JetCollection
 genJets/GenJetCollection

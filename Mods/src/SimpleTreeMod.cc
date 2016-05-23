@@ -495,6 +495,8 @@ mithep::SimpleTreeMod::Process()
       outPhoton.chWorstIso = std::max(chWorstIso, 0.);
 
       outPhoton.sieie = inPhoton.CoviEtaiEta5x5();
+      outPhoton.sipip = inPhoton.CoviPhiiPhi();
+      outPhoton.sieip = inPhoton.CoviEtaiPhi();
       outPhoton.hOverE = inPhoton.HadOverEmTow();
 
       outPhoton.mipEnergy = inPhoton.MipTotEnergy();
@@ -665,6 +667,8 @@ mithep::SimpleTreeMod::Process()
       outElectron.phIsoPh = phIso;
 
       outElectron.sieie = inElectron.CoviEtaiEta5x5();
+      outElectron.sipip = inElectron.CoviPhiiPhi();
+      outElectron.sieip = inElectron.CoviEtaiPhi();
       outElectron.hOverE = inElectron.HadOverEmTow();
 
       if (fUseTrigger) {
