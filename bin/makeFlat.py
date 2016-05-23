@@ -61,9 +61,6 @@ argParser.add_argument('-L', '--linkdef', action = 'store_true', dest = 'makeLin
 
 args = argParser.parse_args()
 
-print args.package
-sys.exit(0)
-
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
 brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[.+\\])/(.+)$')
 fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\}$')
