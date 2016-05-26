@@ -29,14 +29,14 @@ def switchRun(case2, case1):
 rhoAlgo = switchRun(mithep.PileupEnergyDensity.kFixedGridFastjetAll, mithep.PileupEnergyDensity.kHighEta)
 
 if run == 2:
-    jecVersion = switchBX('25nsV6', '50nsV5')
+    jecVersion = switchBX('Spring16_25nsV1', 'Summer15_50nsV5')
 
     if analysis.isRealData:
-        jecPattern = mitdata + '/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_DATA_{level}_{jettype}.txt'
+        jecPattern = mitdata + '/JEC/' + jecVersion + '/' + jecVersion + '_DATA_{level}_{jettype}.txt'
         jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
     
     else:
-        jecPattern = mitdata +'/JEC/Summer15_' + jecVersion + '/Summer15_' + jecVersion + '_MC_{level}_{jettype}.txt'
+        jecPattern = mitdata +'/JEC/' + jecVersion + '/' + jecVersion + '_MC_{level}_{jettype}.txt'
         jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
 
 else:
@@ -164,18 +164,40 @@ looseJets = mithep.JetIdMod('JetId',
     OutputName = 'GoodJets',
     PFId = mithep.JetTools.kPFLoose,
     PtMin = 20.,
-    EtaMax = 5.
+    EtaMax = 5.,
+    MVACutWP = mithep.JetIDMVA.kLoose
 )
 if run == 2:
-    looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
-#    looseJets.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
-#    looseJets.SetMVACutWP(mithep.JetIDMVA.kLoose)
-#    looseJets.SetMVACutsFile(os.environ['MIT_DATA'] + '/JetId/jetIDCuts_150807.dat')
-#
-#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2.xml', 0)
-#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5.xml', 1)
-#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3.xml', 2)
-#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
+    synchWith = '80Xv1'
+
+    if synchWith == '76':
+        looseJets.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2_newNames.xml', 0)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5_newNames.xml', 1)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3_newNames.xml', 2)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5_newNames.xml', 3)
+        looseJets.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_150807.dat')
+        looseJets.SetUseBuggyPullForMVA(True)
+        looseJets.SetUseBuggyCovarianceForMVA(True)
+    elif synchWith == '80Xv1':
+        # to synch with 80X MINIAODv1 or privately recomputed 76X using tag pileupJetId76X of https://github.com/jbrands/cmssw.git
+        looseJets.SetMVATrainingSet(mithep.JetIDMVA.k76CHS)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta0to2p5_BDT.weights.xml', 0)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p5to2p75_BDT.weights.xml', 1)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p75to3_BDT.weights.xml', 2)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta3to5_BDT.weights.xml', 3)
+        looseJets.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160225.dat')
+        looseJets.SetUseBuggyCovarianceForMVA(True)
+    elif synchWith == '80Xv2':
+        # to synch with 80X MINIAODv2
+        looseJets.SetMVATrainingSet(mithep.JetIDMVA.k80CHS)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta0to2p5_BDT.weights.xml', 0)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p5to2p75_BDT.weights.xml', 1)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p75to3_BDT.weights.xml', 2)
+        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta3to5_BDT.weights.xml', 3)
+        looseJets.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160416.dat')
+        looseJets.SetUseBuggyCovarianceForMVA(True)
+
 else:
     looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
 
@@ -367,6 +389,7 @@ ntuples = mithep.SimpleTreeMod(
     PhotonsName = baselinePhotons.GetOutputName(),
     PhotonIsoType = mithep.PhotonTools.kSpring15MediumIso,
     ElectronsName = baselineElectrons.GetOutputName(),
+    ElectronIsoType = mithep.ElectronTools.kSummer15LooseIso,
     VetoElectronsName = vetoElectronId.GetOutputName(),
     LooseElectronsName = looseElectronId.GetOutputName(),
     TightElectronsName = tightElectronId.GetOutputName(),
@@ -389,7 +412,12 @@ ntuples = mithep.SimpleTreeMod(
     IsMC = not analysis.isRealData
 )
 
-if analysis.book.endswith('044') or ('usehlt' in analysis.custom and not analysis.custom['usehlt']):
+if (analysis.book.endswith('044') and not analysis.isRealData) or ('usehlt' in analysis.custom and not analysis.custom['usehlt']):
+    analysis.SetUseHLT(False)
+    ntuples.SetUseTrigger(False)
+    recoChain = []
+
+else:
     recoChain = [hltMod]
 
     for iPath, path in hltPaths:
@@ -404,33 +432,28 @@ if analysis.book.endswith('044') or ('usehlt' in analysis.custom and not analysi
     for iFilt, filt in muonHLTObjects:
         ntuples.SetMuonTriggerModuleName(iFilt, filt)
 
-else:
-    analysis.SetUseHLT(False)
-    ntuples.SetUseTrigger(False)
-    recoChain = []
-
 recoChain.append(goodPVFilterMod)
 
-if analysis.isRealData:
-    eventlistDir = '/cvmfs/cvmfs.cmsaf.mit.edu/hidsk0001/cmsprod/cms/MitPhysics/data/eventfilter'
+#if analysis.isRealData:
+#    eventlistDir = '/cvmfs/cvmfs.cmsaf.mit.edu/hidsk0001/cmsprod/cms/MitPhysics/data/eventfilter'
+#
+#    badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
+#        FillHist = True,
+#        TaggingMode = True
+#    )
+#    badEventsFilterMod.SetFilter('HBHENoiseFilter')
+#    badEventsFilterMod.SetFilter('EEBadScFilter')
+#    badEventsFilterMod.AddEventList('CSCTightHaloFilter', eventlistDir + '/csc2015_Dec01.txt')
+#    badEventsFilterMod.AddEventList('EEBadScFilter', eventlistDir + '/ecalscn1043093_Dec01.txt')
+#    badEventsFilterMod.AddEventList('CHTrackResolutionFilter', eventlistDir + '/badResolutionTrack_Jan13.txt')
+#    badEventsFilterMod.AddEventList('MuBadTrackFilter', eventlistDir + '/muonBadTrack_Jan13.txt')
+#    badEventsFilterMod.AddEventList('HBHENoiseIsoFilter', eventlistDir + '/hbheiso_Jan13.txt')
+#
+#    recoChain.append(badEventsFilterMod)
+#
+#    ntuples.SetMetFilterName(badEventsFilterMod.GetOutputName())
 
-    badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
-        FillHist = True,
-        TaggingMode = True
-    )
-    badEventsFilterMod.SetFilter('HBHENoiseFilter')
-    badEventsFilterMod.SetFilter('EEBadScFilter')
-    badEventsFilterMod.AddEventList('CSCTightHaloFilter', eventlistDir + '/csc2015_Dec01.txt')
-    badEventsFilterMod.AddEventList('EEBadScFilter', eventlistDir + '/ecalscn1043093_Dec01.txt')
-    badEventsFilterMod.AddEventList('CHTrackResolutionFilter', eventlistDir + '/badResolutionTrack_Jan13.txt')
-    badEventsFilterMod.AddEventList('MuBadTrackFilter', eventlistDir + '/muonBadTrack_Jan13.txt')
-    badEventsFilterMod.AddEventList('HBHENoiseIsoFilter', eventlistDir + '/hbheiso_Jan13.txt')
-
-    recoChain.append(badEventsFilterMod)
-
-    ntuples.SetMetFilterName(badEventsFilterMod.GetOutputName())
-
-else:
+if not analysis.isRealData:
     generator = mithep.GeneratorMod(
         IsData = False,
         CopyArrays = False,

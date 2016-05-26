@@ -359,14 +359,20 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "mipIntercept", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "mipNhitCone", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "mipIsHalo", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e13", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e31", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "e15", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e22", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "e25", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "e33", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e44", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "e55", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "emax", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e2nd", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e4", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "r9", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "etaWidth", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "phiWidth", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "s4", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "time", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "timeSpan", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
@@ -404,14 +410,20 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "mipIntercept", mipIntercept, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "mipNhitCone", mipNhitCone, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "mipIsHalo", mipIsHalo, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e13", e13, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e31", e31, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "e15", e15, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e22", e22, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "e25", e25, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "e33", e33, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e44", e44, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "e55", e55, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "emax", emax, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e2nd", e2nd, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e4", e4, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "r9", r9, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "etaWidth", etaWidth, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "phiWidth", phiWidth, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "s4", s4, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "time", time, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "timeSpan", timeSpan, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
@@ -449,14 +461,20 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "mipIntercept", "[" + _name + ".size]", 'F', mipIntercept, _branches, _whitelist);
   flatutils::book(_tree, _name, "mipNhitCone", "[" + _name + ".size]", 's', mipNhitCone, _branches, _whitelist);
   flatutils::book(_tree, _name, "mipIsHalo", "[" + _name + ".size]", 'O', mipIsHalo, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e13", "[" + _name + ".size]", 'F', e13, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e31", "[" + _name + ".size]", 'F', e31, _branches, _whitelist);
   flatutils::book(_tree, _name, "e15", "[" + _name + ".size]", 'F', e15, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e22", "[" + _name + ".size]", 'F', e22, _branches, _whitelist);
   flatutils::book(_tree, _name, "e25", "[" + _name + ".size]", 'F', e25, _branches, _whitelist);
   flatutils::book(_tree, _name, "e33", "[" + _name + ".size]", 'F', e33, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e44", "[" + _name + ".size]", 'F', e44, _branches, _whitelist);
   flatutils::book(_tree, _name, "e55", "[" + _name + ".size]", 'F', e55, _branches, _whitelist);
+  flatutils::book(_tree, _name, "emax", "[" + _name + ".size]", 'F', emax, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e2nd", "[" + _name + ".size]", 'F', e2nd, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e4", "[" + _name + ".size]", 'F', e4, _branches, _whitelist);
   flatutils::book(_tree, _name, "r9", "[" + _name + ".size]", 'F', r9, _branches, _whitelist);
   flatutils::book(_tree, _name, "etaWidth", "[" + _name + ".size]", 'F', etaWidth, _branches, _whitelist);
   flatutils::book(_tree, _name, "phiWidth", "[" + _name + ".size]", 'F', phiWidth, _branches, _whitelist);
-  flatutils::book(_tree, _name, "s4", "[" + _name + ".size]", 'F', s4, _branches, _whitelist);
   flatutils::book(_tree, _name, "time", "[" + _name + ".size]", 'F', time, _branches, _whitelist);
   flatutils::book(_tree, _name, "timeSpan", "[" + _name + ".size]", 'F', timeSpan, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
@@ -491,14 +509,20 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   mipIntercept(_data.mipIntercept[_idx]),
   mipNhitCone(_data.mipNhitCone[_idx]),
   mipIsHalo(_data.mipIsHalo[_idx]),
+  e13(_data.e13[_idx]),
+  e31(_data.e31[_idx]),
   e15(_data.e15[_idx]),
+  e22(_data.e22[_idx]),
   e25(_data.e25[_idx]),
   e33(_data.e33[_idx]),
+  e44(_data.e44[_idx]),
   e55(_data.e55[_idx]),
+  emax(_data.emax[_idx]),
+  e2nd(_data.e2nd[_idx]),
+  e4(_data.e4[_idx]),
   r9(_data.r9[_idx]),
   etaWidth(_data.etaWidth[_idx]),
   phiWidth(_data.phiWidth[_idx]),
-  s4(_data.s4[_idx]),
   time(_data.time[_idx]),
   timeSpan(_data.timeSpan[_idx]),
   matchedGen(_data.matchedGen[_idx]),
@@ -534,14 +558,20 @@ simpletree::Photon::Photon(Photon const& _src) :
   mipIntercept(_src.mipIntercept),
   mipNhitCone(_src.mipNhitCone),
   mipIsHalo(_src.mipIsHalo),
+  e13(_src.e13),
+  e31(_src.e31),
   e15(_src.e15),
+  e22(_src.e22),
   e25(_src.e25),
   e33(_src.e33),
+  e44(_src.e44),
   e55(_src.e55),
+  emax(_src.emax),
+  e2nd(_src.e2nd),
+  e4(_src.e4),
   r9(_src.r9),
   etaWidth(_src.etaWidth),
   phiWidth(_src.phiWidth),
-  s4(_src.s4),
   time(_src.time),
   timeSpan(_src.timeSpan),
   matchedGen(_src.matchedGen),
@@ -580,14 +610,20 @@ simpletree::Photon::operator=(Photon const& _rhs)
   mipIntercept = _rhs.mipIntercept;
   mipNhitCone = _rhs.mipNhitCone;
   mipIsHalo = _rhs.mipIsHalo;
+  e13 = _rhs.e13;
+  e31 = _rhs.e31;
   e15 = _rhs.e15;
+  e22 = _rhs.e22;
   e25 = _rhs.e25;
   e33 = _rhs.e33;
+  e44 = _rhs.e44;
   e55 = _rhs.e55;
+  emax = _rhs.emax;
+  e2nd = _rhs.e2nd;
+  e4 = _rhs.e4;
   r9 = _rhs.r9;
   etaWidth = _rhs.etaWidth;
   phiWidth = _rhs.phiWidth;
-  s4 = _rhs.s4;
   time = _rhs.time;
   timeSpan = _rhs.timeSpan;
   matchedGen = _rhs.matchedGen;
@@ -626,14 +662,20 @@ simpletree::Photon::init()
   mipIntercept = 0.;
   mipNhitCone = 0;
   mipIsHalo = false;
+  e13 = 0.;
+  e31 = 0.;
   e15 = 0.;
+  e22 = 0.;
   e25 = 0.;
   e33 = 0.;
+  e44 = 0.;
   e55 = 0.;
+  emax = 0.;
+  e2nd = 0.;
+  e4 = 0.;
   r9 = 0.;
   etaWidth = 0.;
   phiWidth = 0.;
-  s4 = 0.;
   time = 0.;
   timeSpan = 0.;
   matchedGen = 0;
@@ -657,7 +699,7 @@ double const simpletree::Photon::hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.0
 void
 simpletree::Lepton::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+  Particle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "tauDecay", _status, _branches, _whitelist);
@@ -670,7 +712,7 @@ simpletree::Lepton::array_data::setStatus(TTree& _tree, TString const& _name, Bo
 void
 simpletree::Lepton::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
+  Particle::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "tauDecay", tauDecay, _branches, _whitelist);
@@ -683,7 +725,7 @@ simpletree::Lepton::array_data::setAddress(TTree& _tree, TString const& _name, f
 void
 simpletree::Lepton::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
+  Particle::array_data::book(_tree, _name, _branches, _whitelist);
 
   flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
   flatutils::book(_tree, _name, "tauDecay", "[" + _name + ".size]", 'O', tauDecay, _branches, _whitelist);
@@ -694,7 +736,7 @@ simpletree::Lepton::array_data::book(TTree& _tree, TString const& _name, flatuti
 }
 
 simpletree::Lepton::Lepton(array_data& _data, UInt_t _idx) :
-  ParticleM(_data, _idx),
+  Particle(_data, _idx),
   matchedGen(_data.matchedGen[_idx]),
   tauDecay(_data.tauDecay[_idx]),
   hadDecay(_data.hadDecay[_idx]),
@@ -705,7 +747,7 @@ simpletree::Lepton::Lepton(array_data& _data, UInt_t _idx) :
 }
 
 simpletree::Lepton::Lepton(Lepton const& _src) :
-  ParticleM(_src),
+  Particle(_src),
   matchedGen(_src.matchedGen),
   tauDecay(_src.tauDecay),
   hadDecay(_src.hadDecay),
@@ -718,7 +760,7 @@ simpletree::Lepton::Lepton(Lepton const& _src) :
 simpletree::Lepton&
 simpletree::Lepton::operator=(Lepton const& _rhs)
 {
-  ParticleM::operator=(_rhs);
+  Particle::operator=(_rhs);
 
   matchedGen = _rhs.matchedGen;
   tauDecay = _rhs.tauDecay;
@@ -732,7 +774,7 @@ simpletree::Lepton::operator=(Lepton const& _rhs)
 void
 simpletree::Lepton::init()
 {
-  ParticleM::init();
+  Particle::init();
 
   matchedGen = 0;
   tauDecay = false;
@@ -747,12 +789,10 @@ simpletree::Electron::array_data::setStatus(TTree& _tree, TString const& _name, 
 {
   Lepton::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
-  flatutils::setStatus(_tree, _name, "chIso", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "nhIso", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "phIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "chIsoPh", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "nhIsoPh", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "phIsoPh", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "combRelIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ecalIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hcalIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
@@ -769,12 +809,10 @@ simpletree::Electron::array_data::setAddress(TTree& _tree, TString const& _name,
 {
   Lepton::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
-  flatutils::setStatusAndAddress(_tree, _name, "chIso", chIso, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "nhIso", nhIso, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "phIso", phIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "chIsoPh", chIsoPh, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "nhIsoPh", nhIsoPh, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "phIsoPh", phIsoPh, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "combRelIso", combRelIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ecalIso", ecalIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hcalIso", hcalIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
@@ -791,12 +829,10 @@ simpletree::Electron::array_data::book(TTree& _tree, TString const& _name, flatu
 {
   Lepton::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "chIso", "[" + _name + ".size]", 'F', chIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "nhIso", "[" + _name + ".size]", 'F', nhIso, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phIso", "[" + _name + ".size]", 'F', phIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "chIsoPh", "[" + _name + ".size]", 'F', chIsoPh, _branches, _whitelist);
   flatutils::book(_tree, _name, "nhIsoPh", "[" + _name + ".size]", 'F', nhIsoPh, _branches, _whitelist);
   flatutils::book(_tree, _name, "phIsoPh", "[" + _name + ".size]", 'F', phIsoPh, _branches, _whitelist);
+  flatutils::book(_tree, _name, "combRelIso", "[" + _name + ".size]", 'F', combRelIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "ecalIso", "[" + _name + ".size]", 'F', ecalIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "hcalIso", "[" + _name + ".size]", 'F', hcalIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", "[" + _name + ".size]", 'F', sieie, _branches, _whitelist);
@@ -810,12 +846,10 @@ simpletree::Electron::array_data::book(TTree& _tree, TString const& _name, flatu
 
 simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
   Lepton(_data, _idx),
-  chIso(_data.chIso[_idx]),
-  nhIso(_data.nhIso[_idx]),
-  phIso(_data.phIso[_idx]),
   chIsoPh(_data.chIsoPh[_idx]),
   nhIsoPh(_data.nhIsoPh[_idx]),
   phIsoPh(_data.phIsoPh[_idx]),
+  combRelIso(_data.combRelIso[_idx]),
   ecalIso(_data.ecalIso[_idx]),
   hcalIso(_data.hcalIso[_idx]),
   sieie(_data.sieie[_idx]),
@@ -830,12 +864,10 @@ simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
 
 simpletree::Electron::Electron(Electron const& _src) :
   Lepton(_src),
-  chIso(_src.chIso),
-  nhIso(_src.nhIso),
-  phIso(_src.phIso),
   chIsoPh(_src.chIsoPh),
   nhIsoPh(_src.nhIsoPh),
   phIsoPh(_src.phIsoPh),
+  combRelIso(_src.combRelIso),
   ecalIso(_src.ecalIso),
   hcalIso(_src.hcalIso),
   sieie(_src.sieie),
@@ -853,12 +885,10 @@ simpletree::Electron::operator=(Electron const& _rhs)
 {
   Lepton::operator=(_rhs);
 
-  chIso = _rhs.chIso;
-  nhIso = _rhs.nhIso;
-  phIso = _rhs.phIso;
   chIsoPh = _rhs.chIsoPh;
   nhIsoPh = _rhs.nhIsoPh;
   phIsoPh = _rhs.phIsoPh;
+  combRelIso = _rhs.combRelIso;
   ecalIso = _rhs.ecalIso;
   hcalIso = _rhs.hcalIso;
   sieie = _rhs.sieie;
@@ -876,12 +906,10 @@ simpletree::Electron::init()
 {
   Lepton::init();
 
-  chIso = 0.;
-  nhIso = 0.;
-  phIso = 0.;
   chIsoPh = 0.;
   nhIsoPh = 0.;
   phIsoPh = 0.;
+  combRelIso = 0.;
   ecalIso = 0.;
   hcalIso = 0.;
   sieie = 0.;

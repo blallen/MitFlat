@@ -134,14 +134,20 @@ mipSlope/F
 mipIntercept/F
 mipNhitCone/s
 mipIsHalo/O
+e13/F
+e31/F
 e15/F
+e22/F
 e25/F
 e33/F
+e44/F
 e55/F
+emax/F
+e2nd/F
+e4/F
 r9/F
 etaWidth/F
 phiWidth/F
-s4/F
 time/F
 timeSpan/F
 matchedGen/I
@@ -166,7 +172,7 @@ static double const phIsoCuts[2][3]{{0.81, 0.28, 0.08}, {0.83, 0.39, 0.16}};
 static double const sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.0274, 0.0268, 0.0268}};
 static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
-[Lepton:ParticleM]
+[Lepton:Particle]
 int charge() const { return positive ? 1 : -1; }
 matchedGen/I
 tauDecay/O
@@ -176,12 +182,12 @@ loose/O
 tight/O
 
 [Electron:Lepton]
-chIso/F
-nhIso/F
-phIso/F
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 5.11e-4); }
+TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 5.11e-4); return p4; }
 chIsoPh/F
 nhIsoPh/F
 phIsoPh/F
+combRelIso/F
 ecalIso/F
 hcalIso/F
 sieie/F
@@ -199,6 +205,8 @@ bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 
 bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
 [Muon:Lepton]
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.1057); }
+TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.1057); return p4; }
 combRelIso/F
 matchHLT[nMuonHLTObjects]/O
 

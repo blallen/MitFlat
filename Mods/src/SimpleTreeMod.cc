@@ -450,6 +450,7 @@ mithep::SimpleTreeMod::Process()
         continue;
 
       auto& superCluster(*inPhoton.SCluster());
+      auto& seedCluster(*superCluster.Seed());
 
       fEvent.photons.resize(nP + 1);
       auto& outPhoton(fEvent.photons[nP++]);
@@ -507,17 +508,22 @@ mithep::SimpleTreeMod::Process()
       outPhoton.mipIntercept = inPhoton.MipIntercept();
       outPhoton.mipNhitCone = inPhoton.MipNhitCone();
       outPhoton.mipIsHalo = inPhoton.MipIsHalo();
+      outPhoton.e13 = seedCluster.E1x3();
+      outPhoton.e31 = seedCluster.E3x1();
       outPhoton.e15 = inPhoton.E15();
+      outPhoton.e22 = seedCluster.E2x2();
       outPhoton.e25 = inPhoton.E25();
       outPhoton.e33 = inPhoton.E33();
+      outPhoton.e44 = seedCluster.E4x4();
       outPhoton.e55 = inPhoton.E55();
+      outPhoton.emax = seedCluster.EMax();
+      outPhoton.e2nd = seedCluster.E2nd();
+      outPhoton.e4 = seedCluster.ETop() + seedCluster.ERight() + seedCluster.EBottom() + seedCluster.ELeft();
       outPhoton.r9 = inPhoton.R9();
       outPhoton.etaWidth = inPhoton.EtaWidth();
       outPhoton.phiWidth = inPhoton.PhiWidth();
-      outPhoton.s4 = inPhoton.S4Ratio();
       outPhoton.time = superCluster.SeedTime();
       outPhoton.timeSpan = superCluster.LeadTimeSpan();
-
       outPhoton.pixelVeto = !inPhoton.HasPixelSeed();
       outPhoton.electronVeto = true;
       for (unsigned iE(0); iE != electrons->GetEntries(); ++iE) {
@@ -657,6 +663,8 @@ mithep::SimpleTreeMod::Process()
           
       double chIso, nhIso, phIso;
       IsolationTools::PFEGIsoFootprintRemoved(&inElectron, vertices->At(0), pfCandidates, 0.3, chIso, nhIso, phIso);
+      double combRelIso(ElectronTools::CombinedIsoRhoCorr(ElectronTools::EElIsoType(fElectronIsoType), chIso, nhIso + phIso, fEvent.rho, inElectron.SCluster()->AbsEta()) / inElectron.Pt());
+
       PhotonTools::IsoLeakageCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), inElectron.Et(), inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
       PhotonTools::IsoRhoCorrection(PhotonTools::EPhIsoType(fPhotonIsoType), fEvent.rho, inElectron.SCluster()->AbsEta(), chIso, nhIso, phIso);
 
@@ -664,6 +672,7 @@ mithep::SimpleTreeMod::Process()
       outElectron.nhIsoPh = nhIso;
       outElectron.phIsoPh = phIso;
 
+      outElectron.combRelIso = combRelIso;
       outElectron.ecalIso = inElectron.EcalPFClusterIso();
       outElectron.hcalIso = inElectron.HcalPFClusterIso();
 

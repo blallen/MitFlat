@@ -241,14 +241,20 @@ namespace simpletree {
       Float_t mipIntercept[NMAX]{};
       UShort_t mipNhitCone[NMAX]{};
       Bool_t mipIsHalo[NMAX]{};
+      Float_t e13[NMAX]{};
+      Float_t e31[NMAX]{};
       Float_t e15[NMAX]{};
+      Float_t e22[NMAX]{};
       Float_t e25[NMAX]{};
       Float_t e33[NMAX]{};
+      Float_t e44[NMAX]{};
       Float_t e55[NMAX]{};
+      Float_t emax[NMAX]{};
+      Float_t e2nd[NMAX]{};
+      Float_t e4[NMAX]{};
       Float_t r9[NMAX]{};
       Float_t etaWidth[NMAX]{};
       Float_t phiWidth[NMAX]{};
-      Float_t s4[NMAX]{};
       Float_t time[NMAX]{};
       Float_t timeSpan[NMAX]{};
       Int_t matchedGen[NMAX]{};
@@ -298,14 +304,20 @@ namespace simpletree {
     Float_t& mipIntercept;
     UShort_t& mipNhitCone;
     Bool_t& mipIsHalo;
+    Float_t& e13;
+    Float_t& e31;
     Float_t& e15;
+    Float_t& e22;
     Float_t& e25;
     Float_t& e33;
+    Float_t& e44;
     Float_t& e55;
+    Float_t& emax;
+    Float_t& e2nd;
+    Float_t& e4;
     Float_t& r9;
     Float_t& etaWidth;
     Float_t& phiWidth;
-    Float_t& s4;
     Float_t& time;
     Float_t& timeSpan;
     Int_t& matchedGen;
@@ -320,9 +332,9 @@ namespace simpletree {
     Bool_t* matchHLT; //[nPhotonHLTObjects]
   };
 
-  class Lepton : public ParticleM {
+  class Lepton : public Particle {
   public:
-    struct array_data : public ParticleM::array_data {
+    struct array_data : public Particle::array_data {
       Int_t matchedGen[NMAX]{};
       Bool_t tauDecay[NMAX]{};
       Bool_t hadDecay[NMAX]{};
@@ -355,12 +367,10 @@ namespace simpletree {
   class Electron : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
-      Float_t chIso[NMAX]{};
-      Float_t nhIso[NMAX]{};
-      Float_t phIso[NMAX]{};
       Float_t chIsoPh[NMAX]{};
       Float_t nhIsoPh[NMAX]{};
       Float_t phIsoPh[NMAX]{};
+      Float_t combRelIso[NMAX]{};
       Float_t ecalIso[NMAX]{};
       Float_t hcalIso[NMAX]{};
       Float_t sieie[NMAX]{};
@@ -382,6 +392,8 @@ namespace simpletree {
     Electron& operator=(Electron const&);
     void init() override;
 
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 5.11e-4); }
+    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 5.11e-4); return p4; }
     bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
     bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
@@ -389,12 +401,10 @@ namespace simpletree {
     bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
   public:
-    Float_t& chIso;
-    Float_t& nhIso;
-    Float_t& phIso;
     Float_t& chIsoPh;
     Float_t& nhIsoPh;
     Float_t& phIsoPh;
+    Float_t& combRelIso;
     Float_t& ecalIso;
     Float_t& hcalIso;
     Float_t& sieie;
@@ -422,6 +432,9 @@ namespace simpletree {
     virtual ~Muon() {}
     Muon& operator=(Muon const&);
     void init() override;
+
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.1057); }
+    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.1057); return p4; }
 
   public:
     Float_t& combRelIso;

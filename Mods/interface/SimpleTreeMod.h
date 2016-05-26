@@ -4,6 +4,7 @@
 #include "MitAna/TreeMod/interface/BaseMod.h"
 #include "MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
 #include "MitPhysics/Utils/interface/PhotonTools.h"
+#include "MitPhysics/Utils/interface/ElectronTools.h"
 
 #include "TString.h"
 #include "TTree.h"
@@ -24,6 +25,7 @@ namespace mithep {
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
     void SetPhotonIsoType(UInt_t i) { fPhotonIsoType = i; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
+    void SetElectronIsoType(UInt_t i) { fElectronIsoType = i; }
     void SetVetoElectronsName(char const* n) { fVetoElectronsName = n; }
     void SetLooseElectronsName(char const* n) { fLooseElectronsName = n; }
     void SetTightElectronsName(char const* n) { fTightElectronsName = n; }
@@ -82,6 +84,7 @@ namespace mithep {
     TString fPhotonsName{"Photons"};
     UInt_t fPhotonIsoType{PhotonTools::kSpring15MediumIso};
     TString fElectronsName{"Electrons"};
+    UInt_t fElectronIsoType{ElectronTools::kSummer15LooseIso};
     TString fVetoElectronsName{"VetoElectrons"};
     TString fLooseElectronsName{"LooseElectrons"};
     TString fTightElectronsName{"TightElectrons"};

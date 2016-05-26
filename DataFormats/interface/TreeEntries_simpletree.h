@@ -9,7 +9,7 @@ namespace simpletree {
   typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
   typedef flatutils::Collection<Jet, ParticleMCollection> JetCollection;
   typedef flatutils::Collection<Photon, ParticleCollection> PhotonCollection;
-  typedef flatutils::Collection<Lepton, ParticleMCollection> LeptonCollection;
+  typedef flatutils::Collection<Lepton, ParticleCollection> LeptonCollection;
   typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
   typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
   typedef flatutils::Collection<Tau, ParticleMCollection> TauCollection;
