@@ -231,6 +231,8 @@ namespace simpletree {
       Float_t ecalIso[NMAX]{};
       Float_t hcalIso[NMAX]{};
       Float_t sieie[NMAX]{};
+      Float_t sipip[NMAX]{};
+      Float_t sieip[NMAX]{};
       Float_t hOverE[NMAX]{};
       Float_t genIso[NMAX]{};
       Float_t mipEnergy[NMAX]{};
@@ -286,6 +288,8 @@ namespace simpletree {
     Float_t& ecalIso;
     Float_t& hcalIso;
     Float_t& sieie;
+    Float_t& sipip;
+    Float_t& sieip;
     Float_t& hOverE;
     Float_t& genIso;
     Float_t& mipEnergy;
@@ -360,6 +364,8 @@ namespace simpletree {
       Float_t ecalIso[NMAX]{};
       Float_t hcalIso[NMAX]{};
       Float_t sieie[NMAX]{};
+      Float_t sipip[NMAX]{};
+      Float_t sieip[NMAX]{};
       Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t veto[NMAX]{};
@@ -392,6 +398,8 @@ namespace simpletree {
     Float_t& ecalIso;
     Float_t& hcalIso;
     Float_t& sieie;
+    Float_t& sipip;
+    Float_t& sieip;
     Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& veto;

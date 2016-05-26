@@ -124,6 +124,8 @@ phIso/F
 ecalIso/F
 hcalIso/F
 sieie/F
+sipip/F
+sieip/F
 hOverE/F
 genIso/F
 mipEnergy/F
@@ -183,6 +185,8 @@ phIsoPh/F
 ecalIso/F
 hcalIso/F
 sieie/F
+sipip/F
+sieip/F
 hOverE/F
 isEB/O
 veto/O
@@ -236,7 +240,6 @@ weight/D
 rho/D
 npv/s
 partons/PartonCollection
-partonFinalStates/MCParticleCollection
 promptFinalStates/MCParticleCollection
 jets/JetCollection
 genJets/GenJetCollection

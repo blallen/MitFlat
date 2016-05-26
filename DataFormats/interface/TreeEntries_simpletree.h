@@ -28,7 +28,6 @@ namespace simpletree {
     Double_t rho{};
     UShort_t npv{};
     PartonCollection partons = PartonCollection("partons");
-    MCParticleCollection partonFinalStates = MCParticleCollection("partonFinalStates");
     MCParticleCollection promptFinalStates = MCParticleCollection("promptFinalStates");
     JetCollection jets = JetCollection("jets");
     GenJetCollection genJets = GenJetCollection("genJets");

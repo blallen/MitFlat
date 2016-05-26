@@ -167,14 +167,15 @@ looseJets = mithep.JetIdMod('JetId',
     EtaMax = 5.
 )
 if run == 2:
-    looseJets.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
-    looseJets.SetMVACutWP(mithep.JetIDMVA.kLoose)
-    looseJets.SetMVACutsFile(os.environ['MIT_DATA'] + '/JetId/jetIDCuts_150807.dat')
-
-    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2.xml', 0)
-    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5.xml', 1)
-    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3.xml', 2)
-    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
+    looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
+#    looseJets.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
+#    looseJets.SetMVACutWP(mithep.JetIDMVA.kLoose)
+#    looseJets.SetMVACutsFile(os.environ['MIT_DATA'] + '/JetId/jetIDCuts_150807.dat')
+#
+#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2.xml', 0)
+#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5.xml', 1)
+#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3.xml', 2)
+#    looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5.xml', 3)
 else:
     looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
 
