@@ -65,7 +65,6 @@ if run == 2:
     ROOT.gSystem.Load('libMitFlatDataFormats.so')
     simpletree = ROOT.simpletree
 
-    # this has to be in the same order as the HLTPaths enum
     hltPaths = [
         (simpletree.kPhoton120, 'Photon120'),
         (simpletree.kPhoton135MET100, 'Photon135_PFMET100_JetIdCleaned'),

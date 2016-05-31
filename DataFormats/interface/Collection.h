@@ -123,10 +123,10 @@ namespace flatutils {
       this->base_type::size_ = data.NMAX;
   }
 
-  //protected
+  /*protected*/
   template<class T, class B>
   Collection<T, B>::Collection(TString const& _name, Bool_t) :
-    B(_name)
+    B(_name, kFALSE)
   {
   }
 

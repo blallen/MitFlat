@@ -699,6 +699,26 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('  return tree;\n')
         src.write('}\n\n')
 
+# finally update the makefile
+
+makefile = open(args.package + '/tools/Makefile')
+for line in makefile:
+    if line.startswith('.PHONY') and namespace in line:
+        break
+    else:
+        makefile.close()
+        makefile = open(args.package + '/tools/Makefile')
+        newMakefile = open(args.package + '/tools/Makefile_tmp', 'w')
+        for line in makefile:
+            if line.startswith('.PHONY'):
+                newMakefile.write(line.strip() + ' ' + namespace + '\n')
+            else:
+                newMakefile.write(line)
+
+        newMakefile.close()
+        makefile.close()
+        os.rename(args.package + '/tools/Makefile_tmp', args.package + '/tools/Makefile')
+
 if args.makeLinkdef:
     try:
         os.makedirs(args.package + '/dict')
@@ -726,24 +746,24 @@ if args.makeLinkdef:
         for name, items in enums:
             linkdef.write('#pragma link C++ enum ' + namespace + '::' + name + ';\n')
 
-        for obj in objs:
-            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
-    
-        for obj in objs:
-            if obj in singleObjs:
-                continue
-
-            if obj in inheritance:
-                linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
-            else:
-                if obj in fixedSize:
-                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::StaticCollection>;\n')
-                else:
-                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::DynamicCollection>;\n')
-
-            linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
-    
-        for tree in trees:
-            linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
+#        for obj in objs:
+#            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
+#    
+#        for obj in objs:
+#            if obj in singleObjs:
+#                continue
+#
+#            if obj in inheritance:
+#                linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
+#            else:
+#                if obj in fixedSize:
+#                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::StaticCollection>;\n')
+#                else:
+#                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::DynamicCollection>;\n')
+#
+#            linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
+#    
+#        for tree in trees:
+#            linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
 
         linkdef.write('#endif\n')
