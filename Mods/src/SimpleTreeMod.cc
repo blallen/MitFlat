@@ -555,6 +555,7 @@ mithep::SimpleTreeMod::Process()
         }
       }
 
+      outPhoton.genMatchDR = -1.;
       outPhoton.matchedGen = 0;
       outPhoton.genIso = 0.;
 
@@ -582,8 +583,10 @@ mithep::SimpleTreeMod::Process()
             continue;
 
           auto&& partP4(fs.p4());
-          if (caloDir.DeltaR(TVector3(partP4.X(), partP4.Y(), partP4.Z())) < 0.1) {
+          double dR(caloDir.DeltaR(TVector3(partP4.X(), partP4.Y(), partP4.Z())));
+          if (dR < 0.1) {
             matched = promptFinalState[iFS];
+            outPhoton.genMatchDR = dR;
             outPhoton.matchedGen = -22;
             break;
           }
@@ -601,6 +604,7 @@ mithep::SimpleTreeMod::Process()
             bool isLepton(part->AbsPdgId() == 11 || part->AbsPdgId() == 13);
 
             if (minDR < 0. || isLepton || (dR < minDR && !leptonMatched)) {
+              outPhoton.genMatchDR = dR;
               outPhoton.matchedGen = part->PdgId();
 
               minDR = dR;

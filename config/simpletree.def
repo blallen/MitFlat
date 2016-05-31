@@ -150,6 +150,7 @@ etaWidth/F
 phiWidth/F
 time/F
 timeSpan/F
+genMatchDR/F
 matchedGen/I
 isEB/O
 pixelVeto/O

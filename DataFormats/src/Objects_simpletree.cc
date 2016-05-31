@@ -375,6 +375,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "phiWidth", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "time", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "timeSpan", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "genMatchDR", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "pixelVeto", _status, _branches, _whitelist);
@@ -426,6 +427,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "phiWidth", phiWidth, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "time", time, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "timeSpan", timeSpan, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "genMatchDR", genMatchDR, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "pixelVeto", pixelVeto, _branches, _whitelist);
@@ -477,6 +479,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "phiWidth", "[" + _name + ".size]", 'F', phiWidth, _branches, _whitelist);
   flatutils::book(_tree, _name, "time", "[" + _name + ".size]", 'F', time, _branches, _whitelist);
   flatutils::book(_tree, _name, "timeSpan", "[" + _name + ".size]", 'F', timeSpan, _branches, _whitelist);
+  flatutils::book(_tree, _name, "genMatchDR", "[" + _name + ".size]", 'F', genMatchDR, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
   flatutils::book(_tree, _name, "isEB", "[" + _name + ".size]", 'O', isEB, _branches, _whitelist);
   flatutils::book(_tree, _name, "pixelVeto", "[" + _name + ".size]", 'O', pixelVeto, _branches, _whitelist);
@@ -525,6 +528,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   phiWidth(_data.phiWidth[_idx]),
   time(_data.time[_idx]),
   timeSpan(_data.timeSpan[_idx]),
+  genMatchDR(_data.genMatchDR[_idx]),
   matchedGen(_data.matchedGen[_idx]),
   isEB(_data.isEB[_idx]),
   pixelVeto(_data.pixelVeto[_idx]),
@@ -574,6 +578,7 @@ simpletree::Photon::Photon(Photon const& _src) :
   phiWidth(_src.phiWidth),
   time(_src.time),
   timeSpan(_src.timeSpan),
+  genMatchDR(_src.genMatchDR),
   matchedGen(_src.matchedGen),
   isEB(_src.isEB),
   pixelVeto(_src.pixelVeto),
@@ -626,6 +631,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
   phiWidth = _rhs.phiWidth;
   time = _rhs.time;
   timeSpan = _rhs.timeSpan;
+  genMatchDR = _rhs.genMatchDR;
   matchedGen = _rhs.matchedGen;
   isEB = _rhs.isEB;
   pixelVeto = _rhs.pixelVeto;
@@ -678,6 +684,7 @@ simpletree::Photon::init()
   phiWidth = 0.;
   time = 0.;
   timeSpan = 0.;
+  genMatchDR = 0.;
   matchedGen = 0;
   isEB = false;
   pixelVeto = false;

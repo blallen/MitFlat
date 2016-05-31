@@ -257,6 +257,7 @@ namespace simpletree {
       Float_t phiWidth[NMAX]{};
       Float_t time[NMAX]{};
       Float_t timeSpan[NMAX]{};
+      Float_t genMatchDR[NMAX]{};
       Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
@@ -320,6 +321,7 @@ namespace simpletree {
     Float_t& phiWidth;
     Float_t& time;
     Float_t& timeSpan;
+    Float_t& genMatchDR;
     Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;
