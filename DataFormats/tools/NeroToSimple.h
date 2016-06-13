@@ -133,19 +133,31 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     auto& photon(event_.photons[iP]);
 
     p4ToParticle(inPhotons_, iP, photon);
-    photon.chIso = inPhotons_.chIso->at(iP);
-    photon.nhIso = inPhotons_.nhIso->at(iP);
-    photon.phIso = inPhotons_.phoIso->at(iP);
-    photon.sieie = inPhotons_.sieie->at(iP);
+
     photon.csafeVeto = (inPhotons_.selBits->at(iP) & BarePhotons::PhoElectronVeto) != 0;
+    photon.pixelVeto = (inPhotons_.selBits->at(iP) & BarePhotons::PhoPixelSeedVeto) != 0;
     photon.loose = (inPhotons_.selBits->at(iP) & BarePhotons::PhoLoose) != 0;
     photon.medium = (inPhotons_.selBits->at(iP) & BarePhotons::PhoMedium) != 0;
     photon.tight = (inPhotons_.selBits->at(iP) & BarePhotons::PhoTight) != 0;
 
-    photon.matchHLT120 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
-    photon.matchHLT135MET100 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
-    photon.matchHLT165HE10 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
-    photon.matchHLT175 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
+    photon.chIso = inPhotons_.chIso->at(iP);
+    photon.nhIso = inPhotons_.nhIso->at(iP);
+    photon.phIso = inPhotons_.phoIso->at(iP);
+    photon.sieie = inPhotons_.sieie->at(iP);
+    photon.hOverE = inPhotons_.hOverE->at(iP);
+
+    photon.sipip = inPhotons_.sipip->at(iP);
+    photon.sieip = inPhotons_.sieip->at(iP);
+    photon.r9 = inPhotons_.r9->at(iP);
+    // photon.s4 = inPhotons_.s4->at(iP);
+
+    photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
+    photon.e55 = inPhotons_.e55->at(iP);
+
+    photon.matchHLT[simpletree::fPh120] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
+    photon.matchHLT[simpletree::fPh135] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
+    photon.matchHLT[simpletree::fPh165HE10] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
+    photon.matchHLT[simpletree::fPh175] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
   }
 
   event_.electrons.clear();
@@ -158,18 +170,18 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
       auto& electron(event_.electrons.back());
       lepton = &electron;
 
-      electron.matchHLT23Loose = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle23Loose);
-      electron.matchHLT27Loose = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle27Loose);
+      electron.matchHLT[simpletree::fEl23Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle23Loose);
+      electron.matchHLT[simpletree::fEl27Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle27Loose);
     }
     else {
       event_.muons.resize(event_.muons.size() + 1);
       auto& muon(event_.muons.back());
       lepton = &muon;
 
-      muon.matchHLT20 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu20);
-      muon.matchHLTTrk20 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kTrkMu20);
-      muon.matchHLT24 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu24eta2p1);
-      muon.matchHLT27 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu27);
+      muon.matchHLT[simpletree::fMu20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu20);
+      muon.matchHLT[simpletree::fMuTrk20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kTrkMu20);
+      muon.matchHLT[simpletree::fMu24] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu24eta2p1);
+      muon.matchHLT[simpletree::fMu27] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu27);
     }
 
     p4ToParticle(inLeptons_, iL, *lepton);
