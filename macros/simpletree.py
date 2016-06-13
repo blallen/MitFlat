@@ -32,6 +32,7 @@ if run == 2:
     jecVersion = switchBX('Spring16_25nsV1', 'Summer15_50nsV5')
 
     if analysis.isRealData:
+        jecVersion = 'Fall15_25nsV2'
         jecPattern = mitdata + '/JEC/' + jecVersion + '/' + jecVersion + '_DATA_{level}_{jettype}.txt'
         jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
     
