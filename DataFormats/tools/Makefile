@@ -8,7 +8,7 @@
 	rootcling -f ../obj/common_dict.cc $^
 	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) ../obj/common_dict.cc
 
-../obj/%_dict.o: ../interface/Objects_%.h ../interface/TreeEntries_%.h ../interface/Collection.h ../interface/%_LinkDef.h
+../obj/%_dict.o: ../interface/Objects_%.h ../interface/TreeEntries_%.h ../interface/Collection.h ../interface/%_LinkDef.h %_LinkDef.h
 	mkdir -p ../obj
 	rootcling -f $(patsubst ../obj/%_dict.o,../obj/%_dict.cc,$@) $^
 	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $(patsubst ../obj/%_dict.o,../obj/%_dict.cc,$@)
