@@ -43,6 +43,16 @@ namespace simpletree {
     nHLTPaths
   };
 
+  enum PhotonL1Object {
+    fSEG34IorSEG40,
+    fSEG40IorSJet200,
+    fSEG34IorSEG40IorSJet200,
+    fSEG24,
+    fSEG30,
+    fSEG40,
+    nPhotonL1Objects
+  };
+
   enum PhotonHLTObject {
     fPh120,
     fPh135,
@@ -267,6 +277,7 @@ namespace simpletree {
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
+      Float_t matchL1[NMAX][nPhotonL1Objects]{};
       Bool_t matchHLT[NMAX][nPhotonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -331,6 +342,7 @@ namespace simpletree {
     Bool_t& medium;
     Bool_t& tight;
     Bool_t& highpt;
+    Float_t* matchL1; //[nPhotonL1Objects]
     Bool_t* matchHLT; //[nPhotonHLTObjects]
   };
 

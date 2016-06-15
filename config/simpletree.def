@@ -36,6 +36,16 @@ enum HLTPath {
   nHLTPaths
 };
 
+enum PhotonL1Object {
+  fSEG34IorSEG40,
+  fSEG40IorSJet200,
+  fSEG34IorSEG40IorSJet200,
+  fSEG24,
+  fSEG30,
+  fSEG40,
+  nPhotonL1Objects
+};
+
 enum PhotonHLTObject {
   fPh120,
   fPh135,
@@ -160,6 +170,7 @@ loose/O
 medium/O
 tight/O
 highpt/O
+matchL1[nPhotonL1Objects]/F
 matchHLT[nPhotonHLTObjects]/O
 
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }

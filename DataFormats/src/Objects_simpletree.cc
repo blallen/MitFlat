@@ -385,6 +385,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "medium", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "tight", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "highpt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchL1", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchHLT", _status, _branches, _whitelist);
 }
 
@@ -437,6 +438,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "medium", medium, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "tight", tight, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "highpt", highpt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchL1", matchL1, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchHLT", matchHLT, _branches, _whitelist);
 }
 
@@ -489,6 +491,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "medium", "[" + _name + ".size]", 'O', medium, _branches, _whitelist);
   flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
   flatutils::book(_tree, _name, "highpt", "[" + _name + ".size]", 'O', highpt, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchL1", TString::Format("[" + _name + ".size][%d]", nPhotonL1Objects), 'F', matchL1, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nPhotonHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
@@ -538,6 +541,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   medium(_data.medium[_idx]),
   tight(_data.tight[_idx]),
   highpt(_data.highpt[_idx]),
+  matchL1(_data.matchL1[_idx]),
   matchHLT(_data.matchHLT[_idx])
 {
 }
@@ -589,6 +593,7 @@ simpletree::Photon::Photon(Photon const& _src) :
   tight(_src.tight),
   highpt(_src.highpt)
 {
+  std::copy_n(_src.matchL1, nPhotonL1Objects, matchL1);
   std::copy_n(_src.matchHLT, nPhotonHLTObjects, matchHLT);
 }
 
@@ -641,6 +646,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
   medium = _rhs.medium;
   tight = _rhs.tight;
   highpt = _rhs.highpt;
+  std::copy_n(_rhs.matchL1, nPhotonL1Objects, matchL1);
   std::copy_n(_rhs.matchHLT, nPhotonHLTObjects, matchHLT);
   return *this;
 }
@@ -694,6 +700,7 @@ simpletree::Photon::init()
   medium = false;
   tight = false;
   highpt = false;
+  std::fill(matchL1, matchL1 + nPhotonL1Objects, 0.);
   std::fill(matchHLT, matchHLT + nPhotonHLTObjects, false);
 }
 

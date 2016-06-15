@@ -307,6 +307,7 @@ mithep::SimpleTreeMod::Process()
 
   // triggers
 
+  std::vector<mithep::TriggerObject const*> photonL1Objects[simpletree::nPhotonL1Objects];
   std::vector<mithep::TriggerObject const*> photonHLTObjects[simpletree::nPhotonHLTObjects];
   std::vector<mithep::TriggerObject const*> electronHLTObjects[simpletree::nElectronHLTObjects];
   std::vector<mithep::TriggerObject const*> muonHLTObjects[simpletree::nMuonHLTObjects];
@@ -328,6 +329,13 @@ mithep::SimpleTreeMod::Process()
 
     for (unsigned iO(0); iO != triggerObjects->GetEntries(); ++iO) {
       auto& obj(*triggerObjects->At(iO));
+
+      for (unsigned iF(0); iF != simpletree::nPhotonL1Objects; ++iF) {
+        if (fPhotonL1ModuleName[iF] == obj.ModuleName()) {
+          photonL1Objects[iF].push_back(&obj);
+          break;
+        }
+      }
 
       for (unsigned iF(0); iF != simpletree::nPhotonHLTObjects; ++iF) {
         if (fPhotonTriggerModuleName[iF] == obj.ModuleName()) {
@@ -541,6 +549,18 @@ mithep::SimpleTreeMod::Process()
       auto&& caloPos(inPhoton.CaloPos());
 
       if (fUseTrigger) {
+        for (unsigned iF(0); iF != simpletree::nPhotonL1Objects; ++iF) {
+          outPhoton.matchL1[iF] = -1.;
+
+          for (auto* obj : photonL1Objects[iF]) {
+            double dEta(caloPos.Eta() - obj->Eta());
+            double dPhi(TVector2::Phi_mpi_pi(caloPos.Phi() - obj->Phi()));
+            double dR(std::sqrt(dEta * dEta + dPhi * dPhi));
+            if (outPhoton.matchL1[iF] < 0. || dR < outPhoton.matchL1[iF])
+              outPhoton.matchL1[iF] = dR;
+          }
+        }
+
         for (unsigned iF(0); iF != simpletree::nPhotonHLTObjects; ++iF) {
           outPhoton.matchHLT[iF] = false;
 

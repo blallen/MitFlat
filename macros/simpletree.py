@@ -30,6 +30,8 @@ rhoAlgo = switchRun(mithep.PileupEnergyDensity.kFixedGridFastjetAll, mithep.Pile
 
 if run == 2:
     jecVersion = switchBX('Spring16_25nsV1', 'Summer15_50nsV5')
+    if analysis.isRealData and jecVersion == 'Spring16_25nsV1':
+        jecVersion = 'Fall15_25nsV2'
 
     if analysis.isRealData:
         jecPattern = mitdata + '/JEC/' + jecVersion + '/' + jecVersion + '_DATA_{level}_{jettype}.txt'
@@ -86,11 +88,20 @@ if run == 2:
         (simpletree.kEle27Loose, 'Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf'), # filter only matches data
         (simpletree.kMu20, 'IsoMu20'),
         (simpletree.kTrkMu20, 'IsoTkMu20'),
-        (simpletree.kMu24eta2p1, 'IsoMu24_eta2p1'),
+        (simpletree.kMu24eta2p1, 'IsoMu24'),
         (simpletree.kMu27, 'IsoMu27'),
         (simpletree.kMET170, 'PFMET170_NoiseCleaned'),
         (simpletree.kMETNoMu90MHTNoMu90, 'PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and bx == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight'),
         (simpletree.kMETNoMu120MHTNoMu120, 'PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and bx == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight')
+    ]
+
+    photonL1Objects = [
+        (simpletree.fSEG34IorSEG40, 'hltL1sSingleEG34IorSingleEG40'),
+        (simpletree.fSEG40IorSJet200, 'hltL1sSingleEG40IorSingleJet200'),
+        (simpletree.fSEG34IorSEG40IorSJet200, 'hltL1sSingleEG34IorSingleEG40IorSingleJet200'),
+        (simpletree.fSEG24, 'hltL1sSingleEG24'),
+        (simpletree.fSEG30, 'hltL1sSingleEG30'),
+        (simpletree.fSEG40, 'hltL1sSingleEG40')
     ]
 
     photonHLTObjects = [
@@ -137,6 +148,7 @@ else:
         (4, 'Ele27_WP80')
     ]
 
+    photonL1Objects = []
     photonHLTObjects = []
     electronHLTObjects = []
     muonHLTObjects = []
@@ -421,6 +433,9 @@ else:
 
     for iPath, path in hltPaths:
         ntuples.SetTriggerPathName(iPath, path)
+
+    for iFilt, filt in photonL1Objects:
+        ntuples.SetPhotonL1ModuleName(iFilt, filt)
     
     for iFilt, filt in photonHLTObjects:
         ntuples.SetPhotonTriggerModuleName(iFilt, filt)

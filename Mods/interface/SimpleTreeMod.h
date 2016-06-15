@@ -48,6 +48,7 @@ namespace mithep {
     void SetGenMetName(char const* n) { fGenMetName = n; }
     void SetGenJetsName(char const* n) { fGenJetsName = n; }
     void SetUseTrigger(Bool_t b) { fUseTrigger = b; }
+    void SetPhotonL1ModuleName(UInt_t p, char const* n) { fPhotonL1ModuleName[p] = n; }
     void SetPhotonTriggerModuleName(UInt_t p, char const* n) { fPhotonTriggerModuleName[p] = n; }
     void SetElectronTriggerModuleName(UInt_t p, char const* n) { fElectronTriggerModuleName[p] = n; }
     void SetMuonTriggerModuleName(UInt_t p, char const* n) { fMuonTriggerModuleName[p] = n; }
@@ -106,6 +107,7 @@ namespace mithep {
     TString fGenMetName{""};
     TString fGenJetsName{""};
     Bool_t fUseTrigger{kTRUE};
+    TString fPhotonL1ModuleName[simpletree::nPhotonL1Objects]{};
     TString fPhotonTriggerModuleName[simpletree::nPhotonHLTObjects]{};
     TString fElectronTriggerModuleName[simpletree::nElectronHLTObjects]{};
     TString fMuonTriggerModuleName[simpletree::nMuonHLTObjects]{};

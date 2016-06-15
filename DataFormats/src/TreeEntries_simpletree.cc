@@ -155,6 +155,32 @@ simpletree::makeHLTPathTree()
 }
 
 TTree*
+simpletree::makePhotonL1ObjectTree()
+{
+  auto* tree(new TTree("PhotonL1Object", "PhotonL1Object"));
+  char name[1024];
+  tree->Branch("name", name, "name/C");
+
+  TString names[] = {
+    "fSEG34IorSEG40",
+    "fSEG40IorSJet200",
+    "fSEG34IorSEG40IorSJet200",
+    "fSEG24",
+    "fSEG30",
+    "fSEG40",
+    "nPhotonL1Objects"
+  };
+
+  for (auto&& n : names) {
+    std::strcpy(name, n.Data());
+    tree->Fill();
+  }
+
+  tree->ResetBranchAddresses();
+  return tree;
+}
+
+TTree*
 simpletree::makePhotonHLTObjectTree()
 {
   auto* tree(new TTree("PhotonHLTObject", "PhotonHLTObject"));
