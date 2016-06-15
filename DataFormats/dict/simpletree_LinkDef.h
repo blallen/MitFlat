@@ -1,4 +1,4 @@
-#include "/scratch1/yiiyama/cmssw/044/CMSSW_8_0_7_patch3/src/MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
+#include "/scratch1/yiiyama/cmssw/044/CMSSW_8_0_7_patch3/src/MitFlat/DataFormats/interface/Objects_simpletree.h"
 
 #ifdef __CLING__
 #pragma link off all globals;

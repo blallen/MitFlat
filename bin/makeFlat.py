@@ -703,14 +703,14 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
 
 makefile = open(args.package + '/tools/Makefile')
 for line in makefile:
-    if line.startswith('.PHONY') and namespace in line:
+    if line.startswith('trees=') and namespace in line:
         break
     else:
         makefile.close()
         makefile = open(args.package + '/tools/Makefile')
         newMakefile = open(args.package + '/tools/Makefile_tmp', 'w')
         for line in makefile:
-            if line.startswith('.PHONY'):
+            if line.startswith('trees='):
                 newMakefile.write(line.strip() + ' ' + namespace + '\n')
             else:
                 newMakefile.write(line)
@@ -737,7 +737,7 @@ if args.makeLinkdef:
 
     # Make dictionaries only for enums in dict/
     with open(args.package + '/dict/' + namespace + '_LinkDef.h', 'w') as linkdef:
-        linkdef.write('#include "' + incname + '/TreeEntries_' + namespace + '.h"\n\n')
+        linkdef.write('#include "' + incname + '/Objects_' + namespace + '.h"\n\n')
     
         linkdef.write('#ifdef __CLING__\n')
         linkdef.write('#pragma link off all globals;\n')
