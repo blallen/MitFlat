@@ -85,7 +85,7 @@ if run == 2:
         (simpletree.kPhoton120MET40, 'Photon120_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
         (simpletree.kPhoton120VBF, 'Photon120_R9Id90_HE10_Iso40_EBOnly_VBF'),
         (simpletree.kEle23Loose, 'Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele22_eta2p1_WP75_Gsf'),
-        (simpletree.kEle27Loose, 'Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf'), # filter only matches data
+        (simpletree.kEle27Loose, 'Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'Ele27_eta2p1_WP75_Gsf'), # filter only matches data
         (simpletree.kMu20, 'IsoMu20'),
         (simpletree.kTrkMu20, 'IsoTkMu20'),
         (simpletree.kMu24eta2p1, 'IsoMu24'),
