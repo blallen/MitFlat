@@ -1,0 +1,1 @@
+python copyoutput.py $FILESET
