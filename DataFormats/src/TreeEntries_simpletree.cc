@@ -5,6 +5,10 @@
 
 #include <cstring>
 
+simpletree::Event::Event()
+{
+}
+
 void
 simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
@@ -12,7 +16,10 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   flatutils::setStatus(_tree, "", "lumi", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "event", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "weight", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "scaleReweight", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "pdfDW", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "rho", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "npvTrue", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, "", "npv", _status, _branches, _whitelist);
 
   partons.setStatus(_tree, _status, flatutils::subBranchList(_branches, "partons"), _whitelist);
@@ -26,9 +33,8 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   rawMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   genMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "genMet"), _whitelist);
-  hlt.setStatus(_tree, _status, flatutils::subBranchList(_branches, "hlt"), _whitelist);
+  hltBits.setStatus(_tree, _status, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.setStatus(_tree, _status, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
-  reweight.setStatus(_tree, _status, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
 void
@@ -38,7 +44,10 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   flatutils::setStatusAndAddress(_tree, "", "lumi", &lumi, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "event", &event, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "weight", &weight, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "scaleReweight", scaleReweight, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "pdfDW", &pdfDW, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "rho", &rho, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "npvTrue", &npvTrue, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, "", "npv", &npv, _branches, _whitelist);
 
   partons.setAddress(_tree, flatutils::subBranchList(_branches, "partons"), _whitelist);
@@ -52,9 +61,10 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   rawMet.setAddress(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setAddress(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   genMet.setAddress(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
-  hlt.setAddress(_tree, flatutils::subBranchList(_branches, "hlt"), _whitelist);
+  hltBits.setAddress(_tree, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.setAddress(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
-  reweight.setAddress(_tree, flatutils::subBranchList(_branches, "reweight"), _whitelist);
+
+  input_ = &_tree;
 }
 
 void
@@ -64,7 +74,10 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   flatutils::book(_tree, "", "lumi", "", 'i', &lumi, _branches, _whitelist);
   flatutils::book(_tree, "", "event", "", 'i', &event, _branches, _whitelist);
   flatutils::book(_tree, "", "weight", "", 'D', &weight, _branches, _whitelist);
+  flatutils::book(_tree, "", "scaleReweight", "[6]", 'D', scaleReweight, _branches, _whitelist);
+  flatutils::book(_tree, "", "pdfDW", "", 'D', &pdfDW, _branches, _whitelist);
   flatutils::book(_tree, "", "rho", "", 'D', &rho, _branches, _whitelist);
+  flatutils::book(_tree, "", "npvTrue", "", 'F', &npvTrue, _branches, _whitelist);
   flatutils::book(_tree, "", "npv", "", 's', &npv, _branches, _whitelist);
 
   partons.book(_tree, flatutils::subBranchList(_branches, "partons"), _whitelist);
@@ -78,9 +91,8 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   rawMet.book(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.book(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   genMet.book(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
-  hlt.book(_tree, flatutils::subBranchList(_branches, "hlt"), _whitelist);
+  hltBits.book(_tree, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.book(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
-  reweight.book(_tree, flatutils::subBranchList(_branches, "reweight"), _whitelist);
 }
 
 void
@@ -90,7 +102,10 @@ simpletree::Event::init()
   lumi = 0;
   event = 0;
   weight = 0.;
+  std::fill(scaleReweight, scaleReweight + 6, 0.);
+  pdfDW = 0.;
   rho = 0.;
+  npvTrue = 0.;
   npv = 0;
 
   partons.init();
@@ -104,54 +119,46 @@ simpletree::Event::init()
   rawMet.init();
   t1Met.init();
   genMet.init();
-  hlt.init();
+  hltBits.init();
   metFilters.init();
-  reweight.init();
 }
 
-TTree*
-simpletree::makeHLTPathTree()
+simpletree::Run::Run()
 {
-  auto* tree(new TTree("HLTPath", "HLTPath"));
-  char name[1024];
-  tree->Branch("name", name, "name/C");
+}
 
-  TString names[] = {
-    "kPhoton120",
-    "kPhoton135MET100",
-    "kPhoton165HE10",
-    "kPhoton175",
-    "kPhoton22MET40",
-    "kPhoton22VBF",
-    "kPhoton36MET40",
-    "kPhoton36VBF",
-    "kPhoton50MET40",
-    "kPhoton50VBF",
-    "kPhoton75MET40",
-    "kPhoton75VBF",
-    "kPhoton90MET40",
-    "kPhoton90VBF",
-    "kPhoton120MET40",
-    "kPhoton120VBF",
-    "kEle23Loose",
-    "kEle27Loose",
-    "kMu20",
-    "kTrkMu20",
-    "kMu24eta2p1",
-    "kMu27",
-    "kMET170",
-    "kMETNoMu90MHTNoMu90",
-    "kMETNoMu120MHTNoMu120",
-    "nHLTPaths"
-  };
+void
+simpletree::Run::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatus(_tree, "", "run", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, "", "hltMenu", _status, _branches, _whitelist);
 
-  for (auto&& n : names) {
-    std::strcpy(name, n.Data());
-    tree->Fill();
-  }
+}
 
-  tree->ResetBranchAddresses();
-  return tree;
+void
+simpletree::Run::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatusAndAddress(_tree, "", "run", &run, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, "", "hltMenu", &hltMenu, _branches, _whitelist);
+
+
+  input_ = &_tree;
+}
+
+void
+simpletree::Run::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::book(_tree, "", "run", "", 'i', &run, _branches, _whitelist);
+  flatutils::book(_tree, "", "hltMenu", "", 'i', &hltMenu, _branches, _whitelist);
+
+}
+
+void
+simpletree::Run::init()
+{
+  run = 0;
+  hltMenu = 0;
+
 }
 
 TTree*

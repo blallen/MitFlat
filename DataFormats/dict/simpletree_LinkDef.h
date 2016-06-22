@@ -9,7 +9,6 @@
 #pragma link C++ namespace flatutils;
 #pragma link C++ namespace simpletree;
 
-#pragma link C++ enum simpletree::HLTPath;
 #pragma link C++ enum simpletree::PhotonL1Object;
 #pragma link C++ enum simpletree::PhotonHLTObject;
 #pragma link C++ enum simpletree::ElectronHLTObject;

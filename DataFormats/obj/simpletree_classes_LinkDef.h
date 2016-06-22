@@ -22,9 +22,8 @@
 #pragma link C++ class simpletree::Parton;
 #pragma link C++ class simpletree::MCParticle;
 #pragma link C++ class simpletree::GenJet;
-#pragma link C++ class simpletree::HLT;
+#pragma link C++ class simpletree::HLTBits;
 #pragma link C++ class simpletree::MetFilters;
-#pragma link C++ class simpletree::ReweightScale;
 #pragma link C++ class flatutils::Collection<simpletree::Particle, flatutils::DynamicCollection>;
 #pragma link C++ typedef simpletree::ParticleCollection;
 #pragma link C++ class flatutils::Collection<simpletree::ParticleM, simpletree::ParticleCollection>;
@@ -47,9 +46,6 @@
 #pragma link C++ typedef simpletree::MCParticleCollection;
 #pragma link C++ class flatutils::Collection<simpletree::GenJet, simpletree::ParticleMCollection>;
 #pragma link C++ typedef simpletree::GenJetCollection;
-#pragma link C++ class flatutils::Collection<simpletree::HLT, flatutils::StaticCollection>;
-#pragma link C++ typedef simpletree::HLTCollection;
-#pragma link C++ class flatutils::Collection<simpletree::ReweightScale, flatutils::StaticCollection>;
-#pragma link C++ typedef simpletree::ReweightScaleCollection;
 #pragma link C++ class simpletree::Event;
+#pragma link C++ class simpletree::Run;
 #endif

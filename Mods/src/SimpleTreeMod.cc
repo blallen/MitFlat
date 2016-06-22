@@ -1,5 +1,6 @@
 #include "MitFlat/Mods/interface/SimpleTreeMod.h"
 #include "MitAna/DataTree/interface/EventHeader.h"
+#include "MitAna/DataTree/interface/RunInfo.h"
 #include "MitAna/DataTree/interface/MCEventInfo.h"
 #include "MitAna/DataTree/interface/MCRunInfo.h"
 #include "MitAna/DataTree/interface/ParticleCol.h"
@@ -15,7 +16,9 @@
 #include "MitAna/DataTree/interface/PileupEnergyDensityCol.h"
 #include "MitAna/DataTree/interface/MCParticleCol.h"
 #include "MitAna/DataTree/interface/GenJetCol.h"
+#include "MitAna/DataTree/interface/PileupInfoCol.h"
 #include "MitAna/DataTree/interface/TriggerMask.h"
+#include "MitAna/DataTree/interface/TriggerName.h"
 #include "MitAna/DataTree/interface/TriggerTable.h"
 #include "MitAna/DataTree/interface/TriggerObjectsTable.h"
 #include "MitAna/DataTree/interface/TriggerObject.h"
@@ -36,6 +39,7 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 ClassImp(mithep::SimpleTreeMod)
 
@@ -75,6 +79,46 @@ fillP4_(simpletree::ParticleM& _out, mithep::FourVectorM const& _in)
 }
 
 void
+mithep::SimpleTreeMod::SetPhotonL1ModuleName(char const* f, char const* n)
+{
+  unsigned iF(std::find(simpletree::PhotonL1ObjectName, simpletree::PhotonL1ObjectName + simpletree::nPhotonL1Objects, f) - simpletree::PhotonL1ObjectName);
+  if (iF == simpletree::nPhotonL1Objects)
+    return;
+
+  fPhotonL1ModuleName[iF] = n;
+}
+
+void
+mithep::SimpleTreeMod::SetPhotonTriggerModuleName(char const* f, char const* n)
+{
+  unsigned iF(std::find(simpletree::PhotonHLTObjectName, simpletree::PhotonHLTObjectName + simpletree::nPhotonHLTObjects, f) - simpletree::PhotonHLTObjectName);
+  if (iF == simpletree::nPhotonHLTObjects)
+    return;
+
+  fPhotonTriggerModuleName[iF] = n;
+}
+
+void
+mithep::SimpleTreeMod::SetElectronTriggerModuleName(char const* f, char const* n)
+{
+  unsigned iF(std::find(simpletree::ElectronHLTObjectName, simpletree::ElectronHLTObjectName + simpletree::nElectronHLTObjects, f) - simpletree::ElectronHLTObjectName);
+  if (iF == simpletree::nElectronHLTObjects)
+    return;
+
+  fElectronTriggerModuleName[iF] = n;
+}
+
+void
+mithep::SimpleTreeMod::SetMuonTriggerModuleName(char const* f, char const* n)
+{
+  unsigned iF(std::find(simpletree::MuonHLTObjectName, simpletree::MuonHLTObjectName + simpletree::nMuonHLTObjects, f) - simpletree::MuonHLTObjectName);
+  if (iF == simpletree::nMuonHLTObjects)
+    return;
+
+  fMuonTriggerModuleName[iF] = n;
+}
+
+void
 mithep::SimpleTreeMod::Process()
 {
   if (fDebug)
@@ -87,19 +131,34 @@ mithep::SimpleTreeMod::Process()
   mithep::MCEventInfo* mcEvent = 0;
   if (fIsMC) {
     mcEvent = GetObject<mithep::MCEventInfo>(mithep::Names::gkMCEvtInfoBrn);
-    fEventCounter->Fill(1.5, mcEvent->Weight());
+
+    double weight = mcEvent->Weight();
+
+    double centralReweight(1.);
+    if (fCentralReweightId != -1)
+      centralReweight = mcEvent->ReweightScaleFactor(fCentralReweightId);
+
+    weight *= centralReweight;
+
+    fEventCounter->Fill(1.5, weight);
 
     double binCenter(2.5);
-    if (mcEvent->NReweightScaleFactors() > 8) {
+    if (mcEvent->NReweightScaleFactors() != 0) {
       for (unsigned iW : {1, 2, 3, 4, 6, 8}) {
-        fEventCounter->Fill(binCenter, mcEvent->Weight() * mcEvent->ReweightScaleFactor(iW));
-        binCenter += 1.;
-      }
-      for (unsigned id : fPdfReweightIds) {
-        fEventCounter->Fill(binCenter, mcEvent->Weight() * mcEvent->ReweightScaleFactor(id));
+        fEventCounter->Fill(binCenter, weight * mcEvent->ReweightScaleFactor(iW));
         binCenter += 1.;
       }
     }
+
+    // compatible only with Monte Carlo PDF reweights
+    double sumd2(0.);
+    for (unsigned id : fPdfReweightIds) {
+      double d(mcEvent->ReweightScaleFactor(id) - centralReweight);
+      sumd2 += d * d;
+    }
+    double dw(std::sqrt(sumd2 / (fPdfReweightIds.size() - 1)));
+    fEventCounter->Fill(8.5, weight * (1. + dw));
+    fEventCounter->Fill(9.5, weight * (1. - dw));
   }
   else
     fEventCounter->Fill(1.5, 1.);
@@ -127,9 +186,18 @@ mithep::SimpleTreeMod::Process()
   fEvent.run = eventHeader->RunNum();
   fEvent.lumi = eventHeader->LumiSec();
   fEvent.event = eventHeader->EvtNum();
-  fEvent.weight = 1.;
   fEvent.rho = energyDensity->At(0)->Rho(fRhoAlgo);
   fEvent.npv = vertices->GetEntries();
+
+  if (fIsMC) {
+    auto* puInfo = GetObject<mithep::PileupInfoCol>("PileupInfo");
+    fEvent.npvTrue = 0.;
+    for (unsigned iP = 0; iP != puInfo->GetEntries(); ++iP) {
+      auto& pu(*puInfo->At(iP));
+      if (pu.GetBunchCrossing() == 0)
+        fEvent.npvTrue += pu.GetPU_NumMean();
+    }
+  }
 
   // event weights
 
@@ -139,14 +207,25 @@ mithep::SimpleTreeMod::Process()
   if (fIsMC) {
     fEvent.weight = mcEvent->Weight();
 
-    unsigned iR(0);
+    double centralReweight(1.);
+    if (fCentralReweightId != -1)
+      centralReweight = mcEvent->ReweightScaleFactor(fCentralReweightId);
 
-    if (mcEvent->NReweightScaleFactors() > 8) {
+    fEvent.weight *= centralReweight;
+
+    if (mcEvent->NReweightScaleFactors() != 0) {
+      unsigned iR(0);
       for (unsigned iW : {1, 2, 3, 4, 6, 8})
-        fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(iW);
-      for (unsigned id : fPdfReweightIds)
-       fEvent.reweight[iR++].scale = mcEvent->ReweightScaleFactor(id);
+        fEvent.scaleReweight[iR++] = mcEvent->ReweightScaleFactor(iW);
     }
+
+    // compatible only with Monte Carlo PDF reweights
+    double sumd2(0.);
+    for (unsigned id : fPdfReweightIds) {
+      double d(mcEvent->ReweightScaleFactor(id) - centralReweight);
+      sumd2 += d * d;
+    }
+    fEvent.pdfDW = std::sqrt(sumd2 / (fPdfReweightIds.size() - 1));
   }
 
   // met filters
@@ -316,13 +395,15 @@ mithep::SimpleTreeMod::Process()
     if (fDebug)
       Info("Process", "Fill triggers");
 
+    for (auto& word : fEvent.hltBits.words)
+      word = 0;
+
     auto* triggerMask = GetObject<mithep::TriggerMask>(mithep::Names::gkHltBitBrn);
 
-    for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
-      if (fHLTIds[iH] != -1)
-        fEvent.hlt[iH].pass = triggerMask->At(fHLTIds[iH]);
-      else
-        fEvent.hlt[iH].pass = false;
+    for (unsigned iH(0); iH != fHLTIds.size(); ++iH) {
+      unsigned short hltId(fHLTIds[iH]);
+      if (triggerMask->At(hltId))
+        fEvent.hltBits.set(iH);
     }
 
     auto* triggerObjects = GetObject<mithep::TriggerObjectCol>(TString(Names::gkHltObjBrn) + "Arr");
@@ -391,7 +472,6 @@ mithep::SimpleTreeMod::Process()
     outMet.met = inMet.Pt();
     outMet.phi = inMet.Phi();
     outMet.sumEt = inMet.SumEt();
-    outMet.et = inMet.Et();
   }
 
   if (fCorrUpMetName.Length() != 0) {
@@ -879,14 +959,34 @@ mithep::SimpleTreeMod::SlaveBegin()
   auto* outputFile = TFile::Open(fOutputName, "recreate");
   outputFile->cd();
 
-  fEventTree = new TTree(fEventTreeName, "Events");
-  if (fIsMC)
-    fEvent.book(*fEventTree);
-  else
-    fEvent.book(*fEventTree, {"partons", "partonFinalStates", "genJets", "genMet", "reweight"}, false);
+  fEventTree = new TTree("events", "Events");
+
+  flatutils::BranchList unusedBranches;
 
   if (fIsMC)
-    fEventCounter = new TH1D("counter", "", 8, 0., 8.);
+    unusedBranches = {"metFilters"};
+  else
+    unusedBranches = {"weight", "scaleReweight", "pdfDW", "npvTrue", "partons", "promptFinalStates", "genJets", "genMet", "*.genIso", "*.matchedGen", "*.genMatchDR"};
+
+  if (!fUseTrigger) {
+    unusedBranches.emplace_back("hltBits");
+    unusedBranches.emplace_back("*.matchHLT");
+    unusedBranches.emplace_back("*.matchL1");
+  }
+
+  fEvent.book(*fEventTree, unusedBranches, false);
+
+  fRunTree = new TTree("runs", "Runs");
+  fRun.book(*fRunTree);
+
+  if (fUseTrigger) {
+    fHLTTree = new TTree("hlt", "HLT");
+    fHLTPaths = new std::vector<TString>;
+    fHLTTree->Branch("paths", "std::vector<TString>", &fHLTPaths);
+  }
+
+  if (fIsMC)
+    fEventCounter = new TH1D("counter", "", 10, 0, 10.);
   else
     fEventCounter = new TH1D("counter", "", 2, 0., 2.);
 
@@ -899,9 +999,9 @@ mithep::SimpleTreeMod::SlaveBegin()
     fEventCounter->GetXaxis()->SetBinLabel(6, "muR=2 muF=2");
     fEventCounter->GetXaxis()->SetBinLabel(7, "muR=0.5 muF=1");
     fEventCounter->GetXaxis()->SetBinLabel(8, "muR=0.5 muF=2");
+    fEventCounter->GetXaxis()->SetBinLabel(9, "NNPDF up");
+    fEventCounter->GetXaxis()->SetBinLabel(10, "NNPDF down");
   }
-
-  simpletree::makeHLTPathTree();
 }
 
 void
@@ -911,61 +1011,109 @@ mithep::SimpleTreeMod::SlaveTerminate()
   outputFile->cd();
 
   fEventTree->Write();
+  fRunTree->Write();
+  if (fUseTrigger)
+    fHLTTree->Write();
   fEventCounter->Write();
   delete outputFile;
+
+  delete fHLTPaths;
 }
 
 void
 mithep::SimpleTreeMod::BeginRun()
 {
+  mithep::RunInfo const* runInfo = GetRunInfo();
+  fRun.run = runInfo->RunNum();  
+
   if (fUseTrigger) {
-    auto* hltTable = GetObject<mithep::TriggerTable>(TString::Format("%sFwk", mithep::Names::gkHltTableBrn));
-    mithep::TriggerName const* triggerName(0);
+    if (runInfo->HltEntry() != fCurrentTriggerTable) {
+      fCurrentTriggerTable = runInfo->HltEntry();
 
-    for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH) {
-      triggerName = hltTable->GetWildcard("HLT_" + fTriggerPathName[iH] + "_v");
-      if (triggerName)
-        fHLTIds[iH] = triggerName->Id();
-      else
-        fHLTIds[iH] = -1;
-    }
-  }
-  else {
-    for (unsigned iH(0); iH != simpletree::nHLTPaths; ++iH)
-      fHLTIds[iH] = -1;
-  }
+      fHLTIds.clear();
 
-  if (fIsMC && (fPdfReweightGroupNames.size() != 0 || fPdfReweightGroupIds.size() != 0)) {
-    auto* mcRunInfo = GetMCRunInfo();
+      // HLT tables are not IDed in Bambu -> need to actually extract all path names to compare the menus across files
+      auto* hltTable = GetObject<mithep::TriggerTable>(TString::Format("%sFwk", mithep::Names::gkHltTableBrn));
+      TString allPaths;
+      for (auto* triggerName : *hltTable) {
+        allPaths += triggerName->GetName();
+        allPaths += " ";
 
-    for (auto& name : fPdfReweightGroupNames) {
-      unsigned iG = 0;
-      for (; iG != mcRunInfo->NWeightGroups(); ++iG) {
-        if (name == mcRunInfo->WeightGroupType(iG))
-          break;
-      }
-      if (iG == mcRunInfo->NWeightGroups()) {
-        SendError(kAbortAnalysis, "BeginRun", "PDF reweight factor group " + name + " not found");
+        if (std::strstr(triggerName->GetName(), "HLT_") == triggerName->GetName())
+          fHLTIds.push_back(static_cast<mithep::TriggerName const*>(triggerName)->Id());
       }
 
-      if (std::find(fPdfReweightGroupIds.begin(), fPdfReweightGroupIds.end(), iG) == fPdfReweightGroupIds.end())
-        fPdfReweightGroupIds.push_back(iG);
-    }
+      auto ttItr(fTriggerTableMap.find(allPaths));
+      if (ttItr != fTriggerTableMap.end())
+        fRun.hltMenu = ttItr->second;
+      else {
+        fRun.hltMenu = fTriggerTableMap.size();
+        fTriggerTableMap[allPaths] = fRun.hltMenu;
 
-    fPdfReweightGroupNames.clear();
+        fHLTPaths->clear();
 
-    int iCounterBin(9);
-    for (unsigned gid : fPdfReweightGroupIds) {
-      for (unsigned iC = 0; iC != mcRunInfo->NWeights(); ++iC) {
-        if (mcRunInfo->WeightGroup(iC) != gid)
-          continue;
+        auto* paths(allPaths.Tokenize(" "));
+        for (auto* path : *paths) {
+          if (std::strstr(path->GetName(), "HLT_") == path->GetName())
+            fHLTPaths->emplace_back(path->GetName());
+        }
+        delete paths;
 
-        fPdfReweightIds.push_back(mcRunInfo->WeightPositionInEvent(iC));
-        fEventCounter->SetBins(fEventCounter->GetNbinsX() + 1, 0., fEventCounter->GetXaxis()->GetXmax() + 1.);
-        fEventCounter->GetXaxis()->SetBinLabel(iCounterBin++, mcRunInfo->WeightDefinition(iC));
+        fHLTTree->Fill();
       }
     }
-
-    fPdfReweightGroupIds.clear();
   }
+
+  fRunTree->Fill();
+
+  if (fIsMC) {
+    if (fPdfReweightName.Length() != 0) {
+      auto* mcRunInfo = GetMCRunInfo();
+
+      TString groupName;
+      int groupId(-1);
+
+      if (fPdfReweightName == "amc_74")
+        groupName = "PDF_variation";
+      else if (fPdfReweightName == "mg5_74")
+        groupName = "NNPDF30_lo_as_0130.LHgrid";
+      else if (fPdfReweightName == "pwhg_74")
+        groupId = 1;
+
+      if (groupId == -1) {
+        unsigned iG = 0;
+        for (; iG != mcRunInfo->NWeightGroups(); ++iG) {
+          if (groupName == mcRunInfo->WeightGroupType(iG))
+            break;
+        }
+        if (iG == mcRunInfo->NWeightGroups()) {
+          SendError(kAbortAnalysis, "BeginRun", "PDF reweight factor group " + groupName + " not found");
+        }
+
+        groupId = iG;
+      }
+
+      if (groupId != -1) {
+        for (unsigned iC = 0; iC != mcRunInfo->NWeights(); ++iC) {
+          if (mcRunInfo->WeightGroup(iC) != groupId)
+            continue;
+
+          fPdfReweightIds.push_back(mcRunInfo->WeightPositionInEvent(iC));
+        }
+      }
+
+      if (fPdfReweightName == "mg5_74") {
+        auto minItr(std::min_element(fPdfReweightIds.begin(), fPdfReweightIds.end()));
+        fCentralReweightId = *minItr;
+        fPdfReweightIds.erase(minItr);
+      }
+    }
+  }
+}
+
+Bool_t
+mithep::SimpleTreeMod::Notify()
+{
+  fCurrentTriggerTable = -1;
+  return true;
 }
