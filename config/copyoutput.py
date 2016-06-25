@@ -10,11 +10,17 @@ if os.path.getsize(fileset + '.root') == 0:
 source = ROOT.TFile.Open('simpletree.root')
 target = ROOT.TFile.Open(fileset + '.root', 'update')
 
+trees = set()
+
 for key in source.GetListOfKeys():
     obj = key.ReadObj()
     if obj.InheritsFrom(ROOT.TTree.Class()):
-        newobj = obj.CloneTree(-1, 'fast')
-    else:
-        newobj = obj.Clone()
+        trees.add(obj.GetName())
+        continue
 
+    newobj = obj.Clone()
     newobj.Write()
+
+# clone only the last version
+for tree in trees:
+    source.Get(tree).CloneTree(-1, 'fast')

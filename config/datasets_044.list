@@ -2,7 +2,7 @@ book dataset skim pdfrwgt usehlt json
 
 #t2mit/filefi/044 SingleElectron+Run2016B-PromptReco-v2+AOD - - True Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt
 #t2mit/filefi/044 SingleMuon+Run2016B-PromptReco-v2+AOD - - True Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt
-t2mit/filefi/044 SinglePhoton+Run2016B-PromptReco-v2+AOD - - True Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt
+#t2mit/filefi/044 SinglePhoton+Run2016B-PromptReco-v2+AOD - - True Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt
 #t2mit/filefi/044 JetHT+Run2016B-PromptReco-v2+AOD - - True Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt
 
 #t2mit/filefi/044 DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - amc_74 False ~
@@ -20,6 +20,11 @@ t2mit/filefi/044 SinglePhoton+Run2016B-PromptReco-v2+AOD - - True Cert_271036-27
 #t2mit/filefi/044 GJets_DR-0p4_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
 #t2mit/filefi/044 GJets_DR-0p4_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
 #t2mit/filefi/044 GJets_DR-0p4_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
+#t2mit/filefi/044 GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v2+AODSIM - mg5_74 False ~
+t2mit/filefi/044 GJets_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
+#t2mit/filefi/044 GJets_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
+#t2mit/filefi/044 GJets_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v2+AODSIM - mg5_74 False ~
+#t2mit/filefi/044 GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
 #t2mit/filefi/044 QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~
 #t2mit/filefi/044 QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3_ext1-v1+AODSIM - mg5_74 False ~
 #t2mit/filefi/044 QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8+RunIISpring16DR80-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1+AODSIM - mg5_74 False ~

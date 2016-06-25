@@ -630,14 +630,15 @@ mithep::SimpleTreeMod::Process()
 
       if (fUseTrigger) {
         for (unsigned iF(0); iF != simpletree::nPhotonL1Objects; ++iF) {
-          outPhoton.matchL1[iF] = -1.;
+          outPhoton.matchL1[iF] = false;
 
           for (auto* obj : photonL1Objects[iF]) {
             double dEta(caloPos.Eta() - obj->Eta());
             double dPhi(TVector2::Phi_mpi_pi(caloPos.Phi() - obj->Phi()));
-            double dR(std::sqrt(dEta * dEta + dPhi * dPhi));
-            if (outPhoton.matchL1[iF] < 0. || dR < outPhoton.matchL1[iF])
-              outPhoton.matchL1[iF] = dR;
+            if (dEta * dEta + dPhi * dPhi < 0.09) {
+              outPhoton.matchL1[iF] = true;
+              break;
+            }
           }
         }
 
@@ -946,6 +947,13 @@ mithep::SimpleTreeMod::Process()
       if (jetsCorrDown)
         outJet.ptCorrDown = jetsCorrDown->At(iJ)->Pt();
 
+      if (fIsMC) {
+        if (jetsResUp)
+          outJet.ptResUp = jetsResUp->At(iJ)->Pt();
+        if (jetsResDown)
+          outJet.ptResDown = jetsResDown->At(iJ)->Pt();
+      }
+
       outJet.cisv = inJet.BJetTagsDisc(mithep::Jet::kCombinedInclusiveSecondaryVertexV2);
     }
   }
@@ -964,9 +972,48 @@ mithep::SimpleTreeMod::SlaveBegin()
   flatutils::BranchList unusedBranches;
 
   if (fIsMC)
-    unusedBranches = {"metFilters"};
+    unusedBranches = {
+      "metFilters",
+    };
   else
-    unusedBranches = {"weight", "scaleReweight", "pdfDW", "npvTrue", "partons", "promptFinalStates", "genJets", "genMet", "*.genIso", "*.matchedGen", "*.genMatchDR"};
+    unusedBranches = {
+      "weight",
+      "scaleReweight",
+      "pdfDW",
+      "npvTrue",
+      "partons",
+      "promptFinalStates",
+      "genJets",
+      "genMet",
+      "*.genIso",
+      "*.matchedGen",
+      "*.genMatchDR"
+    };
+
+  if (!fPhotonDetails) {
+    for (auto& bname : flatutils::BranchList{
+      "photons.mipChi2",
+      "photons.mipSlope",
+      "photons.mipIntercept",
+      "photons.mipNhitCone",
+      "photons.mipIsHalo",
+      "photons.e13",
+      "photons.e31",
+      "photons.e15",
+      "photons.e22",
+      "photons.e25",
+      "photons.e33",
+      "photons.e44",
+      "photons.e55",
+      "photons.emax",
+      "photons.e2nd",
+      "photons.e4",
+      "photons.etaWidth",
+      "photons.phiWidth",
+      "photons.timeSpan"
+        })
+      unusedBranches.push_back(bname);
+  }
 
   if (!fUseTrigger) {
     unusedBranches.emplace_back("hltBits");

@@ -76,6 +76,8 @@ mjid/O
 ptRaw/F
 ptCorrUp/F
 ptCorrDown/F
+ptResUp/F
+ptResDown/F
 cisv/F
 
 [Met:SINGLE]
@@ -140,7 +142,7 @@ loose/O
 medium/O
 tight/O
 highpt/O
-matchL1[nPhotonL1Objects]/F
+matchL1[nPhotonL1Objects]/O
 matchHLT[nPhotonHLTObjects]/O
 
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
@@ -197,9 +199,7 @@ decayMode/O
 combIso/F
 
 [Parton:ParticleM]
-pid/I
-status/S
-frixIso/O
+pid/B
 
 [MCParticle:ParticleM]
 pid/I

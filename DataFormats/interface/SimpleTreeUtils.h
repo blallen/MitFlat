@@ -13,28 +13,30 @@ namespace simpletree {
   public:
     TriggerHelper(char const* path);
 
+    void reset() { TreeInterface::singleton()->reset(); }
     bool pass(Event const&);
 
   private:
     class TreeInterface {
     public:
+      void reset();
       bool initRun(Event const&);
-      std::vector<TString> const* menu() const { return hltMenu_; }
       unsigned& index(char const* path);
 
       static TreeInterface* singleton();
 
     private:
-      TreeInterface();
-      ~TreeInterface();
+      TreeInterface() {}
+      ~TreeInterface() {}
 
-      Run run_;
+      unsigned currentRun_{0};
       int currentTreeNumber_{-1};
-      TTree* hltTree_{0};
-      unsigned hltTreeEntry_{0};
-      std::vector<TString>* hltMenu_;
+      unsigned currentMenuIndex_{0xffffffff};
 
-      std::map<TString, unsigned> pathIndices_;
+      std::map<unsigned, unsigned> runToMenuIndex_{};
+      std::vector<std::vector<TString>> menus_{};
+
+      std::map<TString, unsigned> pathIndices_{};
     };
 
     unsigned* index_{0};

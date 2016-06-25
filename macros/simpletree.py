@@ -1,4 +1,4 @@
-from MitAna.TreeMod.bambu import mithep, analysis
+sfrom MitAna.TreeMod.bambu import mithep, analysis
 from MitAna.TreeMod.sequenceable import Chain
 import os
 
@@ -20,27 +20,9 @@ def switchRun(case2, case1):
 rhoAlgo = switchRun(mithep.PileupEnergyDensity.kFixedGridFastjetAll, mithep.PileupEnergyDensity.kHighEta)
 
 if run == 2:
-    jecVersion = 'Spring16_25nsV1'
-    if analysis.isRealData and jecVersion == 'Spring16_25nsV1':
-        jecVersion = 'Fall15_25nsV2'
-
-    if analysis.isRealData:
-        jecPattern = mitdata + '/JEC/' + jecVersion + '/' + jecVersion + '_DATA_{level}_{jettype}.txt'
-        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
-    
-    else:
-        jecPattern = mitdata +'/JEC/' + jecVersion + '/' + jecVersion + '_MC_{level}_{jettype}.txt'
-        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
-
+    jecVersion = 'Spring16_25nsV3'
 else:
-    if analysis.isRealData:
-        jecPattern = mitdata + '/JEC/Summer13_V4/Summer13_V4_DATA_{level}_{jettype}.txt'
-        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
-    
-    else:
-        jecPattern = mitdata +'/JEC/Summer13_V4/Summer13_V4_MC_{level}_{jettype}.txt'
-        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
-
+    jecVersion = 'Summer13_V4'
 
 #########################################
 ### MODULES RUN WITH DEFAULT SETTINGS ###
@@ -114,13 +96,24 @@ jetCorrection = mithep.JetCorrectionMod('JetCorrection',
     RhoAlgo = rhoAlgo
 )
 
+correctedJets = jetCorrection.GetOutputName()
+
+if not analysis.isRealData:
+    jetSmearing = mithep.JetCorrectionMod('JetSmearing',
+        InputName = looseJets.GetOutputName(),
+        CorrectedJetsName = 'SmearedJets'
+    )
+
+    correctedJets = jetCorrection.GetOutputName()
+
 looseJets = mithep.JetIdMod('JetId',
-    InputName = jetCorrection.GetOutputName(),
+    InputName = correctedJets,
     OutputName = 'GoodJets',
     PFId = mithep.JetTools.kPFLoose,
     PtMin = 20.,
     EtaMax = 5.,
-    MVACutWP = mithep.JetIDMVA.kLoose
+    MVACutWP = mithep.JetIDMVA.kLoose,
+    FillHist = True
 )
 if run == 2:
     synchWith = '80Xv1'
@@ -171,7 +164,7 @@ jetUncertaintyDown = mithep.JetCorrectionMod('JetUncertaintyDown',
 metCorrection = mithep.MetCorrectionMod('MetCorrection',
     InputName = 'PFMet',
     OutputName = 'PFType1Met',
-    JetsName = jetCorrection.GetOutputName(),
+    JetsName = correctedJets,
     RhoAlgo = rhoAlgo,
     MaxEMFraction = 0.9,
     SkipMuons = True,
@@ -203,11 +196,24 @@ metCorrectionUnclDown = metCorrectionUnclUp.clone('MetCorrectionUnclDown',
     UnclusteredVariation = -0.1
 )
 
+if analysis.isRealData:
+    jecPattern = mitdata + '/JEC/{version}/{version}_DATA_{level}_{jettype}.txt'
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+
+else:
+    jecPattern = mitdata +'/JEC/{version}/{version}_MC_{level}_{jettype}.txt'
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+
 for level in jecLevels:
-    repl = {'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
+    repl = {'version': jecVersion, 'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
     jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
     metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
     metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
+
+if run == 2 and not analysis.isRealData:
+    jetSmearing.AddCorrectionFromFile(jecPattern.format(version = 'Fall15_V2', level = 'PtResolution', jettype = 'AK4PFchs'))
+    jetSmearing.AddCorrectionFromFile(jecPattern.format(version = 'Fall15_V2', level = 'PhiResolution', jettype = 'AK4PFchs'))
+    jetSmearing.AddCorrectionFromFile(jecPattern.format(version = 'Fall15_V2', level = 'SF', jettype = 'AK4PFchs'))
 
 repl = {'level': 'Uncertainty', 'jettype': 'AK4PFchs'}
 metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
@@ -236,7 +242,8 @@ baselineElectrons = mithep.ElectronIdMod('BaselineElectrons',
     ApplyConvFilterType2 = False,
     ApplyNExpectedHitsInnerCut = False,
     ChargeFilter = False,
-    ConversionsName = 'Conversions'    
+    ConversionsName = 'Conversions',
+    FillHist = True
 )
 
 vetoElectronId = mithep.ElectronIdMod('VetoElectronId',
@@ -248,7 +255,8 @@ vetoElectronId = mithep.ElectronIdMod('VetoElectronId',
     ApplyD0Cut = True,
     ApplyDZCut = True,
     ApplyConvFilterType1 = True,
-    ApplyNExpectedHitsInnerCut = True
+    ApplyNExpectedHitsInnerCut = True,
+    FillHist = True
 )
 
 looseElectronId = vetoElectronId.clone('LooseElectronId',
@@ -275,7 +283,8 @@ looseMuons = mithep.MuonIdMod('LooseMuons',
     ApplyD0Cut = True,
     ApplyDZCut = True,
     PtMin = 10.,
-    EtaMax = 2.4
+    EtaMax = 2.4,
+    FillHist = True
 )
 
 tightMuonId = looseMuons.clone('MuonTightId',
@@ -292,7 +301,8 @@ looseTaus = mithep.PFTauIdMod('LooseTaus',
     InputName = 'HPSTaus',
     OutputName = 'LooseTaus',
     PtMin = 18.,
-    EtaMax = 2.3
+    EtaMax = 2.3,
+    FillHist = True
 )
 looseTaus.AddDiscriminator(mithep.PFTau.iDecayModeFinding)
 looseTaus.AddCutDiscriminator(mithep.PFTau.dByCombinedIsolationDeltaBetaCorrRaw3Hits, 5., False)
@@ -305,7 +315,8 @@ baselinePhotons = mithep.PhotonIdMod('BaselinePhotons',
     IdType = mithep.PhotonTools.kNoId,
     IsoType = mithep.PhotonTools.kNoIso,
     PtMin = 30.,
-    EtaMax = 3.
+    EtaMax = 3.,
+    FillHist = True
 )
 
 photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
@@ -313,7 +324,8 @@ photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     InputName = baselinePhotons.GetOutputName(),
     OutputName = 'PhotonLooseId',
     IdType = mithep.PhotonTools.kSpring15Loose,
-    IsoType = mithep.PhotonTools.kSpring15LooseIso
+    IsoType = mithep.PhotonTools.kSpring15LooseIso,
+    FillHist = True
 )
 
 photonMediumId = photonLooseId.clone('PhotonMediumId',
@@ -334,6 +346,8 @@ photonHighPtId = photonLooseId.clone('PhotonHighPtId',
     IsoType = mithep.PhotonTools.kHighPtV2Iso,
     PtMin = 100.
 )
+
+# TODO SimpleTreeMod should use its own JetCorrector to compute res up & down jet and met
 
 ntuples = mithep.SimpleTreeMod(
     RhoAlgo = rhoAlgo,
@@ -363,6 +377,7 @@ ntuples = mithep.SimpleTreeMod(
     CorrDownMetName = metCorrectionJESDown.GetOutputName(),
     UnclUpMetName = metCorrectionUnclUp.GetOutputName(),
     UnclDownMetName = metCorrectionUnclDown.GetOutputName(),
+    FillPhotonDetails = analysis.custom['phdetail'],
     IsMC = not analysis.isRealData
 )
 

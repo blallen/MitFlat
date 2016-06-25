@@ -1,23 +1,19 @@
 #include "../interface/SimpleTreeUtils.h"
 
 #include "TFile.h"
-#include "TROOT.h"
-#include "TDirectory.h"
 
 #include <iostream>
 #include <stdexcept>
 
-simpletree::TriggerHelper::TreeInterface::TreeInterface()
+void
+simpletree::TriggerHelper::TreeInterface::reset()
 {
-  hltMenu_ = new std::vector<TString>;
+  currentRun_ = 0;
+  currentTreeNumber_ = -1;
+  currentMenuIndex_ = 0xffffffff;
 
-  gROOT->mkdir("simpletreeTriggerHelper");
-}
-
-simpletree::TriggerHelper::TreeInterface::~TreeInterface()
-{
-  // gROOT will be closed by the time static singleton is deleted
-  delete hltMenu_;
+  runToMenuIndex_.clear();
+  menus_.clear();
 }
 
 bool
@@ -27,7 +23,9 @@ simpletree::TriggerHelper::TreeInterface::initRun(Event const& _event)
   if (!eventTree)
     return false;
 
-  if (_event.run != run_.run || eventTree->GetTreeNumber() != currentTreeNumber_) {
+  if (_event.run != currentRun_ || eventTree->GetTreeNumber() != currentTreeNumber_) {
+    currentRun_ = _event.run;
+
     if (eventTree->GetTreeNumber() != currentTreeNumber_) {
       // moved to a new file
       currentTreeNumber_ = eventTree->GetTreeNumber();
@@ -36,56 +34,69 @@ simpletree::TriggerHelper::TreeInterface::initRun(Event const& _event)
       if (!inputFile)
         return false;
 
-      gROOT->cd("simpletreeTriggerHelper");
-      delete gDirectory->Get("runs");
-      delete gDirectory->Get("hlt");
+      runToMenuIndex_.clear();
+      menus_.clear();
 
-      auto* runSource(static_cast<TTree*>(inputFile->Get("runs")));
-      if (!runSource) {
+      auto* runTree(static_cast<TTree*>(inputFile->Get("runs")));
+      if (!runTree) {
         std::cerr << "File " << inputFile->GetName() << " does not have a run tree" << std::endl;
         throw std::runtime_error("InputError");
       }
 
-      auto* runTree(runSource->CloneTree());
-
-      run_.setAddress(*runTree);
-
-      auto* hltSource(static_cast<TTree*>(inputFile->Get("hlt")));
-      if (!hltSource) {
+      auto* hltTree(static_cast<TTree*>(inputFile->Get("hlt")));
+      if (!hltTree) {
         std::cerr << "File " << inputFile->GetName() << " does not have an hlt tree" << std::endl;
         return false;
       }
 
-      hltTree_ = hltSource->CloneTree();
-      hltTree_->SetBranchAddress("paths", &hltMenu_);
+      auto* runTreeAddrs(runTree->CloneTree(0));
+      runTreeAddrs->CopyAddresses(runTree, true); // second argument: undo = true. Probably has the same effect as runTree->ResetBranchAddresses()...
 
-      run_.run = 0;
-      hltTreeEntry_ = -1;
+      simpletree::Run run;
+      run.setAddress(*runTree);
+
+      long iEntry(0);
+      while (runTree->GetEntry(iEntry++) > 0)
+        runToMenuIndex_.emplace(run.run, run.hltMenu);
+
+      runTreeAddrs->CopyAddresses(runTree);
+      delete runTreeAddrs;
+
+      auto* hltTreeAddrs(hltTree->CloneTree(0));
+      hltTreeAddrs->CopyAddresses(hltTree, true);
+
+      auto* hltMenu(new std::vector<TString>);
+      hltTree->SetBranchAddress("paths", &hltMenu);
+
+      iEntry = 0;
+      while (hltTree->GetEntry(iEntry++) > 0)
+        menus_.emplace_back(*hltMenu);
+
+      hltTreeAddrs->CopyAddresses(hltTree);
+      delete hltTreeAddrs;
+      delete hltMenu;
+
+      currentMenuIndex_ = 0xffffffff;
     }
 
-    auto* runTree(run_.getInput());
-
-    long iEntry(0);
-    while (run_.run != _event.run && runTree->GetEntry(iEntry++) > 0)
-      continue;
-
-    if (run_.run != _event.run) {
-      std::cerr << "Run tree in file " << runTree->GetCurrentFile()->GetName() << " does not have an entry Run = " << _event.run << std::endl;
+    auto idxItr(runToMenuIndex_.find(currentRun_));
+    if (idxItr == runToMenuIndex_.end()) {
+      std::cerr << "Run " << currentRun_ << " not found in the run tree" << std::endl;
       throw std::runtime_error("InputError");
     }
 
-    if (run_.hltMenu != hltTreeEntry_) {
-      hltTreeEntry_ = run_.hltMenu;
-      hltTree_->GetEntry(hltTreeEntry_);
+    if (idxItr->second != currentMenuIndex_) {
+      currentMenuIndex_ = idxItr->second;
+      auto& menu(menus_.at(currentMenuIndex_));
 
       for (auto& pathIndex : pathIndices_) {
         unsigned iP(0);
-        for (auto& path : *hltMenu_) {
+        for (auto& path : menu) {
           if (path.BeginsWith(pathIndex.first))
             break;
           ++iP;
         }
-        if (iP == hltMenu_->size()) {
+        if (iP == menu.size()) {
           std::cerr << "Path " << pathIndex.first << " not found for Event " << _event.run << ":" << _event.lumi << ":" << _event.event << std::endl;
           throw std::runtime_error("ArgumentError");
         }
