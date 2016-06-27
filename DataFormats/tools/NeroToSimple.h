@@ -65,6 +65,16 @@ NeroToSimple::NeroToSimple(TTree& _neroTree, simpletree::Event& _outEvent) :
  input_(_neroTree),
  event_(_outEvent)             
 {
+  inEvent_.SetExtend(true);
+  inJets_.SetExtend(true);
+  inMet_.SetExtend(true);
+  inPhotons_.SetExtend(true);
+  inLeptons_.SetExtend(true);
+  inTaus_.SetExtend(true);
+  inMC_.SetExtend(true);
+  inTrigger_.SetExtend(true);
+  inVertex_.SetExtend(true);
+  
   inEvent_.setBranchAddresses(&input_);
   inJets_.setBranchAddresses(&input_);
   inMet_.setBranchAddresses(&input_);
@@ -84,16 +94,6 @@ NeroToSimple::NeroToSimple(TTree& _neroTree, simpletree::Event& _outEvent) :
   inMC_.init();
   inTrigger_.init();
   inVertex_.init();
-
-  inEvent_.SetExtend(true);
-  inJets_.SetExtend(true);
-  inMet_.SetExtend(true);
-  inPhotons_.SetExtend(true);
-  inLeptons_.SetExtend(true);
-  inTaus_.SetExtend(true);
-  inMC_.SetExtend(true);
-  inTrigger_.SetExtend(true);
-  inVertex_.SetExtend(true);
 
   for (unsigned& idx : triggerIndices_)
     idx = -1;
@@ -156,17 +156,23 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   event_.npv = inVertex_.npv;
 
   // printf("\nnjets %d \n", inJets_.size());
-  event_.jets.resize(inJets_.size());
+  // event_.jets.resize(inJets_.size());
+  event_.jets.clear();
   for (unsigned iJ(0); iJ != inJets_.size(); ++iJ) {
     // printf(" adding jet %u \n", iJ);
-    p4ToParticle(inJets_, iJ, event_.jets[iJ]);
+    event_.jets.resize(event_.jets.size() + 1);
+    auto& jet(event_.jets.back());
+    p4ToParticle(inJets_, iJ, jet);
   }
 
-  printf("\nnpho %d \n", inPhotons_.size());
-  event_.photons.resize(inPhotons_.size());
+  // printf("\nnpho %d \n", inPhotons_.size());
+  // event_.photons.resize(inPhotons_.size());
+  event_.photons.clear();
   for (unsigned iP(0); iP != inPhotons_.size(); ++iP) {
-    printf(" adding pho %u \n", iP);
-    auto& photon(event_.photons[iP]);
+    // printf(" adding pho %u \n", iP);
+    event_.photons.resize(event_.photons.size() + 1);
+    auto& photon(event_.photons.back());
+    // auto& photon(event_.photons[iP]);
 
     p4ToParticle(inPhotons_, iP, photon);
 
@@ -176,13 +182,13 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     photon.medium = (inPhotons_.selBits->at(iP) & BarePhotons::PhoMedium) != 0;
     photon.tight = (inPhotons_.selBits->at(iP) & BarePhotons::PhoTight) != 0;
     
-    printf("  got through ID bits \n");
+    // printf("  got through ID bits \n");
 
-    printf("  chiso %f \n", inPhotons_.chIso->at(iP));
-    printf("  nhiso %f \n", inPhotons_.nhIso->at(iP));
-    printf("  phiso %f \n", inPhotons_.phoIso->at(iP));
-    printf("  sieie %f \n", inPhotons_.sieie->at(iP));
-    printf("  hOverE %f \n", inPhotons_.hOverE->at(iP));
+    // printf("  chiso %f \n", inPhotons_.chIso->at(iP));
+    // printf("  nhiso %f \n", inPhotons_.nhIso->at(iP));
+    // printf("  phiso %f \n", inPhotons_.phoIso->at(iP));
+    // printf("  sieie %f \n", inPhotons_.sieie->at(iP));
+    // printf("  hOverE %f \n", inPhotons_.hOverE->at(iP));
 
     photon.chIso = inPhotons_.chIso->at(iP);
     photon.nhIso = inPhotons_.nhIso->at(iP);
@@ -190,11 +196,11 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     photon.sieie = inPhotons_.sieie->at(iP);
     photon.hOverE = inPhotons_.hOverE->at(iP);
 
-    printf("  got through ID variables \n");
+    // printf("  got through ID variables \n");
 
-    printf("  sipip %f \n", inPhotons_.sipip->at(iP));
-    printf("  sieip %f \n", inPhotons_.sieip->at(iP));
-    printf("  r9 %f \n", inPhotons_.r9->at(iP));
+    // printf("  sipip %f \n", inPhotons_.sipip->at(iP));
+    // printf("  sieip %f \n", inPhotons_.sieip->at(iP));
+    // printf("  r9 %f \n", inPhotons_.r9->at(iP));
 
     photon.sipip = inPhotons_.sipip->at(iP);
     photon.sieip = inPhotons_.sieip->at(iP);
@@ -203,14 +209,14 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
     photon.e55 = inPhotons_.e55->at(iP);
 
-    printf("  got through extra variables \n");
+    // printf("  got through extra variables \n");
 
     photon.matchHLT[simpletree::fPh120] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
     photon.matchHLT[simpletree::fPh135] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
     photon.matchHLT[simpletree::fPh165HE10] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
     photon.matchHLT[simpletree::fPh175] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
 
-    printf("  got through triggers \n");
+    // printf("  got through triggers \n");
   }
 
   // printf("\nnlep %u \n", inLeptons_.size());
@@ -246,10 +252,13 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   }
 
   // printf("\nntau %u \n", inTaus_.size());
-  event_.taus.resize(inTaus_.size());
+  // event_.taus.resize(inTaus_.size());
+  event_.taus.clear();
   for (unsigned iT(0); iT != inTaus_.size(); ++iT) {
     // printf(" adding tau %u \n", iT);
-    auto& tau(event_.taus[iT]);
+    event_.taus.resize(event_.taus.size() + 1);
+    auto& tau(event_.taus.back());
+    // auto& tau(event_.taus[iT]);
 
     p4ToParticle(inTaus_, iT, tau);
     tau.combIso = inTaus_.iso->at(iT);
