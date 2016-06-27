@@ -23,4 +23,5 @@ for key in source.GetListOfKeys():
 
 # clone only the last version
 for tree in trees:
-    source.Get(tree).CloneTree(-1, 'fast')
+    clonetree = source.Get(tree).CloneTree(-1, 'fast')
+    clonetree.Write()

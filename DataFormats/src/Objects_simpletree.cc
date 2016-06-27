@@ -182,6 +182,8 @@ simpletree::Jet::array_data::setStatus(TTree& _tree, TString const& _name, Bool_
   flatutils::setStatus(_tree, _name, "ptRaw", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ptCorrUp", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ptCorrDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptResUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptResDown", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "cisv", _status, _branches, _whitelist);
 }
 
@@ -194,6 +196,8 @@ simpletree::Jet::array_data::setAddress(TTree& _tree, TString const& _name, flat
   flatutils::setStatusAndAddress(_tree, _name, "ptRaw", ptRaw, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ptCorrUp", ptCorrUp, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ptCorrDown", ptCorrDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptResUp", ptResUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptResDown", ptResDown, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "cisv", cisv, _branches, _whitelist);
 }
 
@@ -206,6 +210,8 @@ simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils:
   flatutils::book(_tree, _name, "ptRaw", "[" + _name + ".size]", 'F', ptRaw, _branches, _whitelist);
   flatutils::book(_tree, _name, "ptCorrUp", "[" + _name + ".size]", 'F', ptCorrUp, _branches, _whitelist);
   flatutils::book(_tree, _name, "ptCorrDown", "[" + _name + ".size]", 'F', ptCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptResUp", "[" + _name + ".size]", 'F', ptResUp, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptResDown", "[" + _name + ".size]", 'F', ptResDown, _branches, _whitelist);
   flatutils::book(_tree, _name, "cisv", "[" + _name + ".size]", 'F', cisv, _branches, _whitelist);
 }
 
@@ -215,6 +221,8 @@ simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
   ptRaw(_data.ptRaw[_idx]),
   ptCorrUp(_data.ptCorrUp[_idx]),
   ptCorrDown(_data.ptCorrDown[_idx]),
+  ptResUp(_data.ptResUp[_idx]),
+  ptResDown(_data.ptResDown[_idx]),
   cisv(_data.cisv[_idx])
 {
 }
@@ -225,6 +233,8 @@ simpletree::Jet::Jet(Jet const& _src) :
   ptRaw(_src.ptRaw),
   ptCorrUp(_src.ptCorrUp),
   ptCorrDown(_src.ptCorrDown),
+  ptResUp(_src.ptResUp),
+  ptResDown(_src.ptResDown),
   cisv(_src.cisv)
 {
 }
@@ -238,6 +248,8 @@ simpletree::Jet::operator=(Jet const& _rhs)
   ptRaw = _rhs.ptRaw;
   ptCorrUp = _rhs.ptCorrUp;
   ptCorrDown = _rhs.ptCorrDown;
+  ptResUp = _rhs.ptResUp;
+  ptResDown = _rhs.ptResDown;
   cisv = _rhs.cisv;
   return *this;
 }
@@ -251,6 +263,8 @@ simpletree::Jet::init()
   ptRaw = 0.;
   ptCorrUp = 0.;
   ptCorrDown = 0.;
+  ptResUp = 0.;
+  ptResDown = 0.;
   cisv = 0.;
 }
 
@@ -319,6 +333,10 @@ simpletree::CorrectedMet::CorrectedMet(CorrectedMet const& _src) :
   phiCorrUp(_src.phiCorrUp),
   metCorrDown(_src.metCorrDown),
   phiCorrDown(_src.phiCorrDown),
+  metResUp(_src.metResUp),
+  phiResUp(_src.phiResUp),
+  metResDown(_src.metResDown),
+  phiResDown(_src.phiResDown),
   metUnclUp(_src.metUnclUp),
   phiUnclUp(_src.phiUnclUp),
   metUnclDown(_src.metUnclDown),
@@ -335,6 +353,10 @@ simpletree::CorrectedMet::setStatus(TTree& _tree, Bool_t _status, flatutils::Bra
   flatutils::setStatus(_tree, name_, "phiCorrUp", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "metCorrDown", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "phiCorrDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metResUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiResUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metResDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiResDown", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "metUnclUp", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "phiUnclUp", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "metUnclDown", _status, _branches, _whitelist);
@@ -350,6 +372,10 @@ simpletree::CorrectedMet::setAddress(TTree& _tree, flatutils::BranchList const& 
   flatutils::setStatusAndAddress(_tree, name_, "phiCorrUp", &phiCorrUp, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "metCorrDown", &metCorrDown, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "phiCorrDown", &phiCorrDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metResUp", &metResUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiResUp", &phiResUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metResDown", &metResDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiResDown", &phiResDown, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "metUnclUp", &metUnclUp, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "phiUnclUp", &phiUnclUp, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "metUnclDown", &metUnclDown, _branches, _whitelist);
@@ -365,6 +391,10 @@ simpletree::CorrectedMet::book(TTree& _tree, flatutils::BranchList const& _branc
   flatutils::book(_tree, name_, "phiCorrUp", "", 'F', &phiCorrUp, _branches, _whitelist);
   flatutils::book(_tree, name_, "metCorrDown", "", 'F', &metCorrDown, _branches, _whitelist);
   flatutils::book(_tree, name_, "phiCorrDown", "", 'F', &phiCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metResUp", "", 'F', &metResUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiResUp", "", 'F', &phiResUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metResDown", "", 'F', &metResDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiResDown", "", 'F', &phiResDown, _branches, _whitelist);
   flatutils::book(_tree, name_, "metUnclUp", "", 'F', &metUnclUp, _branches, _whitelist);
   flatutils::book(_tree, name_, "phiUnclUp", "", 'F', &phiUnclUp, _branches, _whitelist);
   flatutils::book(_tree, name_, "metUnclDown", "", 'F', &metUnclDown, _branches, _whitelist);
@@ -380,6 +410,10 @@ simpletree::CorrectedMet::operator=(CorrectedMet const& _rhs)
   phiCorrUp = _rhs.phiCorrUp;
   metCorrDown = _rhs.metCorrDown;
   phiCorrDown = _rhs.phiCorrDown;
+  metResUp = _rhs.metResUp;
+  phiResUp = _rhs.phiResUp;
+  metResDown = _rhs.metResDown;
+  phiResDown = _rhs.phiResDown;
   metUnclUp = _rhs.metUnclUp;
   phiUnclUp = _rhs.phiUnclUp;
   metUnclDown = _rhs.metUnclDown;
@@ -396,6 +430,10 @@ simpletree::CorrectedMet::init()
   phiCorrUp = 0.;
   metCorrDown = 0.;
   phiCorrDown = 0.;
+  metResUp = 0.;
+  phiResUp = 0.;
+  metResDown = 0.;
+  phiResDown = 0.;
   metUnclUp = 0.;
   phiUnclUp = 0.;
   metUnclDown = 0.;
@@ -562,7 +600,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "medium", "[" + _name + ".size]", 'O', medium, _branches, _whitelist);
   flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
   flatutils::book(_tree, _name, "highpt", "[" + _name + ".size]", 'O', highpt, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchL1", TString::Format("[" + _name + ".size][%d]", nPhotonL1Objects), 'F', matchL1, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchL1", TString::Format("[" + _name + ".size][%d]", nPhotonL1Objects), 'O', matchL1, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nPhotonHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
@@ -771,7 +809,7 @@ simpletree::Photon::init()
   medium = false;
   tight = false;
   highpt = false;
-  std::fill(matchL1, matchL1 + nPhotonL1Objects, 0.);
+  std::fill(matchL1, matchL1 + nPhotonL1Objects, false);
   std::fill(matchHLT, matchHLT + nPhotonHLTObjects, false);
 }
 
@@ -1157,8 +1195,6 @@ simpletree::Parton::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "pid", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "status", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "frixIso", _status, _branches, _whitelist);
 }
 
 void
@@ -1167,8 +1203,6 @@ simpletree::Parton::array_data::setAddress(TTree& _tree, TString const& _name, f
   ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "pid", pid, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "status", status, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "frixIso", frixIso, _branches, _whitelist);
 }
 
 void
@@ -1176,24 +1210,18 @@ simpletree::Parton::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "pid", "[" + _name + ".size]", 'I', pid, _branches, _whitelist);
-  flatutils::book(_tree, _name, "status", "[" + _name + ".size]", 'S', status, _branches, _whitelist);
-  flatutils::book(_tree, _name, "frixIso", "[" + _name + ".size]", 'O', frixIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "pid", "[" + _name + ".size]", 'B', pid, _branches, _whitelist);
 }
 
 simpletree::Parton::Parton(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx),
-  pid(_data.pid[_idx]),
-  status(_data.status[_idx]),
-  frixIso(_data.frixIso[_idx])
+  pid(_data.pid[_idx])
 {
 }
 
 simpletree::Parton::Parton(Parton const& _src) :
   ParticleM(_src),
-  pid(_src.pid),
-  status(_src.status),
-  frixIso(_src.frixIso)
+  pid(_src.pid)
 {
 }
 
@@ -1203,8 +1231,6 @@ simpletree::Parton::operator=(Parton const& _rhs)
   ParticleM::operator=(_rhs);
 
   pid = _rhs.pid;
-  status = _rhs.status;
-  frixIso = _rhs.frixIso;
   return *this;
 }
 
@@ -1214,8 +1240,6 @@ simpletree::Parton::init()
   ParticleM::init();
 
   pid = 0;
-  status = 0;
-  frixIso = false;
 }
 
 simpletree::MCParticle::array_data::array_data() :
@@ -1247,7 +1271,7 @@ simpletree::MCParticle::array_data::book(TTree& _tree, TString const& _name, fla
   ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
   flatutils::book(_tree, _name, "pid", "[" + _name + ".size]", 'I', pid, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ancestor", "[" + _name + ".size]", 's', ancestor, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ancestor", "[" + _name + ".size]", 'b', ancestor, _branches, _whitelist);
 }
 
 simpletree::MCParticle::MCParticle(array_data& _data, UInt_t _idx) :

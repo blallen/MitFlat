@@ -91,6 +91,10 @@ metCorrUp/F
 phiCorrUp/F
 metCorrDown/F
 phiCorrDown/F
+metResUp/F
+phiResUp/F
+metResDown/F
+phiResDown/F
 metUnclUp/F
 phiUnclUp/F
 metUnclDown/F
@@ -203,7 +207,7 @@ pid/B
 
 [MCParticle:ParticleM]
 pid/I
-ancestor/s
+ancestor/b
 
 [GenJet:ParticleM]
 

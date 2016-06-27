@@ -139,6 +139,8 @@ namespace simpletree {
       Float_t ptRaw[NMAX]{};
       Float_t ptCorrUp[NMAX]{};
       Float_t ptCorrDown[NMAX]{};
+      Float_t ptResUp[NMAX]{};
+      Float_t ptResDown[NMAX]{};
       Float_t cisv[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -157,6 +159,8 @@ namespace simpletree {
     Float_t& ptRaw;
     Float_t& ptCorrUp;
     Float_t& ptCorrDown;
+    Float_t& ptResUp;
+    Float_t& ptResDown;
     Float_t& cisv;
   };
 
@@ -202,6 +206,10 @@ namespace simpletree {
     Float_t phiCorrUp{};
     Float_t metCorrDown{};
     Float_t phiCorrDown{};
+    Float_t metResUp{};
+    Float_t phiResUp{};
+    Float_t metResDown{};
+    Float_t phiResDown{};
     Float_t metUnclUp{};
     Float_t phiUnclUp{};
     Float_t metUnclDown{};
@@ -263,7 +271,7 @@ namespace simpletree {
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
-      Float_t matchL1[NMAX][nPhotonL1Objects]{};
+      Bool_t matchL1[NMAX][nPhotonL1Objects]{};
       Bool_t matchHLT[NMAX][nPhotonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -328,7 +336,7 @@ namespace simpletree {
     Bool_t& medium;
     Bool_t& tight;
     Bool_t& highpt;
-    Float_t* matchL1{0}; //[nPhotonL1Objects]
+    Bool_t* matchL1{0}; //[nPhotonL1Objects]
     Bool_t* matchHLT{0}; //[nPhotonHLTObjects]
   };
 
@@ -476,9 +484,7 @@ namespace simpletree {
     struct array_data : public ParticleM::array_data {
       array_data();
 
-      Int_t pid[NMAX]{};
-      Short_t status[NMAX]{};
-      Bool_t frixIso[NMAX]{};
+      Char_t pid[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -492,9 +498,7 @@ namespace simpletree {
     void init() override;
 
   public:
-    Int_t& pid;
-    Short_t& status;
-    Bool_t& frixIso;
+    Char_t& pid;
   };
 
   class MCParticle : public ParticleM {
@@ -503,7 +507,7 @@ namespace simpletree {
       array_data();
 
       Int_t pid[NMAX]{};
-      UShort_t ancestor[NMAX]{};
+      UChar_t ancestor[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -518,7 +522,7 @@ namespace simpletree {
 
   public:
     Int_t& pid;
-    UShort_t& ancestor;
+    UChar_t& ancestor;
   };
 
   class GenJet : public ParticleM {

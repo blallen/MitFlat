@@ -19,8 +19,12 @@ namespace mithep {
 
     void SetRhoAlgo(UInt_t a) { fRhoAlgo = a; }
     void SetJetsName(char const* n) { fJetsName = n; }
+    void SetLooseJetsName(char const* n) { fLooseJetsName = n; }
+    void SetMinJetPt(Double_t p) { fMinJetPt = p; }
     void SetJetsCorrUpName(char const* n) { fJetsCorrUpName = n; }
     void SetJetsCorrDownName(char const* n) { fJetsCorrDownName = n; }
+    void SetJetsResUpName(char const* n) { fJetsResUpName = n; }
+    void SetJetsResDownName(char const* n) { fJetsResDownName = n; }
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
     void SetPhotonIsoType(UInt_t i) { fPhotonIsoType = i; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
@@ -42,6 +46,8 @@ namespace mithep {
     void SetT1MetName(char const* n) { fT1MetName = n; }
     void SetCorrUpMetName(char const* n) { fCorrUpMetName = n; }
     void SetCorrDownMetName(char const* n) { fCorrDownMetName = n; }
+    void SetResUpMetName(char const* n) { fResUpMetName = n; }
+    void SetResDownMetName(char const* n) { fResDownMetName = n; }
     void SetUnclUpMetName(char const* n) { fUnclUpMetName = n; }
     void SetUnclDownMetName(char const* n) { fUnclDownMetName = n; }
     void SetGenMetName(char const* n) { fGenMetName = n; }
@@ -82,8 +88,12 @@ namespace mithep {
     UInt_t fRhoAlgo{0};
     TString fVerticesName{"PrimaryVertexes"};
     TString fJetsName{"AKt4PFJets"};
+    TString fLooseJetsName{""};
+    Double_t fMinJetPt{30.};
     TString fJetsCorrUpName{""};
     TString fJetsCorrDownName{""};
+    TString fJetsResUpName{""};
+    TString fJetsResDownName{""};
     TString fPhotonsName{"Photons"};
     UInt_t fPhotonIsoType{PhotonTools::kSpring15MediumIso};
     TString fElectronsName{"Electrons"};
@@ -104,6 +114,8 @@ namespace mithep {
     TString fT1MetName{""};
     TString fCorrUpMetName{""};
     TString fCorrDownMetName{""};
+    TString fResUpMetName{""};
+    TString fResDownMetName{""};
     TString fUnclUpMetName{""};
     TString fUnclDownMetName{""};
     TString fGenMetName{""};

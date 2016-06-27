@@ -268,24 +268,32 @@ mithep::SimpleTreeMod::Process()
   
   if (fIsMC) {
     unsigned nP(0);
-    std::map<unsigned, unsigned> partonMap;
     for (unsigned iP(0); iP != mcEvent->NPartons(); ++iP) {
-      int pid(mcEvent->PartonId(iP));
-      auto& p4(*mcEvent->PartonMom(iP));
+      if (mcEvent->PartonStatus(iP) != 1)
+        continue;
 
-      partonMap[iP] = nP;
+      int pid(mcEvent->PartonId(iP));
+      unsigned absId(std::abs(pid));
+
+      auto& p4(*mcEvent->PartonMom(iP));
 
       auto& outParton(fEvent.partons[nP++]);
 
       fillP4_(outParton, p4);
 
-      outParton.pid = pid;
-      outParton.status = mcEvent->PartonStatus(iP);
-      outParton.frixIso = false;
+      if (absId > 127) {
+        if (absId % 1000000 < 40) { // "SUSY Particles". Also used for dark matter
+          if (pid > 0)
+            pid = (pid % 1000000) + 64;
+          else
+            pid = (pid % 1000000) - 64;
+        }
+        else // unknown!
+          pid = 0;
+      }
 
       if (pid == 22) {
-        outParton.frixIso = true;
-
+        // Check Frixione isolation on photons
         std::map<double, double> isoDep;
         for (unsigned iQ(0); iQ != mcEvent->NPartons(); ++iQ) {
           if (iQ == iP || mcEvent->PartonStatus(iQ) != 1)
@@ -300,11 +308,13 @@ mithep::SimpleTreeMod::Process()
           double dR(iso.first);
           isoSum += iso.second;
           if (isoSum > mcEvent->PartonMom(iP)->E() * 1. * ((1. - std::cos(dR)) / (1. - std::cos(0.4)))/*to the n=1 power*/) {
-            outParton.frixIso = false;
+            pid = -22; // photon not isolated; call it "anti-photon"
             break;
           }
         }
       }
+
+      outParton.pid = pid;
     }
 
     fEvent.partons.resize(nP);
@@ -356,9 +366,6 @@ mithep::SimpleTreeMod::Process()
       outFS.ancestor = -1;
       for (unsigned iP(0); iP != fEvent.partons.size(); ++iP) {
         auto& parton(fEvent.partons[iP]);
-        if (parton.status != 1)
-          continue;
-
         if (parton.dR2(outFS) < 0.0225) {
           outFS.ancestor = iP;
           break;
@@ -474,48 +481,39 @@ mithep::SimpleTreeMod::Process()
     outMet.sumEt = inMet.SumEt();
   }
 
-  if (fCorrUpMetName.Length() != 0) {
-    auto* mets = GetObject<mithep::MetCol>(fCorrUpMetName);
-    if (!mets) {
-      SendError(kAbortAnalysis, "Process", fCorrUpMetName);
-      return;
-    }
-    auto& inMet(*mets->At(0));
-    fEvent.t1Met.metCorrUp = inMet.Pt();
-    fEvent.t1Met.phiCorrUp = inMet.Phi();
-  }
+  TString varNames[] = {
+    fCorrUpMetName,
+    fCorrDownMetName,
+    fResUpMetName,
+    fResDownMetName,
+    fUnclUpMetName,
+    fUnclDownMetName
+  };
 
-  if (fCorrDownMetName.Length() != 0) {
-    auto* mets = GetObject<mithep::MetCol>(fCorrDownMetName);
-    if (!mets) {
-      SendError(kAbortAnalysis, "Process", fCorrDownMetName);
-      return;
-    }
-    auto& inMet(*mets->At(0));
-    fEvent.t1Met.metCorrDown = inMet.Pt();
-    fEvent.t1Met.phiCorrDown = inMet.Phi();
-  }
+  float* varMets[][2] = {
+    {&fEvent.t1Met.metCorrUp, &fEvent.t1Met.phiCorrUp},
+    {&fEvent.t1Met.metCorrDown, &fEvent.t1Met.phiCorrDown},
+    {&fEvent.t1Met.metResUp, &fEvent.t1Met.phiResUp},
+    {&fEvent.t1Met.metResDown, &fEvent.t1Met.phiResDown},
+    {&fEvent.t1Met.metUnclUp, &fEvent.t1Met.phiUnclUp},
+    {&fEvent.t1Met.metUnclDown, &fEvent.t1Met.phiUnclDown}
+  };
 
-  if (fUnclUpMetName.Length() != 0) {
-    auto* mets = GetObject<mithep::MetCol>(fUnclUpMetName);
-    if (!mets) {
-      SendError(kAbortAnalysis, "Process", fUnclUpMetName);
-      return;
-    }
-    auto& inMet(*mets->At(0));
-    fEvent.t1Met.metUnclUp = inMet.Pt();
-    fEvent.t1Met.phiUnclUp = inMet.Phi();
-  }
+  for (unsigned iV(0); iV != sizeof(varNames) / sizeof(TString); ++iV) {
+    auto& name(varNames[iV]);
+    float& met(*varMets[iV][0]);
+    float& phi(*varMets[iV][1]);
 
-  if (fUnclDownMetName.Length() != 0) {
-    auto* mets = GetObject<mithep::MetCol>(fUnclDownMetName);
-    if (!mets) {
-      SendError(kAbortAnalysis, "Process", fUnclDownMetName);
-      return;
+    if (name.Length() != 0) {
+      auto* mets = GetObject<mithep::MetCol>(name);
+      if (!mets) {
+        SendError(kAbortAnalysis, "Process", name);
+        return;
+      }
+      auto& inMet(*mets->At(0));
+      met = inMet.Pt();
+      phi = inMet.Phi();
     }
-    auto& inMet(*mets->At(0));
-    fEvent.t1Met.metUnclDown = inMet.Pt();
-    fEvent.t1Met.phiUnclDown = inMet.Phi();
   }
 
   if (fDebug)
@@ -680,7 +678,7 @@ mithep::SimpleTreeMod::Process()
             continue;
 
           auto& parton(fEvent.partons[fs.ancestor]);
-          if (parton.pid != 22 || !parton.frixIso)
+          if (parton.pid != 22) // 22: frixione-isolated photon
             continue;
 
           auto&& partP4(fs.p4());
@@ -918,17 +916,61 @@ mithep::SimpleTreeMod::Process()
 
   if (fJetsName.Length() != 0) {
     auto* jets = GetObject<mithep::JetCol>(fJetsName);
-    auto* jetsCorrUp = GetObject<mithep::JetCol>(fJetsCorrUpName);
-    auto* jetsCorrDown = GetObject<mithep::JetCol>(fJetsCorrDownName);
     if (!jets) {
       SendError(kAbortAnalysis, "Process", fJetsName);
       return;
     }
 
-    fEvent.jets.resize(jets->GetEntries());
+    auto* looseMask = GetObject<mithep::NFArrBool>(fLooseJetsName);
+
+    auto* jetsCorrUp = GetObject<mithep::JetCol>(fJetsCorrUpName);
+    auto* jetsCorrDown = GetObject<mithep::JetCol>(fJetsCorrDownName);
+    mithep::JetCol* jetsResUp(0);
+    mithep::JetCol* jetsResDown(0);
+    if (fJetsResUpName.Length() != 0)
+      jetsResUp = GetObject<mithep::JetCol>(fJetsResUpName);
+    if (fJetsResDownName.Length() != 0)
+      jetsResDown = GetObject<mithep::JetCol>(fJetsResDownName);
+
+    unsigned nJ(0);
+
     for (unsigned iJ = 0; iJ != jets->GetEntries(); ++iJ) {
+      if (!looseMask->At(iJ))
+        continue;
+
+      auto& outJet(fEvent.jets[nJ]);
+
+      double maxPt(0.);
+
       auto& inJet(*jets->At(iJ));
-      auto& outJet(fEvent.jets[iJ]);
+      maxPt = inJet.Pt();
+
+      mithep::JetCol* corrs[] = {
+        jetsCorrUp,
+        jetsCorrDown,
+        jetsResUp,
+        jetsResDown
+      };
+      float* targs[] = {
+        &outJet.ptCorrUp,
+        &outJet.ptCorrDown,
+        &outJet.ptResUp,
+        &outJet.ptResDown
+      };
+
+      for (unsigned iC(0); iC != sizeof(corrs) / sizeof(mithep::JetCol*); ++iC) {
+        if (corrs[iC]) {
+          double pt(corrs[iC]->At(iJ)->Pt());
+          *targs[iC] = pt;
+          if (pt > maxPt)
+            maxPt = pt;
+        }
+      }
+
+      if (maxPt < fMinJetPt)
+        continue;
+
+      ++nJ;
 
       fillP4_(outJet, inJet);
 
@@ -942,20 +984,10 @@ mithep::SimpleTreeMod::Process()
         outJet.mjid = (inPFJet.NeutralHadronEnergy() / eRaw < 0.8 && inPFJet.ChargedHadronEnergy() / eRaw > 0.1);
       }
 
-      if (jetsCorrUp)
-        outJet.ptCorrUp = jetsCorrUp->At(iJ)->Pt();
-      if (jetsCorrDown)
-        outJet.ptCorrDown = jetsCorrDown->At(iJ)->Pt();
-
-      if (fIsMC) {
-        if (jetsResUp)
-          outJet.ptResUp = jetsResUp->At(iJ)->Pt();
-        if (jetsResDown)
-          outJet.ptResDown = jetsResDown->At(iJ)->Pt();
-      }
-
       outJet.cisv = inJet.BJetTagsDisc(mithep::Jet::kCombinedInclusiveSecondaryVertexV2);
     }
+
+    fEvent.jets.resize(nJ);
   }
 
   fEventTree->Fill();
@@ -985,6 +1017,12 @@ mithep::SimpleTreeMod::SlaveBegin()
       "promptFinalStates",
       "genJets",
       "genMet",
+      "jets.ptResUp",
+      "jets.ptResDown",
+      "t1Met.ptResUp",
+      "t1Met.phiResUp",
+      "t1Met.ptResDown",
+      "t1Met.phiResDown",
       "*.genIso",
       "*.matchedGen",
       "*.genMatchDR"

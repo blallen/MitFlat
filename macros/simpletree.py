@@ -1,4 +1,4 @@
-sfrom MitAna.TreeMod.bambu import mithep, analysis
+from MitAna.TreeMod.bambu import mithep, analysis
 from MitAna.TreeMod.sequenceable import Chain
 import os
 
@@ -9,20 +9,30 @@ import os
 mitdata = os.environ['MIT_DATA']
 
 if 'run' in analysis.custom:
-    run = int(analysis.custom['run'])
+    run = analysis.custom['run']
 else:
     run = 2
 
-def switchRun(case2, case1):
-    global run
-    return case2 if run == 2 else case1
-
-rhoAlgo = switchRun(mithep.PileupEnergyDensity.kFixedGridFastjetAll, mithep.PileupEnergyDensity.kHighEta)
+if 'phdetail' in analysis.custom:
+    phdetail = analysis.custom['phdetail']
+else:
+    phdetail = True
 
 if run == 2:
+    jetsName = 'AKt4PFJetsCHS'
     jecVersion = 'Spring16_25nsV3'
+    jerVersion = 'Fall15_25nsV2'
+    jecName = 'AK4PFchs'
+    jetCone = 0.4
+    rhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll
+
 else:
+    jetsName = 'AKt5PFJets'
     jecVersion = 'Summer13_V4'
+    jerVersion = ''
+    jecName = 'AK5PF'
+    jetCone = 0.5
+    rhoAlgo = mithep.PileupEnergyDensity.kHighEta
 
 #########################################
 ### MODULES RUN WITH DEFAULT SETTINGS ###
@@ -90,136 +100,199 @@ else:
 ### JET/MET ID & CORRECTIONS ###
 ################################
 
-jetCorrection = mithep.JetCorrectionMod('JetCorrection',
-    InputName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
+if analysis.isRealData:
+    jecPattern = mitdata + '/JEC/{version}/{version}_DATA_{level}_' + jecName + '.txt'
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+
+else:
+    jecPattern = mitdata +'/JEC/{version}/{version}_MC_{level}_' + jecName + '.txt'
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+
+fiducialJets = mithep.JetIdMod('FiducialJets',
+    InputName = jetsName,
+    OutputName = 'FiducialJets',
+    PtMin = 0.,
+    EtaMax = 4.7,
+    JetEEMFractionMinCut = -1.
+)
+
+correctedJets = mithep.JetCorrectionMod('JetCorrection',
+    InputName = fiducialJets.GetName(),
     CorrectedJetsName = 'CorrectedJets',
     RhoAlgo = rhoAlgo
 )
 
-correctedJets = jetCorrection.GetOutputName()
+correctedJetsJESUp = mithep.JetCorrectionMod('JetCorrectionJESUp',
+    InputName = correctedJets.GetOutputName(),
+    CorrectedJetsName = 'CorrectedJetsJESUp',
+    UncertaintySigma = 1.
+)
 
-if not analysis.isRealData:
-    jetSmearing = mithep.JetCorrectionMod('JetSmearing',
-        InputName = looseJets.GetOutputName(),
+correctedJetsJESDown = mithep.JetCorrectionMod('JetCorrectionJESDown',
+    InputName = correctedJets.GetOutputName(),
+    CorrectedJetsName = 'CorrectedJetsJESDown',
+    UncertaintySigma = -1.
+)
+
+for level in jecLevels:
+    repl = {'version': jecVersion, 'level': level}
+    correctedJets.AddCorrectionFromFile(jecPattern.format(**repl))
+
+for mod in [correctedJetsJESUp, correctedJetsJESDown]:
+    repl = {'version': jecVersion, 'level': 'Uncertainty'}
+    mod.AddCorrectionFromFile(jecPattern.format(**repl))
+
+correctedJetsName = correctedJets.GetOutputName()
+correctedJetsJESUpName = correctedJetsJESUp.GetOutputName()
+correctedJetsJESDownName = correctedJetsJESDown.GetOutputName()
+
+jetPreSequence = [fiducialJets, correctedJets]
+jetMetCorrSequence = [correctedJetsJESUp, correctedJetsJESDown]
+
+if not analysis.isRealData and jerVersion != '':
+    smearedJets = mithep.JetCorrectionMod('JetSmearing',
+        InputName = correctedJets.GetOutputName(),
         CorrectedJetsName = 'SmearedJets'
     )
 
-    correctedJets = jetCorrection.GetOutputName()
+    smearedJetsJESUp = mithep.JetCorrectionMod('JetSmearingJESUp',
+        InputName = correctedJetsJESUp.GetOutputName(),
+        CorrectedJetsName = 'SmearedJetsJESUp'
+    )
 
-looseJets = mithep.JetIdMod('JetId',
-    InputName = correctedJets,
-    OutputName = 'GoodJets',
+    smearedJetsJESDown = mithep.JetCorrectionMod('JetSmearingJESDown',
+        InputName = correctedJetsJESDown.GetOutputName(),
+        CorrectedJetsName = 'SmearedJetsJESDown'
+    )
+
+    smearedJetsJERUp = mithep.JetCorrectionMod('JetSmearingJERUp',
+        InputName = correctedJets.GetOutputName(),
+        CorrectedJetsName = 'SmearedJetsJERUp',
+        UncertaintySigma = 1.
+    )
+
+    smearedJetsJERDown = mithep.JetCorrectionMod('JetSmearingJERDown',
+        InputName = correctedJets.GetOutputName(),
+        CorrectedJetsName = 'SmearedJetsJERDown',
+        UncertaintySigma = -1.
+    )
+
+    for mod in [smearedJets, smearedJetsJESUp, smearedJetsJESDown, smearedJetsJERUp, smearedJetsJERDown]:
+        for level, ftype in [('PtResolution', mithep.JetCorrector.Corrector.kPtResolution), ('PhiResolution', mithep.JetCorrector.Corrector.kPhiResolution), ('SF', mithep.JetCorrector.Corrector.nFactorTypes)]:
+            mod.AddCorrectionFromFile(jecPattern.format(version = jerVersion, level = level), ftype)
+
+    correctedJetsName = smearedJets.GetOutputName()
+    correctedJetsJESUpName = smearedJetsJESUp.GetOutputName()
+    correctedJetsJESDownName = smearedJetsJESDown.GetOutputName()
+
+    jetPreSequence.append(smearedJets)
+    jetMetCorrSequence.extend([smearedJetsJESUp, smearedJetsJESDown, smearedJetsJERUp, smearedJetsJERDown])
+
+correctedMet = mithep.MetCorrectionMod('MetCorrection',
+    InputName = 'PFMet',
+    OutputName = 'PFType1Met',
+    JetsName = correctedJetsName,
+    RhoAlgo = rhoAlgo,
+    MaxEMFraction = 0.9,
+    SkipMuons = True,
+    MuonGeometricMatch = False
+)
+correctedMet.ApplyType0(False)
+correctedMet.ApplyType1(True)
+correctedMet.ApplyShift(False)
+correctedMet.IsData(analysis.isRealData)
+
+correctedMetJESUp = correctedMet.clone('MetCorrectionJESUp',
+    OutputName = 'PFType1MetJESUp',
+    JetsName = correctedJetsJESUpName
+)
+
+correctedMetJESDown = correctedMet.clone('MetCorrectionJESDown',
+    OutputName = 'PFType1MetJESDown',
+    JetsName = correctedJetsJESDownName
+)
+
+correctedMetUnclUp = correctedMet.clone('MetCorrectionUnclUp',
+    OutputName = 'PFType1MetUnclUp',
+    UnclusteredVariation = 0.1
+)
+correctedMetUnclUp.ApplyUnclustered(True)
+
+correctedMetUnclDown = correctedMetUnclUp.clone('MetCorrectionUnclDown',
+    OutputName = 'PFType1MetUnclDown',
+    UnclusteredVariation = -0.1
+)
+
+jetMetCorrSequence.extend([correctedMet, correctedMetJESUp, correctedMetJESDown, correctedMetUnclUp, correctedMetUnclDown])
+
+if not analysis.isRealData:
+    correctedMetJERUp = correctedMet.clone('MetCorrectionJERUp',
+        OutputName = 'PFType1MetJERUp',
+        JetsName = smearedJetsJERUp.GetOutputName()
+    )
+    
+    correctedMetJERDown = correctedMet.clone('MetCorrectionJERDown',
+        OutputName = 'PFType1MetJERDown',
+        JetsName = smearedJetsJERDown.GetOutputName()
+    )
+
+    jetMetCorrSequence.extend([correctedMetJERUp, correctedMetJERDown])
+        
+jetLooseId = mithep.JetIdMod('JetId',
+    InputName = correctedJetsName,
+    OutputName = 'GoodJetsMask',
     PFId = mithep.JetTools.kPFLoose,
-    PtMin = 20.,
+    PtMin = 0.,
     EtaMax = 5.,
     MVACutWP = mithep.JetIDMVA.kLoose,
-    FillHist = True
+    FillHist = True,
+    IsFilterMode = False,
+    MinOutput = 2
 )
+
 if run == 2:
     synchWith = '80Xv1'
 
     if synchWith == '76':
-        looseJets.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2_newNames.xml', 0)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5_newNames.xml', 1)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3_newNames.xml', 2)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5_newNames.xml', 3)
-        looseJets.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_150807.dat')
-        looseJets.SetUseBuggyPullForMVA(True)
-        looseJets.SetUseBuggyCovarianceForMVA(True)
+        jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2_newNames.xml', 0)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5_newNames.xml', 1)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3_newNames.xml', 2)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5_newNames.xml', 3)
+        jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_150807.dat')
+        jetLooseId.SetUseBuggyPullForMVA(True)
+        jetLooseId.SetUseBuggyCovarianceForMVA(True)
     elif synchWith == '80Xv1':
         # to synch with 80X MINIAODv1 or privately recomputed 76X using tag pileupJetId76X of https://github.com/jbrands/cmssw.git
-        looseJets.SetMVATrainingSet(mithep.JetIDMVA.k76CHS)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta0to2p5_BDT.weights.xml', 0)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p5to2p75_BDT.weights.xml', 1)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p75to3_BDT.weights.xml', 2)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta3to5_BDT.weights.xml', 3)
-        looseJets.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160225.dat')
-        looseJets.SetUseBuggyCovarianceForMVA(True)
+        jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k76CHS)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta0to2p5_BDT.weights.xml', 0)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p5to2p75_BDT.weights.xml', 1)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p75to3_BDT.weights.xml', 2)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta3to5_BDT.weights.xml', 3)
+        jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160225.dat')
+        jetLooseId.SetUseBuggyCovarianceForMVA(True)
     elif synchWith == '80Xv2':
         # to synch with 80X MINIAODv2
-        looseJets.SetMVATrainingSet(mithep.JetIDMVA.k80CHS)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta0to2p5_BDT.weights.xml', 0)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p5to2p75_BDT.weights.xml', 1)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p75to3_BDT.weights.xml', 2)
-        looseJets.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta3to5_BDT.weights.xml', 3)
-        looseJets.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160416.dat')
-        looseJets.SetUseBuggyCovarianceForMVA(True)
+        jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k80CHS)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta0to2p5_BDT.weights.xml', 0)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p5to2p75_BDT.weights.xml', 1)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p75to3_BDT.weights.xml', 2)
+        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta3to5_BDT.weights.xml', 3)
+        jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160416.dat')
+        jetLooseId.SetUseBuggyCovarianceForMVA(True)
 
 else:
-    looseJets.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
+    jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
 
-jetUncertaintyUp = mithep.JetCorrectionMod('JetUncertaintyUp',
-    InputName = looseJets.GetOutputName(),
-    CorrectedJetsName = 'JetUncertaintyUp',
-    UncertaintySigma = 1.
+dijetFilter = mithep.JetIdMod('DijetFilter',
+    InputName = correctedJetsName,
+    OutputName = 'HighPtJets',
+    PtMin = 50.,
+    EtaMax = 5.,
+    JetEEMFractionMinCut = -1.,
+    FillHist = True,
+    MinOutput = 2
 )
-
-jetUncertaintyDown = mithep.JetCorrectionMod('JetUncertaintyDown',
-    InputName = looseJets.GetOutputName(),
-    CorrectedJetsName = 'JetUncertaintyDown',
-    UncertaintySigma = -1.
-)
-
-metCorrection = mithep.MetCorrectionMod('MetCorrection',
-    InputName = 'PFMet',
-    OutputName = 'PFType1Met',
-    JetsName = correctedJets,
-    RhoAlgo = rhoAlgo,
-    MaxEMFraction = 0.9,
-    SkipMuons = True,
-    MuonGeometricMatch = switchRun(True, False)
-)
-metCorrection.ApplyType0(False)
-metCorrection.ApplyType1(True)
-metCorrection.ApplyShift(False)
-metCorrection.IsData(analysis.isRealData)
-
-metCorrectionJESUp = metCorrection.clone('MetCorrectionJESUp',
-    OutputName = 'PFType1CorrectedMetJESUp',
-    JetsName = switchRun('AKt4PFJetsCHS', 'AKt5PFJets'),
-    JESUncertaintySigma = 1.
-)
-metCorrectionJESDown = metCorrectionJESUp.clone('MetCorrectionJESDown',
-    OutputName = 'PFType1CorrectedMetJESDown',
-    JESUncertaintySigma = -1.
-)
-
-metCorrectionUnclUp = metCorrection.clone('MetCorrectionUnclUp',
-    OutputName = 'PFType1CorrectedMetUnclUp',
-    UnclusteredVariation = 0.1
-)
-metCorrectionUnclUp.ApplyUnclustered(True)
-
-metCorrectionUnclDown = metCorrectionUnclUp.clone('MetCorrectionUnclDown',
-    OutputName = 'PFType1CorrectedMetUnclDown',
-    UnclusteredVariation = -0.1
-)
-
-if analysis.isRealData:
-    jecPattern = mitdata + '/JEC/{version}/{version}_DATA_{level}_{jettype}.txt'
-    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
-
-else:
-    jecPattern = mitdata +'/JEC/{version}/{version}_MC_{level}_{jettype}.txt'
-    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
-
-for level in jecLevels:
-    repl = {'version': jecVersion, 'level': level, 'jettype': switchRun('AK4PFchs', 'AK5PF')}
-    jetCorrection.AddCorrectionFromFile(jecPattern.format(**repl))
-    metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
-    metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
-
-if run == 2 and not analysis.isRealData:
-    jetSmearing.AddCorrectionFromFile(jecPattern.format(version = 'Fall15_V2', level = 'PtResolution', jettype = 'AK4PFchs'))
-    jetSmearing.AddCorrectionFromFile(jecPattern.format(version = 'Fall15_V2', level = 'PhiResolution', jettype = 'AK4PFchs'))
-    jetSmearing.AddCorrectionFromFile(jecPattern.format(version = 'Fall15_V2', level = 'SF', jettype = 'AK4PFchs'))
-
-repl = {'level': 'Uncertainty', 'jettype': 'AK4PFchs'}
-metCorrectionJESUp.AddJetCorrectionFromFile(jecPattern.format(**repl))
-metCorrectionJESDown.AddJetCorrectionFromFile(jecPattern.format(**repl))
-jetUncertaintyUp.AddCorrectionFromFile(jecPattern.format(**repl))
-jetUncertaintyDown.AddCorrectionFromFile(jecPattern.format(**repl))
 
 ###########################
 ### LEPTON & PHOTON IDS ###
@@ -319,6 +392,12 @@ baselinePhotons = mithep.PhotonIdMod('BaselinePhotons',
     FillHist = True
 )
 
+photonHighPtFilter = baselinePhotons.clone('PhotonHighPtFilter',
+    PtMin = 100.,
+    OutputName = 'HighPtPhotons',
+    MinOutput = 1
+)
+
 photonLooseId = mithep.PhotonIdMod('PhotonLooseId',
     IsFilterMode = False,
     InputName = baselinePhotons.GetOutputName(),
@@ -351,9 +430,11 @@ photonHighPtId = photonLooseId.clone('PhotonHighPtId',
 
 ntuples = mithep.SimpleTreeMod(
     RhoAlgo = rhoAlgo,
-    JetsName = looseJets.GetOutputName(),
-    JetsCorrUpName = jetUncertaintyUp.GetOutputName(),
-    JetsCorrDownName = jetUncertaintyDown.GetOutputName(),
+    JetsName = correctedJetsName,
+    LooseJetsName = jetLooseId.GetOutputName(),
+    MinJetPt = 30.,
+    JetsCorrUpName = correctedJetsJESUpName,
+    JetsCorrDownName = correctedJetsJESDownName,
     PhotonsName = baselinePhotons.GetOutputName(),
     PhotonIsoType = mithep.PhotonTools.kSpring15MediumIso,
     ElectronsName = baselineElectrons.GetOutputName(),
@@ -372,12 +453,12 @@ ntuples = mithep.SimpleTreeMod(
     HighPtPhotonName = photonHighPtId.GetOutputName(),
     PileupCandsName = separatePileUpMod.GetPFPileUpName(),
     RawMetName = 'PFMet',
-    T1MetName = metCorrection.GetOutputName(),
-    CorrUpMetName = metCorrectionJESUp.GetOutputName(),
-    CorrDownMetName = metCorrectionJESDown.GetOutputName(),
-    UnclUpMetName = metCorrectionUnclUp.GetOutputName(),
-    UnclDownMetName = metCorrectionUnclDown.GetOutputName(),
-    FillPhotonDetails = analysis.custom['phdetail'],
+    T1MetName = correctedMet.GetOutputName(),
+    CorrUpMetName = correctedMetJESUp.GetOutputName(),
+    CorrDownMetName = correctedMetJESDown.GetOutputName(),
+    UnclUpMetName = correctedMetUnclUp.GetOutputName(),
+    UnclDownMetName = correctedMetUnclDown.GetOutputName(),
+    FillPhotonDetails = phdetail,
     IsMC = not analysis.isRealData
 )
 
@@ -397,8 +478,6 @@ else:
     
     for fname, filt in muonHLTObjects:
         ntuples.SetMuonTriggerModuleName(fname, filt)
-
-recoChain = [goodPVFilterMod]
 
 #if analysis.isRealData:
 #    eventlistDir = '/cvmfs/cvmfs.cmsaf.mit.edu/hidsk0001/cmsprod/cms/MitPhysics/data/eventfilter'
@@ -439,17 +518,25 @@ if not analysis.isRealData:
         InputName = mcParticlesNoNu.GetOutputName(),
         OutputJetsName = 'GenJetsNoNu',
         OutputType = mithep.kGenJet,
-        ConeSize = switchRun(0.4, 0.5),
+        ConeSize = jetCone,
         NoActiveArea = True,
         ParticleMinPt = 0.,
         JetMinPt = 20.
     )
 
-    recoChain += [
+    genSequence = [
         generator,
         mcParticlesNoNu,
         genJets
     ]
+
+    for mod in [smearedJets, smearedJetsJESUp, smearedJetsJESDown, smearedJetsJERUp, smearedJetsJERDown]:
+        mod.SetGenJetsName(genJets.GetOutputJetsName())
+
+    ntuples.SetJetsResUpName(smearedJetsJERUp.GetOutputName())
+    ntuples.SetJetsResDownName(smearedJetsJERDown.GetOutputName())
+    ntuples.SetResUpMetName(correctedMetJERUp.GetOutputName())
+    ntuples.SetResDownMetName(correctedMetJERDown.GetOutputName())
 
     ntuples.SetGenMetName(generator.GetMCMETName())
     ntuples.SetGenJetsName(genJets.GetOutputJetsName())
@@ -457,8 +544,22 @@ if not analysis.isRealData:
     if 'pdfrwgt' in analysis.custom and analysis.custom['pdfrwgt'] != '-':
         ntuples.SetPdfReweight(analysis.custom['pdfrwgt'])
 
-recoChain += [
-    baselinePhotons, # skim >= 1 photon with pT > 30
+else:
+    genSequence = []
+
+
+sequence = goodPVFilterMod * (
+    Chain(jetPreSequence) * jetLooseId * dijetFilter +
+    baselinePhotons * photonHighPtFilter
+)
+
+BExpr = mithep.BooleanMod.Expression
+skim = mithep.BooleanMod('Skim',
+    Expression = BExpr(photonHighPtFilter, dijetFilter, BExpr.kOR)
+)
+
+recoChain = genSequence + \
+[
     separatePileUpMod,
     baselineElectrons,
     vetoElectronId,
@@ -466,24 +567,19 @@ recoChain += [
     tightElectronId,
     looseMuons,
     tightMuonId,
-    looseTaus,
-    jetCorrection,
-    metCorrection,
-    metCorrectionJESUp,
-    metCorrectionJESDown,
-    metCorrectionUnclUp,
-    metCorrectionUnclDown,
+    looseTaus
+] + \
+jetMetCorrSequence + \
+[
     photonLooseId,
     photonMediumId,
     photonTightId,
-    photonHighPtId,
-    looseJets,
-    jetUncertaintyUp,
-    jetUncertaintyDown
+    photonHighPtId
 ]
 
-#baselinePhotons.SetMinOutput(1)
-#looseJets.SetMinOutput(2)
 ntuples.SetCondition(recoChain[-1])
 
-analysis.setSequence(Chain(recoChain) + ntuples)
+sequence += skim * Chain(recoChain)
+sequence += ntuples
+
+analysis.setSequence(sequence)
