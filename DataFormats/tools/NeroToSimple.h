@@ -175,6 +175,12 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     // auto& photon(event_.photons[iP]);
 
     p4ToParticle(inPhotons_, iP, photon);
+    
+    // printf("  pho eta %f \n", photon.eta);
+    
+    photon.isEB = (TMath::Abs(photon.eta) < 1.5) ? 1 : 0;
+
+    // printf("  pho isEB %u \n", photon.isEB);
 
     photon.csafeVeto = (inPhotons_.selBits->at(iP) & BarePhotons::PhoElectronVeto) != 0;
     photon.pixelVeto = (inPhotons_.selBits->at(iP) & BarePhotons::PhoPixelSeedVeto) != 0;
@@ -198,6 +204,8 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
     // printf("  got through ID variables \n");
 
+    photon.chWorstIso = inPhotons_.chWorstIso->at(iP);
+
     // printf("  sipip %f \n", inPhotons_.sipip->at(iP));
     // printf("  sieip %f \n", inPhotons_.sieip->at(iP));
     // printf("  r9 %f \n", inPhotons_.r9->at(iP));
@@ -206,8 +214,11 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     photon.sieip = inPhotons_.sieip->at(iP);
     photon.r9 = inPhotons_.r9->at(iP);
 
-    photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
     photon.e55 = inPhotons_.e55->at(iP);
+
+    photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
+    
+    photon.time = inPhotons_.time->at(iP);
 
     // printf("  got through extra variables \n");
 
