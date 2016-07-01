@@ -15,7 +15,7 @@ namespace simpletree {
 
     void reset() { TreeInterface::singleton()->reset(); }
     unsigned index() const { return *index_; }
-    void assignIndex(char const*, unsigned);
+    static void assignIndex(char const*, unsigned);
     bool pass(Event const&);
 
   private:
