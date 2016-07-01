@@ -5,8 +5,10 @@ classes=$(patsubst %,../obj/%_classes.o,$(trees))
 classsrc=$(classes:.o=.cc)
 objects=$(patsubst %,../obj/Objects_%.o,$(trees))
 entries=$(patsubst %,../obj/TreeEntries_%.o,$(trees))
+utilsrc=$(wildcard ../src/*Utils.cc)
+utils=$(patsubst ../src/%.cc,../obj/%.o,$(utilsrc))
 
-$(trees): %: ../obj/Utils.o ../obj/common.o ../obj/%_enums.o ../obj/%_classes.o ../obj/Objects_%.o ../obj/TreeEntries_%.o
+$(trees): %: $(utils) ../obj/common.o ../obj/%_enums.o ../obj/%_classes.o ../obj/Objects_%.o ../obj/TreeEntries_%.o
 	g++ -std=c++11 -O2 -fPIC -shared $(shell root-config --libs) -o $(patsubst %,../obj/lib%.so,$@) $^
 
 ../obj/common.o: ../interface/Collection.h ../interface/common_LinkDef.h
@@ -25,7 +27,7 @@ $(classsrc): ../obj/%_classes.cc: ../interface/TreeEntries_%.h ../obj/%_classes_
 	mkdir -p ../obj
 	rootcling -f $@ $^
 
-../obj/Utils.o $(objects) $(entries): ../obj/%.o: ../src/%.cc ../interface/%.h ../interface/Collection.h
+$(utils) $(objects) $(entries): ../obj/%.o: ../src/%.cc ../interface/%.h ../interface/Collection.h
 	mkdir -p ../obj
 	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $<
 
