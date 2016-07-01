@@ -39,8 +39,6 @@ class NeroToSimple {
   BareTrigger inTrigger_;
   BareVertex inVertex_;
   
-  unsigned triggerIndices_[simpletree::nHLTPaths];
-
   simpletree::Event& event_;
 };
 
@@ -95,38 +93,23 @@ NeroToSimple::NeroToSimple(TTree& _neroTree, simpletree::Event& _outEvent) :
   inTrigger_.init();
   inVertex_.init();
 
-  for (unsigned& idx : triggerIndices_)
-    idx = -1;
 }
 
 inline
 void
 NeroToSimple::setTriggerNames(TString const& _triggerNames)
 {
-  TString matchNames[simpletree::nHLTPaths] = {
-    "Photon120",
-    "Photon135_PFMET100_JetIdCleaned",
-    "Photon165_HE10",
-    "Photon175",
-    "Ele23_WPLoose_Gsf",
-    "Ele27_eta2p1_WPLoose_Gsf",
-    "IsoMu20",
-    "IsoTkMu20",
-    "IsoMu24_eta2p1",
-    "IsoMu27",
-    "PFMET170_NoiseCleaned",
-    "PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight",
-    "PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight"
-  };
-
   auto* names(_triggerNames.Tokenize(","));
+  printf("Before loop: inTrigger_.size() = %u \n", inTrigger_.size());
   for (int iT(0); iT != names->GetEntries(); ++iT) {
-    TString name(names->GetName());
-    for (unsigned iM(0); iM != simpletree::nHLTPaths; ++iM) {
-      if (name.Index("HLT_" + matchNames[iM] + "_v") == 0)
-        triggerIndices_[iM] = iT;
-    }      
+    TString name(names->At(iT)->GetName());
+    name = name.ReplaceAll("_v", "");
+
+    simpletree::TriggerHelper::assignIndex(name, iT);
+    inTrigger_.triggerNames->emplace_back(name);
+
   }
+  printf("After loop: inTrigger_.size() = %u \n", inTrigger_.size());
   delete names;
 }
 
@@ -226,14 +209,14 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
     photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
     
-    photon.time = inPhotons_.time->at(iP); // fails on Zeynep's ntuples
+    // photon.time = inPhotons_.time->at(iP); // fails on Zeynep's ntuples
 
     // printf("  got through extra variables \n");
 
-    photon.matchHLT[simpletree::fPh120] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
-    photon.matchHLT[simpletree::fPh135] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
-    photon.matchHLT[simpletree::fPh165HE10] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
-    photon.matchHLT[simpletree::fPh175] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
+    // photon.matchHLT[simpletree::fPh120] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
+    // photon.matchHLT[simpletree::fPh135] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
+    // photon.matchHLT[simpletree::fPh165HE10] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
+    // photon.matchHLT[simpletree::fPh175] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
 
     // printf("  got through triggers \n");
   }
@@ -250,18 +233,18 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
       auto& electron(event_.electrons.back());
       lepton = &electron;
 
-      electron.matchHLT[simpletree::fEl23Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle23Loose);
-      electron.matchHLT[simpletree::fEl27Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle27Loose);
+      // electron.matchHLT[simpletree::fEl23Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle23Loose);
+      // electron.matchHLT[simpletree::fEl27Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle27Loose);
     }
     else {
       event_.muons.resize(event_.muons.size() + 1);
       auto& muon(event_.muons.back());
       lepton = &muon;
 
-      muon.matchHLT[simpletree::fMu20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu20);
-      muon.matchHLT[simpletree::fMuTrk20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kTrkMu20);
-      muon.matchHLT[simpletree::fMu24] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu24eta2p1);
-      muon.matchHLT[simpletree::fMu27] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu27);
+      // muon.matchHLT[simpletree::fMu20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu20);
+      // muon.matchHLT[simpletree::fMuTrk20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kTrkMu20);
+      // muon.matchHLT[simpletree::fMu24] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu24eta2p1);
+      // muon.matchHLT[simpletree::fMu27] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu27);
     }
 
     p4ToParticle(inLeptons_, iL, *lepton);
@@ -292,13 +275,13 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   event_.t1Met.met = inMet_.momentum(0).Pt();
   event_.t1Met.phi = inMet_.momentum(0).Phi();
 
-  // printf("\nntrig %zu \n", inTrigger_.triggerNames->size());
-  for (unsigned iT(0); iT != simpletree::nHLTPaths; ++iT) {
-    // printf(" adding trig %u \n", iT);
-    if (triggerIndices_[iT] >= inTrigger_.triggerNames->size())
-      continue;
+  for (unsigned iWord(0); iWord != 16; ++iWord) {
+    event_.hltBits.words[iWord] = 0;
+  }
 
-    event_.hlt[iT].pass = inTrigger_.triggerFired->at(triggerIndices_[iT]) != 0;
+  // printf("\nntrig %zu \n", inTrigger_.triggerNames->size());
+  for (unsigned iT(0); iT != inTrigger_.triggerNames->size(); ++iT) {
+      event_.hltBits.set(iT);
   }
 
   if (!inEvent_.isRealData) {
@@ -316,23 +299,25 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     event_.genMet.met = inGenMet.Pt();
     event_.genMet.phi = inGenMet.Phi();
 
-    event_.reweight.resize(6 + inMC_.pdfRwgt->size());
+    // event_.reweight.resize(6 + inMC_.pdfRwgt->size());
 
-    event_.reweight[0].scale = inMC_.r1f2;
-    event_.reweight[1].scale = inMC_.r1f5;
-    event_.reweight[2].scale = inMC_.r2f1;
-    event_.reweight[3].scale = inMC_.r2f2;
-    event_.reweight[4].scale = inMC_.r5f1;
-    event_.reweight[5].scale = inMC_.r5f5;
+    // event_.reweight[0].scale = inMC_.r1f2;
+    // event_.reweight[1].scale = inMC_.r1f5;
+    // event_.reweight[2].scale = inMC_.r2f1;
+    // event_.reweight[3].scale = inMC_.r2f2;
+    // event_.reweight[4].scale = inMC_.r5f1;
+    // event_.reweight[5].scale = inMC_.r5f5;
 
-    unsigned iW(6);
-    for (float w : *inMC_.pdfRwgt)
-      event_.reweight[iW++].scale = w;
+    // unsigned iW(6);
+    // for (float w : *inMC_.pdfRwgt)
+      // event_.reweight[iW++].scale = w;
   }
 }
 
+/*
 bool
 NeroToSimple::triggerMatch(std::vector<int> const& _inBits, unsigned _objIdx, unsigned _trigIdx)
 {
   return triggerIndices_[_trigIdx] < 32 && (_inBits.at(_objIdx) & (0x1 << triggerIndices_[_trigIdx])) != 0;
 }
+*/
