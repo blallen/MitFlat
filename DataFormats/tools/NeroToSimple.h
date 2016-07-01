@@ -123,7 +123,7 @@ NeroToSimple::setTriggerNames(TString const& _triggerNames)
   for (int iT(0); iT != names->GetEntries(); ++iT) {
     TString name(names->GetName());
     for (unsigned iM(0); iM != simpletree::nHLTPaths; ++iM) {
-      if (name.Index("HLT_" + matchNames[iM]) == 0)
+      if (name.Index("HLT_" + matchNames[iM] + "_v") == 0)
         triggerIndices_[iM] = iT;
     }      
   }
