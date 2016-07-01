@@ -15,8 +15,10 @@ namespace simpletree {
 
     void reset() { TreeInterface::singleton()->reset(); }
     unsigned index() const { return *index_; }
-    void assignIndex(char const*, unsigned);
     bool pass(Event const&);
+
+    // Used when assigning indices by hand
+    static void assignIndex(char const*, unsigned);
 
   private:
     // Used when reading paths from the input files
