@@ -14,9 +14,12 @@ namespace simpletree {
     TriggerHelper(char const* path);
 
     void reset() { TreeInterface::singleton()->reset(); }
+    unsigned index() const { return *index_; }
+    void assignIndex(char const*, unsigned);
     bool pass(Event const&);
 
   private:
+    // Used when reading paths from the input files
     class TreeInterface {
     public:
       void reset();
@@ -38,6 +41,10 @@ namespace simpletree {
 
       std::map<TString, unsigned> pathIndices_{};
     };
+
+    // Used when path indices are assigned by hand
+    static bool staticAssignment_;
+    static std::map<TString, unsigned> indices_;
 
     unsigned* index_{0};
   };

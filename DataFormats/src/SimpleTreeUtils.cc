@@ -5,6 +5,9 @@
 #include <iostream>
 #include <stdexcept>
 
+bool simpletree::TriggerHelper::staticAssignment_(false);
+std::map<TString, unsigned> simpletree::TriggerHelper::indices_{};
+
 void
 simpletree::TriggerHelper::TreeInterface::reset()
 {
@@ -125,15 +128,33 @@ simpletree::TriggerHelper::TreeInterface::singleton()
 
 simpletree::TriggerHelper::TriggerHelper(char const* _path)
 {
-  TString path(_path);
-  path += "_v";
-  index_ = &TreeInterface::singleton()->index(path);
+  if (staticAssignment_) {
+    auto itr(indices_.find(_path));
+    if (itr == indices_.end())
+      throw std::runtime_error(TString::Format("Unknown trigger path %s", _path));
+
+    index_ = &itr->second;
+  }
+  else {
+    TString path(_path);
+    path += "_v";
+    index_ = &TreeInterface::singleton()->index(path);
+  }
+}
+
+void
+simpletree::TriggerHelper::assignIndex(char const* _path, unsigned _index)
+{
+  // Once any index is assigned by hand, we don't use input files to determine the trigger index any more.
+  staticAssignment_ = true;
+  
+  indices_.emplace(_path, _index);
 }
 
 bool
 simpletree::TriggerHelper::pass(Event const& _event)
 {
-  if (TreeInterface::singleton()->initRun(_event))
+  if (staticAssignment_ || TreeInterface::singleton()->initRun(_event))
     return _event.hltBits.pass(*index_);
 
   return false;
