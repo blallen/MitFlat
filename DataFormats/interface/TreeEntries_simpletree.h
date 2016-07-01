@@ -16,16 +16,19 @@ namespace simpletree {
   typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
   typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
   typedef flatutils::Collection<GenJet, ParticleMCollection> GenJetCollection;
-  typedef flatutils::Collection<HLT, flatutils::StaticCollection> HLTCollection;
-  typedef flatutils::Collection<ReweightScale, flatutils::StaticCollection> ReweightScaleCollection;
 
   class Event {
   public:
+    Event();
+
     UInt_t run{};
     UInt_t lumi{};
     UInt_t event{};
-    Double_t weight{};
+    Double_t weight{1.};
+    Double_t scaleReweight[6]{};
+    Double_t pdfDW{};
     Double_t rho{};
+    Float_t npvTrue{};
     UShort_t npv{};
     PartonCollection partons = PartonCollection("partons");
     MCParticleCollection promptFinalStates = MCParticleCollection("promptFinalStates");
@@ -38,17 +41,37 @@ namespace simpletree {
     Met rawMet = Met("rawMet");
     CorrectedMet t1Met = CorrectedMet("t1Met");
     Met genMet = Met("genMet");
-    HLTCollection hlt = HLTCollection("hlt");
+    HLTBits hltBits = HLTBits("hltBits");
     MetFilters metFilters = MetFilters("metFilters");
-    ReweightScaleCollection reweight = ReweightScaleCollection("reweight");
 
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void init();
+    TTree* getInput() const { return input_; }
+
+  protected:
+    TTree* input_{0}; // set by setAddress
   };
 
-  TTree* makeHLTPathTree();
+  class Run {
+  public:
+    Run();
+
+    UInt_t run{};
+    UInt_t hltMenu{};
+
+    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    void init();
+    TTree* getInput() const { return input_; }
+
+  protected:
+    TTree* input_{0}; // set by setAddress
+  };
+
+  TTree* makePhotonL1ObjectTree();
   TTree* makePhotonHLTObjectTree();
   TTree* makeElectronHLTObjectTree();
   TTree* makeMuonHLTObjectTree();

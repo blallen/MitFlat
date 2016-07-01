@@ -1,24 +1,37 @@
-.PHONY: simpletree
+trees=simpletree
+enums=$(patsubst %,../obj/%_enums.o,$(trees))
+enumsrc=$(enums:.o=.cc)
+classes=$(patsubst %,../obj/%_classes.o,$(trees))
+classsrc=$(classes:.o=.cc)
+objects=$(patsubst %,../obj/Objects_%.o,$(trees))
+entries=$(patsubst %,../obj/TreeEntries_%.o,$(trees))
+utilsrc=$(wildcard ../src/*Utils.cc)
+utils=$(patsubst ../src/%.cc,../obj/%.o,$(utilsrc))
 
-%: ../obj/Utils.o ../obj/common_dict.o ../obj/%_dict.o ../obj/Objects_%.o ../obj/TreeEntries_%.o
+$(trees): %: $(utils) ../obj/common.o ../obj/%_enums.o ../obj/%_classes.o ../obj/Objects_%.o ../obj/TreeEntries_%.o
 	g++ -std=c++11 -O2 -fPIC -shared $(shell root-config --libs) -o $(patsubst %,../obj/lib%.so,$@) $^
 
-../obj/common_dict.o: ../interface/Collection.h ../interface/common_LinkDef.h
+../obj/common.o: ../interface/Collection.h ../interface/common_LinkDef.h
 	mkdir -p ../obj
-	rootcling -f ../obj/common_dict.cc $^
-	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) ../obj/common_dict.cc
+	rootcling -f ../obj/common.cc $^
+	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) ../obj/common.cc
 
-../obj/%_dict.o: ../interface/Objects_%.h ../interface/TreeEntries_%.h ../interface/Collection.h ../interface/%_LinkDef.h
+$(enums) $(classes): ../obj/%.o: ../obj/%.cc
+	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $^
+
+$(enumsrc): ../obj/%_enums.cc: ../interface/Objects_%.h ../dict/%_LinkDef.h
 	mkdir -p ../obj
-	rootcling -f $(patsubst ../obj/%_dict.o,../obj/%_dict.cc,$@) $^
-	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $(patsubst ../obj/%_dict.o,../obj/%_dict.cc,$@)
+	rootcling -f $@ $^
 
-../obj/%.o: ../src/%.cc ../interface/%.h ../interface/Collection.h
+$(classsrc): ../obj/%_classes.cc: ../interface/TreeEntries_%.h ../obj/%_classes_LinkDef.h
+	mkdir -p ../obj
+	rootcling -f $@ $^
+
+$(utils) $(objects) $(entries): ../obj/%.o: ../src/%.cc ../interface/%.h ../interface/Collection.h
 	mkdir -p ../obj
 	g++ -std=c++11 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $<
 
-.PRECIOUS: ../obj/%_dict.cc ../obj/%_dict.o ../obj/%.o
 .PHONY: clean
 
 clean:
-	rm -f ../obj/*
+	rm -f ../obj/*.cc ../obj/*.o ../obj/*.pcm ../obj/*.so

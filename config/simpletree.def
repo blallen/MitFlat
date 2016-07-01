@@ -7,33 +7,14 @@
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
-enum HLTPath {
-  kPhoton120,
-  kPhoton135MET100,
-  kPhoton165HE10,
-  kPhoton175,
-  kPhoton22MET40,
-  kPhoton22VBF,
-  kPhoton36MET40,
-  kPhoton36VBF,
-  kPhoton50MET40,
-  kPhoton50VBF,
-  kPhoton75MET40,
-  kPhoton75VBF,
-  kPhoton90MET40,
-  kPhoton90VBF,
-  kPhoton120MET40,
-  kPhoton120VBF,
-  kEle23Loose,
-  kEle27Loose,
-  kMu20,
-  kTrkMu20,
-  kMu24eta2p1,
-  kMu27,
-  kMET170,
-  kMETNoMu90MHTNoMu90,
-  kMETNoMu120MHTNoMu120,
-  nHLTPaths
+enum PhotonL1Object {
+  fSEG34IorSEG40,
+  fSEG40IorSJet200,
+  fSEG34IorSEG40IorSJet200,
+  fSEG24,
+  fSEG30,
+  fSEG40,
+  nPhotonL1Objects
 };
 
 enum PhotonHLTObject {
@@ -101,7 +82,6 @@ cisv/F
 met/F
 phi/F
 sumEt/F
-et/F
 virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
 [CorrectedMet:Met]
@@ -160,6 +140,7 @@ loose/O
 medium/O
 tight/O
 highpt/O
+matchL1[nPhotonL1Objects]/F
 matchHLT[nPhotonHLTObjects]/O
 
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
@@ -226,8 +207,10 @@ ancestor/s
 
 [GenJet:ParticleM]
 
-[HLT:SIZE=nHLTPaths]
-pass/O
+[HLTBits:SINGLE]
+void set(unsigned iB) { words[iB / 32] |= (1 << (iB % 32)); }
+bool pass(unsigned iB) const { return ((words[iB / 32] >> (iB % 32)) & 1) != 0; }
+words[16]/i
 
 [MetFilters:SINGLE]
 cschalo/O
@@ -238,15 +221,15 @@ badTrack/O
 badMuonTrack/O
 virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
-[ReweightScale:SIZE=256]
-scale/F
-
 {Event}
 run/i
 lumi/i
 event/i
-weight/D
+weight/D = 1.
+scaleReweight[6]/D
+pdfDW/D
 rho/D
+npvTrue/F
 npv/s
 partons/PartonCollection
 promptFinalStates/MCParticleCollection
@@ -259,6 +242,9 @@ taus/TauCollection
 rawMet/Met
 t1Met/CorrectedMet
 genMet/Met
-hlt/HLTCollection
+hltBits/HLTBits
 metFilters/MetFilters
-reweight/ReweightScaleCollection
+
+{Run}
+run/i
+hltMenu/i

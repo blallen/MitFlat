@@ -13,15 +13,6 @@ if 'run' in analysis.custom:
 else:
     run = 2
 
-if 'bx' in analysis.custom:
-    bx = analysis.custom['bx']
-else:
-    bx = '25ns'
-
-def switchBX(case25, case50):
-    global bx
-    return case25 if bx == '25ns' else case50
-
 def switchRun(case2, case1):
     global run
     return case2 if run == 2 else case1
@@ -29,7 +20,9 @@ def switchRun(case2, case1):
 rhoAlgo = switchRun(mithep.PileupEnergyDensity.kFixedGridFastjetAll, mithep.PileupEnergyDensity.kHighEta)
 
 if run == 2:
-    jecVersion = switchBX('Spring16_25nsV1', 'Summer15_50nsV5')
+    jecVersion = 'Spring16_25nsV1'
+    if analysis.isRealData and jecVersion == 'Spring16_25nsV1':
+        jecVersion = 'Fall15_25nsV2'
 
     if analysis.isRealData:
         jecPattern = mitdata + '/JEC/' + jecVersion + '/' + jecVersion + '_DATA_{level}_{jettype}.txt'
@@ -61,92 +54,55 @@ from MitPhysics.Mods.SeparatePileUpMod import separatePileUpMod
 #####################
 
 if run == 2:
-    import ROOT
-    ROOT.gSystem.Load('libMitFlatDataFormats.so')
-    simpletree = ROOT.simpletree
-
-    hltPaths = [
-        (simpletree.kPhoton120, 'Photon120'),
-        (simpletree.kPhoton135MET100, 'Photon135_PFMET100_JetIdCleaned'),
-        (simpletree.kPhoton165HE10, 'Photon165_HE10'),
-        (simpletree.kPhoton175, 'Photon175'),
-        (simpletree.kPhoton22MET40, 'Photon22_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
-        (simpletree.kPhoton22VBF, 'Photon22_R9Id90_HE10_Iso40_EBOnly_VBF'),
-        (simpletree.kPhoton36MET40, 'Photon36_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
-        (simpletree.kPhoton36VBF, 'Photon36_R9Id90_HE10_Iso40_EBOnly_VBF'),
-        (simpletree.kPhoton50MET40, 'Photon50_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
-        (simpletree.kPhoton50VBF, 'Photon50_R9Id90_HE10_Iso40_EBOnly_VBF'),
-        (simpletree.kPhoton75MET40, 'Photon75_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
-        (simpletree.kPhoton75VBF, 'Photon75_R9Id90_HE10_Iso40_EBOnly_VBF'),
-        (simpletree.kPhoton90MET40, 'Photon90_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
-        (simpletree.kPhoton90VBF, 'Photon90_R9Id90_HE10_Iso40_EBOnly_VBF'),
-        (simpletree.kPhoton120MET40, 'Photon120_R9Id90_HE10_Iso40_EBOnly_PFMET40'),
-        (simpletree.kPhoton120VBF, 'Photon120_R9Id90_HE10_Iso40_EBOnly_VBF'),
-        (simpletree.kEle23Loose, 'Ele23_WPLoose_Gsf' if analysis.isRealData else 'Ele22_eta2p1_WP75_Gsf'),
-        (simpletree.kEle27Loose, 'Ele27_eta2p1_WPLoose_Gsf' if analysis.isRealData else 'HLT_Ele27_eta2p1_WP75_Gsf'), # filter only matches data
-        (simpletree.kMu20, 'IsoMu20'),
-        (simpletree.kTrkMu20, 'IsoTkMu20'),
-        (simpletree.kMu24eta2p1, 'IsoMu24_eta2p1'),
-        (simpletree.kMu27, 'IsoMu27'),
-        (simpletree.kMET170, 'PFMET170_NoiseCleaned'),
-        (simpletree.kMETNoMu90MHTNoMu90, 'PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight' if analysis.isRealData and bx == '25ns' else 'PFMETNoMu90_NoiseCleaned_PFMHTNoMu90_IDTight'),
-        (simpletree.kMETNoMu120MHTNoMu120, 'PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight' if analysis.isRealData and bx == '25ns' else 'PFMETNoMu120_NoiseCleaned_PFMHTNoMu120_IDTight')
+    photonL1Objects = [
+        ('fSEG34IorSEG40', 'hltL1sSingleEG34IorSingleEG40'), # HLT_Photon120
+        ('fSEG40IorSJet200', 'hltL1sSingleEG40IorSingleJet200'), # HLT_Photon135_PFMET100
+        ('fSEG34IorSEG40IorSJet200', 'hltL1sSingleEG34IorSingleEG40IorSingleJet200'), # HLT_Photon165_HE10
+        ('fSEG24', 'hltL1sSingleEG24'), # HLT_Photon22_MET/VBF
+        ('fSEG30', 'hltL1sSingleEG30'), # HLT_Photon36_MET/VBF
+        ('fSEG40', 'hltL1sSingleEG40') # HLT_PhotonX_MET/VBF
     ]
 
     photonHLTObjects = [
-        (simpletree.fPh120, 'hltEG120HEFilter'),
-        (simpletree.fPh135, 'hltEG135HEFilter'),
-        (simpletree.fPh165HE10, 'hltEG165HE10Filter'),
-        (simpletree.fPh175, 'hltEG175HEFilter'),  
-        (simpletree.fPh22EBR9Iso, 'hltEG22R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fPh36EBR9Iso, 'hltEG36R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fPh50EBR9Iso, 'hltEG50R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fPh75EBR9Iso, 'hltEG75R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fPh90EBR9Iso, 'hltEG90R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fPh120EBR9Iso, 'hltEG120R9Id90HE10Iso40EBOnlyTrackIsoFilter')
+        ('fPh120', 'hltEG120HEFilter'), # HLT_Photon120
+        ('fPh135', 'hltEG135HEFilter'), # HLT_Photon135_PFMET100
+        ('fPh165HE10', 'hltEG165HE10Filter'), # HLT_Photon165_HE10
+        ('fPh175', 'hltEG175HEFilter'), # HLT_Photon175
+        ('fPh22EBR9Iso', 'hltEG22R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fPh36EBR9Iso', 'hltEG36R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fPh50EBR9Iso', 'hltEG50R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fPh75EBR9Iso', 'hltEG75R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fPh90EBR9Iso', 'hltEG90R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fPh120EBR9Iso', 'hltEG120R9Id90HE10Iso40EBOnlyTrackIsoFilter')
     ]
 
     electronHLTObjects = [
-        (simpletree.fEl23Loose, 'hltEle23WPLooseGsfTrackIsoFilter'),
-        (simpletree.fEl27Loose, 'hltEle27WPLooseGsfTrackIsoFilter'),
-        (simpletree.fEl120Ph, 'hltEG120HEFilter'),  
-        (simpletree.fEl135Ph, 'hltEG135HEFilter'),  
-        (simpletree.fEl165HE10Ph, 'hltEG165HE10Filter'),
-        (simpletree.fEl175Ph, 'hltEG175HEFilter'),
-        (simpletree.fEl22EBR9IsoPh, 'hltEG22R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fEl36EBR9IsoPh, 'hltEG36R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fEl50EBR9IsoPh, 'hltEG50R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fEl75EBR9IsoPh, 'hltEG75R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fEl90EBR9IsoPh, 'hltEG90R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
-        (simpletree.fEl120EBR9IsoPh, 'hltEG120R9Id90HE10Iso40EBOnlyTrackIsoFilter')
+        ('fEl23Loose', 'hltEle23WPLooseGsfTrackIsoFilter'), # HLT_Ele23_WPLoose_Gsf
+        ('fEl27Loose', 'hltEle27noerWPLooseGsfTrackIsoFilter'), # HLT_Ele27_WPLoose_Gsf
+        ('fEl120Ph', 'hltEG120HEFilter'),
+        ('fEl135Ph', 'hltEG135HEFilter'),
+        ('fEl165HE10Ph', 'hltEG165HE10Filter'),
+        ('fEl175Ph', 'hltEG175HEFilter'),
+        ('fEl22EBR9IsoPh', 'hltEG22R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fEl36EBR9IsoPh', 'hltEG36R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fEl50EBR9IsoPh', 'hltEG50R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fEl75EBR9IsoPh', 'hltEG75R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fEl90EBR9IsoPh', 'hltEG90R9Id90HE10Iso40EBOnlyTrackIsoFilter'),
+        ('fEl120EBR9IsoPh', 'hltEG120R9Id90HE10Iso40EBOnlyTrackIsoFilter')
     ]
 
     muonHLTObjects = [
-        (simpletree.fMu20, 'hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09'),
-        (simpletree.fMuTrk20, 'hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09'),
-        (simpletree.fMu24, 'hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09'),
-        (simpletree.fMu27, 'hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09')
+        ('fMu20', 'hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09'), # HLT_IsoMu20
+        ('fMuTrk20', 'hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09'), # HLT_IsoTkMu20
+        ('fMu24', 'hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09'), # HLT_IsoMu24
+        ('fMu27', 'hltL3crIsoL1sMu22Or25L1f0L2f10QL3f27QL3trkIsoFiltered0p09')
     ]
     
 else:
-    hltPaths = [
-        (0, 'DiPFJet40_PFMETnoMu65_MJJ600VBF_LeadingJets'),
-        (1, 'DiPFJet40_PFMETnoMu65_MJJ800VBF_AllJets'),
-        (2, 'IsoMu24_eta2p1'),
-        (3, 'IsoMu24'),
-        (4, 'Ele27_WP80')
-    ]
-
+    photonL1Objects = []
     photonHLTObjects = []
     electronHLTObjects = []
     muonHLTObjects = []
-
-hltMod = mithep.HLTMod(
-    AbortIfNotAccepted = analysis.isRealData,
-    ExportTrigObjects = False
-)
-for iPath, path in hltPaths:
-    hltMod.AddTrigger('HLT_' + path + '_v*')
 
 ################################
 ### JET/MET ID & CORRECTIONS ###
@@ -380,7 +336,6 @@ photonHighPtId = photonLooseId.clone('PhotonHighPtId',
 )
 
 ntuples = mithep.SimpleTreeMod(
-    EventTreeName = 'events',
     RhoAlgo = rhoAlgo,
     JetsName = looseJets.GetOutputName(),
     JetsCorrUpName = jetUncertaintyUp.GetOutputName(),
@@ -414,24 +369,21 @@ ntuples = mithep.SimpleTreeMod(
 if (analysis.book.endswith('044') and not analysis.isRealData) or ('usehlt' in analysis.custom and not analysis.custom['usehlt']):
     analysis.SetUseHLT(False)
     ntuples.SetUseTrigger(False)
-    recoChain = []
 
 else:
-    recoChain = [hltMod]
+    for fname, filt in photonL1Objects:
+        ntuples.SetPhotonL1ModuleName(fname, filt)
+    
+    for fname, filt in photonHLTObjects:
+        ntuples.SetPhotonTriggerModuleName(fname, filt)
+    
+    for fname, filt in electronHLTObjects:
+        ntuples.SetElectronTriggerModuleName(fname, filt)
+    
+    for fname, filt in muonHLTObjects:
+        ntuples.SetMuonTriggerModuleName(fname, filt)
 
-    for iPath, path in hltPaths:
-        ntuples.SetTriggerPathName(iPath, path)
-    
-    for iFilt, filt in photonHLTObjects:
-        ntuples.SetPhotonTriggerModuleName(iFilt, filt)
-    
-    for iFilt, filt in electronHLTObjects:
-        ntuples.SetElectronTriggerModuleName(iFilt, filt)
-    
-    for iFilt, filt in muonHLTObjects:
-        ntuples.SetMuonTriggerModuleName(iFilt, filt)
-
-recoChain.append(goodPVFilterMod)
+recoChain = [goodPVFilterMod]
 
 #if analysis.isRealData:
 #    eventlistDir = '/cvmfs/cvmfs.cmsaf.mit.edu/hidsk0001/cmsprod/cms/MitPhysics/data/eventfilter'
@@ -457,7 +409,7 @@ if not analysis.isRealData:
         IsData = False,
         CopyArrays = False,
         MCMETName = "GenMet",
-        FillHist = True
+        FillHist = False
     )
 
     mcParticlesNoNu = mithep.MCParticleFilterMod('MCParticlesNoNu',
@@ -488,16 +440,7 @@ if not analysis.isRealData:
     ntuples.SetGenJetsName(genJets.GetOutputJetsName())
 
     if 'pdfrwgt' in analysis.custom and analysis.custom['pdfrwgt'] != '-':
-        if analysis.custom['pdfrwgt'] == 'amc_74':
-            ntuples.AddPdfReweightGroup('PDF_variation')
-        elif analysis.custom['pdfrwgt'] == 'mg5_74':
-            ntuples.AddPdfReweightGroup('NNPDF30_lo_as_0130.LHgrid')
-        elif analysis.custom['pdfrwgt'] == 'pwhg_74':
-            ntuples.AddPdfReweightId(1) # group id = 0 -> scale reweights, 1 -> pdf reweights
-        else:
-            print 'Unrecognized pdfrwgt option', analysis.custom['pdfrwgt']
-            sys.exit(1)
-
+        ntuples.SetPdfReweight(analysis.custom['pdfrwgt'])
 
 recoChain += [
     baselinePhotons, # skim >= 1 photon with pT > 30

@@ -14,34 +14,17 @@ namespace simpletree {
 
   typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
-  enum HLTPath {
-    kPhoton120,
-    kPhoton135MET100,
-    kPhoton165HE10,
-    kPhoton175,
-    kPhoton22MET40,
-    kPhoton22VBF,
-    kPhoton36MET40,
-    kPhoton36VBF,
-    kPhoton50MET40,
-    kPhoton50VBF,
-    kPhoton75MET40,
-    kPhoton75VBF,
-    kPhoton90MET40,
-    kPhoton90VBF,
-    kPhoton120MET40,
-    kPhoton120VBF,
-    kEle23Loose,
-    kEle27Loose,
-    kMu20,
-    kTrkMu20,
-    kMu24eta2p1,
-    kMu27,
-    kMET170,
-    kMETNoMu90MHTNoMu90,
-    kMETNoMu120MHTNoMu120,
-    nHLTPaths
+  enum PhotonL1Object {
+    fSEG34IorSEG40,
+    fSEG40IorSJet200,
+    fSEG34IorSEG40IorSJet200,
+    fSEG24,
+    fSEG30,
+    fSEG40,
+    nPhotonL1Objects
   };
+
+  extern TString PhotonL1ObjectName[nPhotonL1Objects];
 
   enum PhotonHLTObject {
     fPh120,
@@ -56,6 +39,8 @@ namespace simpletree {
     fPh120EBR9Iso,
     nPhotonHLTObjects
   };
+
+  extern TString PhotonHLTObjectName[nPhotonHLTObjects];
 
   enum ElectronHLTObject {
     fEl23Loose,
@@ -73,6 +58,8 @@ namespace simpletree {
     nElectronHLTObjects
   };
 
+  extern TString ElectronHLTObjectName[nElectronHLTObjects];
+
   enum MuonHLTObject {
     fMu20,
     fMuTrk20,
@@ -81,10 +68,14 @@ namespace simpletree {
     nMuonHLTObjects
   };
 
+  extern TString MuonHLTObjectName[nMuonHLTObjects];
+
   class Particle {
   public:
     struct array_data {
       static UInt_t const NMAX{256};
+
+      array_data();
 
       Float_t pt[NMAX]{};
       Float_t eta[NMAX]{};
@@ -117,6 +108,8 @@ namespace simpletree {
   class ParticleM : public Particle {
   public:
     struct array_data : public Particle::array_data {
+      array_data();
+
       Float_t mass[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -140,6 +133,8 @@ namespace simpletree {
   class Jet : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      array_data();
+
       Bool_t mjid[NMAX]{};
       Float_t ptRaw[NMAX]{};
       Float_t ptCorrUp[NMAX]{};
@@ -167,7 +162,7 @@ namespace simpletree {
 
   class Met {
   public:
-    Met(TString const& name) : name_(name) {}
+    Met(TString const& name);
     Met(Met const&);
     virtual ~Met() {}
     Met& operator=(Met const&);
@@ -187,12 +182,11 @@ namespace simpletree {
     Float_t met{};
     Float_t phi{};
     Float_t sumEt{};
-    Float_t et{};
   };
 
   class CorrectedMet : public Met {
   public:
-    CorrectedMet(TString const& name) : Met(name) {}
+    CorrectedMet(TString const& name);
     CorrectedMet(CorrectedMet const&);
     virtual ~CorrectedMet() {}
     CorrectedMet& operator=(CorrectedMet const&);
@@ -223,6 +217,8 @@ namespace simpletree {
     static double const hOverECuts[2][3];
 
     struct array_data : public Particle::array_data {
+      array_data();
+
       Float_t chIso[NMAX]{};
       Float_t chWorstIso[NMAX]{};
       Float_t chIsoMax[NMAX]{};
@@ -267,6 +263,7 @@ namespace simpletree {
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
+      Float_t matchL1[NMAX][nPhotonL1Objects]{};
       Bool_t matchHLT[NMAX][nPhotonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -331,12 +328,15 @@ namespace simpletree {
     Bool_t& medium;
     Bool_t& tight;
     Bool_t& highpt;
-    Bool_t* matchHLT; //[nPhotonHLTObjects]
+    Float_t* matchL1{0}; //[nPhotonL1Objects]
+    Bool_t* matchHLT{0}; //[nPhotonHLTObjects]
   };
 
   class Lepton : public Particle {
   public:
     struct array_data : public Particle::array_data {
+      array_data();
+
       Int_t matchedGen[NMAX]{};
       Bool_t tauDecay[NMAX]{};
       Bool_t hadDecay[NMAX]{};
@@ -369,6 +369,8 @@ namespace simpletree {
   class Electron : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
+      array_data();
+
       Float_t chIsoPh[NMAX]{};
       Float_t nhIsoPh[NMAX]{};
       Float_t phIsoPh[NMAX]{};
@@ -415,12 +417,14 @@ namespace simpletree {
     Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& veto;
-    Bool_t* matchHLT; //[nElectronHLTObjects]
+    Bool_t* matchHLT{0}; //[nElectronHLTObjects]
   };
 
   class Muon : public Lepton {
   public:
     struct array_data : public Lepton::array_data {
+      array_data();
+
       Float_t combRelIso[NMAX]{};
       Bool_t matchHLT[NMAX][nMuonHLTObjects]{};
 
@@ -440,12 +444,14 @@ namespace simpletree {
 
   public:
     Float_t& combRelIso;
-    Bool_t* matchHLT; //[nMuonHLTObjects]
+    Bool_t* matchHLT{0}; //[nMuonHLTObjects]
   };
 
   class Tau : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      array_data();
+
       Bool_t decayMode[NMAX]{};
       Float_t combIso[NMAX]{};
 
@@ -468,6 +474,8 @@ namespace simpletree {
   class Parton : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      array_data();
+
       Int_t pid[NMAX]{};
       Short_t status[NMAX]{};
       Bool_t frixIso[NMAX]{};
@@ -492,6 +500,8 @@ namespace simpletree {
   class MCParticle : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      array_data();
+
       Int_t pid[NMAX]{};
       UShort_t ancestor[NMAX]{};
 
@@ -523,31 +533,32 @@ namespace simpletree {
     void init() override;
   };
 
-  class HLT {
+  class HLTBits {
   public:
-    struct array_data {
-      static UInt_t const NMAX{25};
+    HLTBits(TString const& name);
+    HLTBits(HLTBits const&);
+    virtual ~HLTBits() {}
+    HLTBits& operator=(HLTBits const&);
 
-      Bool_t pass[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    HLT(array_data&, UInt_t idx);
-    HLT(HLT const&);
-    virtual ~HLT() {}
-    HLT& operator=(HLT const&);
+    void setName(TString const& name) { name_ = name; }
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
+    void set(unsigned iB) { words[iB / 32] |= (1 << (iB % 32)); }
+    bool pass(unsigned iB) const { return ((words[iB / 32] >> (iB % 32)) & 1) != 0; }
+
+  protected:
+    TString name_;
+
   public:
-    Bool_t& pass;
+    UInt_t words[16]{};
   };
 
   class MetFilters {
   public:
-    MetFilters(TString const& name) : name_(name) {}
+    MetFilters(TString const& name);
     MetFilters(MetFilters const&);
     virtual ~MetFilters() {}
     MetFilters& operator=(MetFilters const&);
@@ -570,28 +581,6 @@ namespace simpletree {
     Bool_t badsc{};
     Bool_t badTrack{};
     Bool_t badMuonTrack{};
-  };
-
-  class ReweightScale {
-  public:
-    struct array_data {
-      static UInt_t const NMAX{256};
-
-      Float_t scale[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    ReweightScale(array_data&, UInt_t idx);
-    ReweightScale(ReweightScale const&);
-    virtual ~ReweightScale() {}
-    ReweightScale& operator=(ReweightScale const&);
-    virtual void init();
-
-  public:
-    Float_t& scale;
   };
 }
 

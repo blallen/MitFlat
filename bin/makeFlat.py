@@ -63,8 +63,8 @@ argParser.add_argument('-L', '--linkdef', action = 'store_true', dest = 'makeLin
 args = argParser.parse_args()
 
 objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
-brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[.+\\])/(.+)$')
-fncPat = re.compile('^.* +\\{.*return +[^;]+; *\\}$')
+brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[.+\\])/([^ ]+)(?:| += +(.*))$')
+fncPat = re.compile('^.* +\\{.*; *\\}$')
 statPat = re.compile('^static .+$')
 incPat = re.compile('#include [^ ]+$')
 typedefPat = re.compile('typedef [^ ]+ [^ ]+$')
@@ -72,7 +72,7 @@ enumPat = re.compile('enum *([^ ]+) *\\{')
 treePat = re.compile('^\\{([^\\}]+)\\}$')
 
 ObjDef = collections.namedtuple('ObjDef', ['branches', 'functions', 'statics'])
-BranchDef = collections.namedtuple('BranchDef', ['name', 'type', 'size'])
+BranchDef = collections.namedtuple('BranchDef', ['name', 'type', 'size', 'init'])
 
 includes = []
 typedefs = []
@@ -141,7 +141,7 @@ with open(args.config) as configFile:
 
         elif brnPat.match(line):
             matches = brnPat.match(line)
-            brName, arrSize, brType = [matches.group(i) for i in range(1, 4)]
+            brName, arrSize, brType, brInit = [matches.group(i) for i in range(1, 5)]
             if arrSize:
                 try:
                     size = int(arrSize[1:len(arrSize) - 1])
@@ -151,9 +151,9 @@ with open(args.config) as configFile:
                 size = 1
 
             if currentObj:
-                defs[currentObj].branches.append(BranchDef(brName, brType, size))
+                defs[currentObj].branches.append(BranchDef(brName, brType, size, '' if brInit is None else brInit))
             elif currentTree:
-                treeDefs[currentTree].branches.append(BranchDef(brName, brType, size))
+                treeDefs[currentTree].branches.append(BranchDef(brName, brType, size, '' if brInit is None else brInit))
             else:
                 raise RuntimeError('Branch given with no context')
 
@@ -174,12 +174,21 @@ with open(args.config) as configFile:
                 raise RuntimeError('Static given with no context')
 
         elif incPat.match(line):
+            currentObj = ''
+            currentTree = ''
+
             includes.append(line)
 
         elif typedefPat.match(line):
+            currentObj = ''
+            currentTree = ''
+
             typedefs.append(line)
 
         elif enumPat.match(line):
+            currentObj = ''
+            currentTree = ''
+
             enclosure = 'enum'
             matches = enumPat.match(line)
             enums.append((matches.group(1), []))
@@ -246,7 +255,8 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
 
         header.write('\n')
 
-    # define enums
+    # define enums + declare TString arrays.
+    # assuming the last item of enum gives the array length (n{EnumName}s)
     if len(enums) != 0:
         for name, items in enums:
             header.write('\n  enum ' + name + ' {')
@@ -255,6 +265,8 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
                 if item != items[-1]:
                     header.write(',')
             header.write('\n  };\n')
+
+            header.write('\n  extern TString ' + name + 'Name[' + items[-1] +'];\n')
 
     # define all objects
     for obj in objs:
@@ -274,12 +286,7 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
             header.write('\n')
 
         if obj in singleObjs:
-            header.write('\n    ' + obj + '(TString const& name)')
-            if obj in inheritance:
-                header.write(' : ' + inheritance[obj] + '(name)')
-            else:
-                header.write(' : name_(name)')
-            header.write(' {}')
+            header.write('\n    ' + obj + '(TString const& name);')
         else:
             header.write('\n    struct array_data')
             if obj in inheritance:
@@ -289,11 +296,14 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
                 header.write('\n      static UInt_t const NMAX{' + str(sizes[obj]) + '};\n')
 
             if len(defs[obj].branches) != 0:
+                header.write('\n      array_data();\n')
+
                 for br in defs[obj].branches:
                     if br.size == 1:
                         header.write('\n      ' + branchType(br.type) + ' ' + br.name + '[NMAX]{};')
                     else:
                         header.write('\n      ' + branchType(br.type) + ' ' + br.name + '[NMAX][' + str(br.size) + ']{};')
+
                 header.write('\n')
                 header.write('\n      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
                 header.write('\n      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
@@ -339,14 +349,14 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
         for br in defs[obj].branches:
             if obj in singleObjs:
                 if br.size == 1:
-                    header.write('\n    ' + branchType(br.type) + ' ' + br.name + '{};')
+                    header.write('\n    ' + branchType(br.type) + ' ' + br.name + '{' + br.init + '};')
                 else:
                     header.write('\n    ' + branchType(br.type) + ' ' + br.name + '[' + str(br.size) + ']{};')
             else:
                 if br.size == 1:
                     header.write('\n    ' + branchType(br.type) + '& ' + br.name + ';')
                 else:
-                    header.write('\n    ' + branchType(br.type) + '* ' + br.name + '; //[' + str(br.size) + ']')
+                    header.write('\n    ' + branchType(br.type) + '* ' + br.name + '{0}; //[' + str(br.size) + ']')
 
         header.write('\n  };\n')
 
@@ -388,11 +398,13 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
   
             header.write('\n')
 
+        header.write('\n    ' + tree + '();\n')
+
         if len(treeDef.branches) != 0:
             for br in treeDef.branches:
                 if isSimple(br.type):
                     if br.size == 1:
-                        header.write('\n    ' + branchType(br.type) + ' ' + br.name + '{};')
+                        header.write('\n    ' + branchType(br.type) + ' ' + br.name + '{' + br.init + '};')
                     else:
                         header.write('\n    ' + branchType(br.type) + ' ' + br.name + '[' + str(br.size) + ']{};')
     
@@ -406,6 +418,10 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
         header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
         header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
         header.write('\n    void init();')
+        header.write('\n    TTree* getInput() const { return input_; }')
+        header.write('\n')
+        header.write('\n  protected:')
+        header.write('\n    TTree* input_{0}; // set by setAddress')
         header.write('\n  };\n')
 
     if len(enums) != 0:
@@ -424,24 +440,45 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
     src.write('#include "TTree.h"\n\n')
     src.write('#include <algorithm>\n\n')
 
+    # define TString arrays for enums.
+    if len(enums) != 0:
+        src.write('namespace ' + namespace + ' {\n')
+
+        for name, items in enums:
+            src.write('\n  TString ' + name + 'Name[] = {\n')
+            src.write(',\n'.join(['    "%s"' % item for item in items[:-1]]))
+            src.write('\n  };\n')
+
+        src.write('\n}\n\n')
+
     for obj in objs:
         if obj in singleObjs:
             # single objects
+
+            src.write(namespace + '::' + obj + '::' + obj + '(TString const& _name) :\n')
+            if obj in inheritance:
+                src.write('  ' + inheritance[obj] + '(_name)')
+            else:
+                src.write('  name_(_name)')
+
+            src.write('\n{')
+
+            for br in defs[obj].branches:
+                if br.size != 1 and br.init:
+                    src.write('\n  std::fill_n(' + br.name + ', ' + str(br.size) + ', ' + br.init + ');')
+
+            src.write('\n}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(' + obj + ' const& _src) :\n')
             if obj in inheritance:
                 src.write('  ' + inheritance[obj] + '(_src)')
             else:
                 src.write('  name_(_src.name_)')
-            if len(defs[obj].branches) != 0:
-                src.write(',')
 
-            initializers = []
             for br in defs[obj].branches:
                 if br.size == 1:
-                    initializers.append(br.name + '(_src.' + br.name + ')')
+                    src.write(',\n  ' + br.name + '(_src.' + br.name + ')')
 
-            src.write('\n  ' + ',\n  '.join(initializers))
             src.write('\n{')
 
             for br in defs[obj].branches:
@@ -491,6 +528,22 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
             # collection elements
 
             if len(defs[obj].branches) != 0:
+                src.write(namespace + '::' + obj + '::array_data::array_data()')
+                if obj in inheritance:
+                    src.write(' :\n  ' + inheritance[obj] + '::array_data()')
+                src.write('\n{\n')
+                for br in defs[obj].branches:
+                    if br.init == '':
+                        continue
+
+                    if br.size == 1:
+                        src.write('  std::fill_n(' + br.name + ', NMAX, ' + br.init + ');\n')
+                    else:
+                        src.write('  for (unsigned iN(0); iN != NMAX; ++iN)\n')
+                        src.write('    std::fill_n(' + br.name + ', ' + str(br.size) + ', ' + br.init + ');\n')
+
+                src.write('}\n\n')
+
                 src.write('void\n')
                 src.write(namespace + '::' + obj + '::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
                 src.write('{\n')
@@ -544,17 +597,18 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
             src.write('\n{\n}\n\n')
 
             src.write(namespace + '::' + obj + '::' + obj + '(' + obj + ' const& _src) :')
+            needComma = False
             if obj in inheritance:
                 src.write('\n  ' + inheritance[obj] + '(_src)')
-                if len(defs[obj].branches) != 0:
-                    src.write(',')
+                needComma = True
 
-            initializers = []
             for br in defs[obj].branches:
                 if br.size == 1:
-                    initializers.append(br.name + '(_src.' + br.name + ')')
+                    if needComma:
+                        src.write(',')
+                    src.write('\n  ' + br.name + '(_src.' + br.name + ')')
+                    needComma = True
 
-            src.write('\n  ' + ',\n  '.join(initializers))
             src.write('\n{')
             
             for br in defs[obj].branches:
@@ -612,6 +666,15 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
     src.write('#include <cstring>\n\n')
 
     for tree in trees:
+        treeDef = treeDefs[tree]
+
+        src.write(namespace + '::' + tree + '::' + tree + '()\n')
+        src.write('{\n')
+        for br in treeDef.branches:
+            if isSimple(br.type) and br.size != 1 and br.init:
+                src.write('  std::fill_n(' + br.name + ', ' + str(br.size) + ', ' + br.init + ');\n')
+        src.write('}\n\n')
+
         src.write('void\n')
         src.write(namespace + '::' + tree + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
         src.write('{\n')
@@ -642,6 +705,8 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         for br in treeDef.branches:
             if not isSimple(br.type):
                 src.write('  ' + br.name + '.setAddress(_tree, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
+
+        src.write('\n  input_ = &_tree;\n')
     
         src.write('}\n\n')
     
@@ -703,14 +768,14 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
 
 makefile = open(args.package + '/tools/Makefile')
 for line in makefile:
-    if line.startswith('.PHONY') and namespace in line:
+    if line.startswith('trees=') and namespace in line:
         break
     else:
         makefile.close()
         makefile = open(args.package + '/tools/Makefile')
         newMakefile = open(args.package + '/tools/Makefile_tmp', 'w')
         for line in makefile:
-            if line.startswith('.PHONY'):
+            if line.startswith('trees='):
                 newMakefile.write(line.strip() + ' ' + namespace + '\n')
             else:
                 newMakefile.write(line)
@@ -725,13 +790,19 @@ if args.makeLinkdef:
     except OSError:
         pass
 
+    try:
+        os.makedirs(args.package + '/obj')
+    except OSError:
+        pass
+
     if isCMSSW:
         incname = args.package[args.package.rfind('/src/') + 5:] + '/interface'
     else:
         incname = args.package + '/interface'
 
+    # Make dictionaries only for enums in dict/
     with open(args.package + '/dict/' + namespace + '_LinkDef.h', 'w') as linkdef:
-        linkdef.write('#include "' + incname + '/TreeEntries_' + namespace + '.h"\n\n')
+        linkdef.write('#include "' + incname + '/Objects_' + namespace + '.h"\n\n')
     
         linkdef.write('#ifdef __CLING__\n')
         linkdef.write('#pragma link off all globals;\n')
@@ -746,24 +817,40 @@ if args.makeLinkdef:
         for name, items in enums:
             linkdef.write('#pragma link C++ enum ' + namespace + '::' + name + ';\n')
 
-#        for obj in objs:
-#            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
-#    
-#        for obj in objs:
-#            if obj in singleObjs:
-#                continue
-#
-#            if obj in inheritance:
-#                linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
-#            else:
-#                if obj in fixedSize:
-#                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::StaticCollection>;\n')
-#                else:
-#                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::DynamicCollection>;\n')
-#
-#            linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
-#    
-#        for tree in trees:
-#            linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
+        linkdef.write('#endif\n')
+
+    # Make the Linkdef for the rest of the package in obj/
+    with open(args.package + '/obj/' + namespace + '_classes_LinkDef.h', 'w') as linkdef:
+        linkdef.write('#include "' + incname + '/TreeEntries_' + namespace + '.h"\n\n')
+    
+        linkdef.write('#ifdef __CLING__\n')
+        linkdef.write('#pragma link off all globals;\n')
+        linkdef.write('#pragma link off all classes;\n')
+        linkdef.write('#pragma link off all functions;\n')
+
+        linkdef.write('#pragma link C++ nestedclass;\n')
+        linkdef.write('#pragma link C++ nestedtypedef;\n')
+        linkdef.write('#pragma link C++ namespace flatutils;\n')
+        linkdef.write('#pragma link C++ namespace ' + namespace + ';\n\n')
+
+        for obj in objs:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + obj + ';\n')
+    
+        for obj in objs:
+            if obj in singleObjs:
+                continue
+
+            if obj in inheritance:
+                linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', ' + namespace + '::' + inheritance[obj] + 'Collection>;\n')
+            else:
+                if obj in fixedSize:
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::StaticCollection>;\n')
+                else:
+                    linkdef.write('#pragma link C++ class flatutils::Collection<' + namespace + '::' + obj + ', flatutils::DynamicCollection>;\n')
+
+            linkdef.write('#pragma link C++ typedef ' + namespace + '::' + obj + 'Collection;\n')
+    
+        for tree in trees:
+            linkdef.write('#pragma link C++ class ' + namespace + '::' + tree + ';\n')
 
         linkdef.write('#endif\n')

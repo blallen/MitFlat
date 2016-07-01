@@ -17,7 +17,6 @@ namespace mithep {
     SimpleTreeMod(char const* name = "SimpleTreeMod", char const* title = "Fill flat ntuples") : BaseMod(name, title) {}
     ~SimpleTreeMod() {}
 
-    void SetEventTreeName(char const* n) { fEventTreeName = n; }
     void SetRhoAlgo(UInt_t a) { fRhoAlgo = a; }
     void SetJetsName(char const* n) { fJetsName = n; }
     void SetJetsCorrUpName(char const* n) { fJetsCorrUpName = n; }
@@ -48,12 +47,11 @@ namespace mithep {
     void SetGenMetName(char const* n) { fGenMetName = n; }
     void SetGenJetsName(char const* n) { fGenJetsName = n; }
     void SetUseTrigger(Bool_t b) { fUseTrigger = b; }
-    void SetPhotonTriggerModuleName(UInt_t p, char const* n) { fPhotonTriggerModuleName[p] = n; }
-    void SetElectronTriggerModuleName(UInt_t p, char const* n) { fElectronTriggerModuleName[p] = n; }
-    void SetMuonTriggerModuleName(UInt_t p, char const* n) { fMuonTriggerModuleName[p] = n; }
-    void SetTriggerPathName(UInt_t p, char const* n) { fTriggerPathName[p] = n; }
-    void AddPdfReweightGroup(char const* n) { fPdfReweightGroupNames.push_back(n); }
-    void AddPdfReweightId(UInt_t id) { fPdfReweightGroupIds.push_back(id); }
+    void SetPhotonL1ModuleName(char const* f, char const* n);
+    void SetPhotonTriggerModuleName(char const* f, char const* n);
+    void SetElectronTriggerModuleName(char const* f, char const* n);
+    void SetMuonTriggerModuleName(char const* f, char const* n);
+    void SetPdfReweight(char const* n) { fPdfReweightName = n; }
     void SetMetFilterName(char const* n) { fMetFilterName = n; }
     void SetIsMC(Bool_t k) { fIsMC = k; }
 
@@ -67,13 +65,17 @@ namespace mithep {
     void SlaveBegin() override;
     void SlaveTerminate() override;
     void BeginRun() override;
+    Bool_t Notify() override;
 
     // output
     TString fOutputName{"simpletree.root"};
-    TString fEventTreeName{"events"};
     TTree* fEventTree{0};
+    TTree* fRunTree{0};
+    TTree* fHLTTree{0};
     TH1D* fEventCounter{0};
     simpletree::Event fEvent;
+    simpletree::Run fRun;
+    std::vector<TString>* fHLTPaths{0};
 
     // input
     UInt_t fRhoAlgo{0};
@@ -106,13 +108,13 @@ namespace mithep {
     TString fGenMetName{""};
     TString fGenJetsName{""};
     Bool_t fUseTrigger{kTRUE};
+    TString fPhotonL1ModuleName[simpletree::nPhotonL1Objects]{};
     TString fPhotonTriggerModuleName[simpletree::nPhotonHLTObjects]{};
     TString fElectronTriggerModuleName[simpletree::nElectronHLTObjects]{};
     TString fMuonTriggerModuleName[simpletree::nMuonHLTObjects]{};
-    TString fTriggerPathName[simpletree::nHLTPaths]{};
-    std::vector<TString> fPdfReweightGroupNames{};
-    std::vector<UInt_t> fPdfReweightGroupIds{};
+    TString fPdfReweightName{}; // original code name: amc_74, mg5_74, pwhg_74
     std::vector<unsigned> fPdfReweightIds{};
+    Int_t fCentralReweightId{-1};
     TString fMetFilterName{""};
 
     Bool_t fIsMC{kTRUE};
@@ -121,7 +123,9 @@ namespace mithep {
 
     BaseMod* fCondition{0};
 
-    int fHLTIds[simpletree::nHLTPaths] = {};
+    int fCurrentTriggerTable{-1}; // internal variable to detect HLT menu / file transition
+    std::map<TString, unsigned> fTriggerTableMap{};
+    std::vector<unsigned short> fHLTIds{};
 
     ClassDef(SimpleTreeMod, 0)
   };
