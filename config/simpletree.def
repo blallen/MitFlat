@@ -76,8 +76,8 @@ mjid/O
 ptRaw/F
 ptCorrUp/F
 ptCorrDown/F
-ptResUp/F
-ptResDown/F
+ptResCorr/F
+phiResCorr/F
 cisv/F
 
 [Met:SINGLE]
@@ -91,10 +91,8 @@ metCorrUp/F
 phiCorrUp/F
 metCorrDown/F
 phiCorrDown/F
-metResUp/F
-phiResUp/F
-metResDown/F
-phiResDown/F
+metJetRes/F
+phiJetRes/F
 metUnclUp/F
 phiUnclUp/F
 metUnclDown/F
@@ -102,6 +100,7 @@ phiUnclDown/F
 virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
 [Photon:Particle]
+scRawPt/F
 chIso/F
 chWorstIso/F
 chIsoMax/F
@@ -120,6 +119,9 @@ mipSlope/F
 mipIntercept/F
 mipNhitCone/s
 mipIsHalo/O
+scPt/F
+scEta/F
+scPhi/F
 e13/F
 e31/F
 e15/F
@@ -218,12 +220,13 @@ words[16]/i
 
 [MetFilters:SINGLE]
 cschalo/O
+globalHalo16/O
 hbhe/O
 hbheIso/O
 badsc/O
 badTrack/O
 badMuonTrack/O
-virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
 {Event}
 run/i
@@ -245,6 +248,7 @@ muons/MuonCollection
 taus/TauCollection
 rawMet/Met
 t1Met/CorrectedMet
+caloMet/Met
 genMet/Met
 hltBits/HLTBits
 metFilters/MetFilters

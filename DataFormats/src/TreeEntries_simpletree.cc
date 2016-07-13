@@ -32,6 +32,7 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   taus.setStatus(_tree, _status, flatutils::subBranchList(_branches, "taus"), _whitelist);
   rawMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
+  caloMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "caloMet"), _whitelist);
   genMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hltBits.setStatus(_tree, _status, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.setStatus(_tree, _status, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
@@ -60,6 +61,7 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   taus.setAddress(_tree, flatutils::subBranchList(_branches, "taus"), _whitelist);
   rawMet.setAddress(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setAddress(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
+  caloMet.setAddress(_tree, flatutils::subBranchList(_branches, "caloMet"), _whitelist);
   genMet.setAddress(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hltBits.setAddress(_tree, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.setAddress(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
@@ -90,6 +92,7 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   taus.book(_tree, flatutils::subBranchList(_branches, "taus"), _whitelist);
   rawMet.book(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.book(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
+  caloMet.book(_tree, flatutils::subBranchList(_branches, "caloMet"), _whitelist);
   genMet.book(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hltBits.book(_tree, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.book(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
@@ -118,6 +121,7 @@ simpletree::Event::init()
   taus.init();
   rawMet.init();
   t1Met.init();
+  caloMet.init();
   genMet.init();
   hltBits.init();
   metFilters.init();

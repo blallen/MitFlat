@@ -23,8 +23,7 @@ namespace mithep {
     void SetMinJetPt(Double_t p) { fMinJetPt = p; }
     void SetJetsCorrUpName(char const* n) { fJetsCorrUpName = n; }
     void SetJetsCorrDownName(char const* n) { fJetsCorrDownName = n; }
-    void SetJetsResUpName(char const* n) { fJetsResUpName = n; }
-    void SetJetsResDownName(char const* n) { fJetsResDownName = n; }
+    void SetJetsResCorrName(char const* n) { fJetsResCorrName = n; }
     void SetPhotonsName(char const* n) { fPhotonsName = n; }
     void SetPhotonIsoType(UInt_t i) { fPhotonIsoType = i; }
     void SetElectronsName(char const* n) { fElectronsName = n; }
@@ -46,10 +45,10 @@ namespace mithep {
     void SetT1MetName(char const* n) { fT1MetName = n; }
     void SetCorrUpMetName(char const* n) { fCorrUpMetName = n; }
     void SetCorrDownMetName(char const* n) { fCorrDownMetName = n; }
-    void SetResUpMetName(char const* n) { fResUpMetName = n; }
-    void SetResDownMetName(char const* n) { fResDownMetName = n; }
+    void SetJetResMetName(char const* n) { fJetResMetName = n; }
     void SetUnclUpMetName(char const* n) { fUnclUpMetName = n; }
     void SetUnclDownMetName(char const* n) { fUnclDownMetName = n; }
+    void SetCaloMetName(char const* n) { fCaloMetName = n; }
     void SetGenMetName(char const* n) { fGenMetName = n; }
     void SetGenJetsName(char const* n) { fGenJetsName = n; }
     void SetUseTrigger(Bool_t b) { fUseTrigger = b; }
@@ -92,8 +91,7 @@ namespace mithep {
     Double_t fMinJetPt{30.};
     TString fJetsCorrUpName{""};
     TString fJetsCorrDownName{""};
-    TString fJetsResUpName{""};
-    TString fJetsResDownName{""};
+    TString fJetsResCorrName{""};
     TString fPhotonsName{"Photons"};
     UInt_t fPhotonIsoType{PhotonTools::kSpring15MediumIso};
     TString fElectronsName{"Electrons"};
@@ -114,10 +112,10 @@ namespace mithep {
     TString fT1MetName{""};
     TString fCorrUpMetName{""};
     TString fCorrDownMetName{""};
-    TString fResUpMetName{""};
-    TString fResDownMetName{""};
+    TString fJetResMetName{""};
     TString fUnclUpMetName{""};
     TString fUnclDownMetName{""};
+    TString fCaloMetName{""};
     TString fGenMetName{""};
     TString fGenJetsName{""};
     Bool_t fUseTrigger{kTRUE};

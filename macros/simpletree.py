@@ -20,8 +20,8 @@ else:
 
 if run == 2:
     jetsName = 'AKt4PFJetsCHS'
-    jecVersion = 'Spring16_25nsV3'
-    jerVersion = 'Fall15_25nsV2'
+    jecVersion = 'Spring16_25nsV6'
+    jerVersion = 'Spring16_25nsV6'
     jecName = 'AK4PFchs'
     jetCone = 0.4
     rhoAlgo = mithep.PileupEnergyDensity.kFixedGridFastjetAll
@@ -97,7 +97,7 @@ else:
     muonHLTObjects = []
 
 ################################
-### JET/MET ID & CORRECTIONS ###
+### JET/MET CORRECTIONS & ID ###
 ################################
 
 if analysis.isRealData:
@@ -142,56 +142,10 @@ for mod in [correctedJetsJESUp, correctedJetsJESDown]:
     repl = {'version': jecVersion, 'level': 'Uncertainty'}
     mod.AddCorrectionFromFile(jecPattern.format(**repl))
 
-correctedJetsName = correctedJets.GetOutputName()
-correctedJetsJESUpName = correctedJetsJESUp.GetOutputName()
-correctedJetsJESDownName = correctedJetsJESDown.GetOutputName()
-
-jetPreSequence = [fiducialJets, correctedJets]
-jetMetCorrSequence = [correctedJetsJESUp, correctedJetsJESDown]
-
-if not analysis.isRealData and jerVersion != '':
-    smearedJets = mithep.JetCorrectionMod('JetSmearing',
-        InputName = correctedJets.GetOutputName(),
-        CorrectedJetsName = 'SmearedJets'
-    )
-
-    smearedJetsJESUp = mithep.JetCorrectionMod('JetSmearingJESUp',
-        InputName = correctedJetsJESUp.GetOutputName(),
-        CorrectedJetsName = 'SmearedJetsJESUp'
-    )
-
-    smearedJetsJESDown = mithep.JetCorrectionMod('JetSmearingJESDown',
-        InputName = correctedJetsJESDown.GetOutputName(),
-        CorrectedJetsName = 'SmearedJetsJESDown'
-    )
-
-    smearedJetsJERUp = mithep.JetCorrectionMod('JetSmearingJERUp',
-        InputName = correctedJets.GetOutputName(),
-        CorrectedJetsName = 'SmearedJetsJERUp',
-        UncertaintySigma = 1.
-    )
-
-    smearedJetsJERDown = mithep.JetCorrectionMod('JetSmearingJERDown',
-        InputName = correctedJets.GetOutputName(),
-        CorrectedJetsName = 'SmearedJetsJERDown',
-        UncertaintySigma = -1.
-    )
-
-    for mod in [smearedJets, smearedJetsJESUp, smearedJetsJESDown, smearedJetsJERUp, smearedJetsJERDown]:
-        for level, ftype in [('PtResolution', mithep.JetCorrector.Corrector.kPtResolution), ('PhiResolution', mithep.JetCorrector.Corrector.kPhiResolution), ('SF', mithep.JetCorrector.Corrector.nFactorTypes)]:
-            mod.AddCorrectionFromFile(jecPattern.format(version = jerVersion, level = level), ftype)
-
-    correctedJetsName = smearedJets.GetOutputName()
-    correctedJetsJESUpName = smearedJetsJESUp.GetOutputName()
-    correctedJetsJESDownName = smearedJetsJESDown.GetOutputName()
-
-    jetPreSequence.append(smearedJets)
-    jetMetCorrSequence.extend([smearedJetsJESUp, smearedJetsJESDown, smearedJetsJERUp, smearedJetsJERDown])
-
 correctedMet = mithep.MetCorrectionMod('MetCorrection',
     InputName = 'PFMet',
     OutputName = 'PFType1Met',
-    JetsName = correctedJetsName,
+    JetsName = correctedJets.GetOutputName(),
     RhoAlgo = rhoAlgo,
     MaxEMFraction = 0.9,
     SkipMuons = True,
@@ -204,12 +158,12 @@ correctedMet.IsData(analysis.isRealData)
 
 correctedMetJESUp = correctedMet.clone('MetCorrectionJESUp',
     OutputName = 'PFType1MetJESUp',
-    JetsName = correctedJetsJESUpName
+    JetsName = correctedJetsJESUp.GetOutputName()
 )
 
 correctedMetJESDown = correctedMet.clone('MetCorrectionJESDown',
     OutputName = 'PFType1MetJESDown',
-    JetsName = correctedJetsJESDownName
+    JetsName = correctedJetsJESDown.GetOutputName()
 )
 
 correctedMetUnclUp = correctedMet.clone('MetCorrectionUnclUp',
@@ -223,23 +177,8 @@ correctedMetUnclDown = correctedMetUnclUp.clone('MetCorrectionUnclDown',
     UnclusteredVariation = -0.1
 )
 
-jetMetCorrSequence.extend([correctedMet, correctedMetJESUp, correctedMetJESDown, correctedMetUnclUp, correctedMetUnclDown])
-
-if not analysis.isRealData:
-    correctedMetJERUp = correctedMet.clone('MetCorrectionJERUp',
-        OutputName = 'PFType1MetJERUp',
-        JetsName = smearedJetsJERUp.GetOutputName()
-    )
-    
-    correctedMetJERDown = correctedMet.clone('MetCorrectionJERDown',
-        OutputName = 'PFType1MetJERDown',
-        JetsName = smearedJetsJERDown.GetOutputName()
-    )
-
-    jetMetCorrSequence.extend([correctedMetJERUp, correctedMetJERDown])
-        
 jetLooseId = mithep.JetIdMod('JetId',
-    InputName = correctedJetsName,
+    InputName = correctedJets.GetOutputName(),
     OutputName = 'GoodJetsMask',
     PFId = mithep.JetTools.kPFLoose,
     PtMin = 0.,
@@ -285,7 +224,7 @@ else:
     jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
 
 dijetFilter = mithep.JetIdMod('DijetFilter',
-    InputName = correctedJetsName,
+    InputName = correctedJets.GetOutputName(),
     OutputName = 'HighPtJets',
     PtMin = 50.,
     EtaMax = 5.,
@@ -293,6 +232,9 @@ dijetFilter = mithep.JetIdMod('DijetFilter',
     FillHist = True,
     MinOutput = 2
 )
+
+jetbaseSequence = fiducialJets * correctedJets * jetLooseId
+jetMetCorrSequence = correctedJetsJESUp * correctedJetsJESDown * correctedMet * correctedMetJESUp * correctedMetJESDown * correctedMetUnclUp * correctedMetUnclDown
 
 ###########################
 ### LEPTON & PHOTON IDS ###
@@ -341,7 +283,8 @@ looseElectronId = vetoElectronId.clone('LooseElectronId',
 tightElectronId = vetoElectronId.clone('TightElectronId',
     OutputName = 'TightElectronId',
     IdType = mithep.ElectronTools.kSummer15Tight,
-    IsoType = mithep.ElectronTools.kSummer15TightIso
+    IsoType = mithep.ElectronTools.kSummer15TightIso,
+    MinOutput = 1 # will be placed out of the reco chain
 )
 
 ### MUONS
@@ -365,7 +308,8 @@ tightMuonId = looseMuons.clone('MuonTightId',
     InputName = looseMuons.GetOutputName(),
     OutputName = 'TightMuonId',
     IdType = mithep.MuonTools.kTight,
-    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight
+    IsoType = mithep.MuonTools.kPFIsoBetaPUCorrectedTight,
+    MinOutput = 1 # will be placed out of the reco chain
 )
 
 ### TAUS
@@ -394,7 +338,7 @@ baselinePhotons = mithep.PhotonIdMod('BaselinePhotons',
 
 photonHighPtFilter = baselinePhotons.clone('PhotonHighPtFilter',
     PtMin = 100.,
-    OutputName = 'HighPtPhotons',
+    OutputName = 'HighPtPhotons', # not used
     MinOutput = 1
 )
 
@@ -426,15 +370,46 @@ photonHighPtId = photonLooseId.clone('PhotonHighPtId',
     PtMin = 100.
 )
 
-# TODO SimpleTreeMod should use its own JetCorrector to compute res up & down jet and met
+leptonIdSequence = vetoElectronId * looseElectronId * looseTaus
+photonIdSequence = photonLooseId * photonMediumId * photonTightId * photonHighPtId
+
+#####################################
+### CONSTRUCT NTUPLES INPUT CHAIN ###
+#####################################
+
+preskimSequence = goodPVFilterMod * separatePileUpMod * (
+    jetbaseSequence * dijetFilter +
+    baselinePhotons * photonHighPtFilter +
+    baselineElectrons * tightElectronId +
+    looseMuons * tightMuonId
+)
+
+BExpr = mithep.BooleanMod.Expression
+skimExpr = BExpr(
+    dijetFilter,
+    BExpr(photonHighPtFilter,
+        BExpr(tightElectronId, tightMuonId, BExpr.kOR),
+        BExpr.kOR),
+    BExpr.kOR   
+)
+
+skim = mithep.BooleanMod('Skim',
+    Expression = skimExpr
+)
+
+recoSequence = leptonIdSequence * photonIdSequence * jetMetCorrSequence
+
+###############
+### NTUPLES ###
+###############
 
 ntuples = mithep.SimpleTreeMod(
     RhoAlgo = rhoAlgo,
-    JetsName = correctedJetsName,
+    JetsName = correctedJets.GetOutputName(),
     LooseJetsName = jetLooseId.GetOutputName(),
     MinJetPt = 30.,
-    JetsCorrUpName = correctedJetsJESUpName,
-    JetsCorrDownName = correctedJetsJESDownName,
+    JetsCorrUpName = correctedJetsJESUp.GetOutputName(),
+    JetsCorrDownName = correctedJetsJESDown.GetOutputName(),
     PhotonsName = baselinePhotons.GetOutputName(),
     PhotonIsoType = mithep.PhotonTools.kSpring15MediumIso,
     ElectronsName = baselineElectrons.GetOutputName(),
@@ -458,11 +433,12 @@ ntuples = mithep.SimpleTreeMod(
     CorrDownMetName = correctedMetJESDown.GetOutputName(),
     UnclUpMetName = correctedMetUnclUp.GetOutputName(),
     UnclDownMetName = correctedMetUnclDown.GetOutputName(),
+    CaloMetName = 'CaloMet',
     FillPhotonDetails = phdetail,
     IsMC = not analysis.isRealData
 )
 
-if (analysis.book.endswith('044') and not analysis.isRealData) or ('usehlt' in analysis.custom and not analysis.custom['usehlt']):
+if 'usehlt' in analysis.custom and not analysis.custom['usehlt']:
     analysis.SetUseHLT(False)
     ntuples.SetUseTrigger(False)
 
@@ -479,26 +455,28 @@ else:
     for fname, filt in muonHLTObjects:
         ntuples.SetMuonTriggerModuleName(fname, filt)
 
-#if analysis.isRealData:
-#    eventlistDir = '/cvmfs/cvmfs.cmsaf.mit.edu/hidsk0001/cmsprod/cms/MitPhysics/data/eventfilter'
-#
-#    badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
-#        FillHist = True,
-#        TaggingMode = True
-#    )
-#    badEventsFilterMod.SetFilter('HBHENoiseFilter')
-#    badEventsFilterMod.SetFilter('EEBadScFilter')
-#    badEventsFilterMod.AddEventList('CSCTightHaloFilter', eventlistDir + '/csc2015_Dec01.txt')
-#    badEventsFilterMod.AddEventList('EEBadScFilter', eventlistDir + '/ecalscn1043093_Dec01.txt')
-#    badEventsFilterMod.AddEventList('CHTrackResolutionFilter', eventlistDir + '/badResolutionTrack_Jan13.txt')
-#    badEventsFilterMod.AddEventList('MuBadTrackFilter', eventlistDir + '/muonBadTrack_Jan13.txt')
-#    badEventsFilterMod.AddEventList('HBHENoiseIsoFilter', eventlistDir + '/hbheiso_Jan13.txt')
-#
-#    recoChain.append(badEventsFilterMod)
-#
-#    ntuples.SetMetFilterName(badEventsFilterMod.GetOutputName())
+################################
+### DATA/MC SPECIFIC MODULES ###
+################################
 
-if not analysis.isRealData:
+if analysis.isRealData:
+    badEventsFilterMod = mithep.BadEventsFilterMod('BadEventsFilterMod',
+        FillHist = True,
+        TaggingMode = True
+    )
+    badEventsFilterMod.SetFilter('HBHENoiseFilter')
+    badEventsFilterMod.SetFilter('HBHENoiseIsoFilter')
+    badEventsFilterMod.SetFilter('EEBadScFilter')
+    badEventsFilterMod.SetFilter('CSCTightHaloFilter')
+    badEventsFilterMod.SetFilter('GlobalTightHaloFilter')
+    badEventsFilterMod.SetFilter('BadPFMuonFilter')
+    badEventsFilterMod.SetFilter('BadChargedCandidateFilter')
+
+    recoSequence *= badEventsFilterMod
+
+    ntuples.SetMetFilterName(badEventsFilterMod.GetOutputName())
+
+else:
     generator = mithep.GeneratorMod(
         IsData = False,
         CopyArrays = False,
@@ -521,65 +499,46 @@ if not analysis.isRealData:
         ConeSize = jetCone,
         NoActiveArea = True,
         ParticleMinPt = 0.,
-        JetMinPt = 20.
+        JetMinPt = 0.
     )
 
-    genSequence = [
-        generator,
-        mcParticlesNoNu,
-        genJets
-    ]
+    storedGenJets = mithep.GenJetFilterMod('FilteredGenJets',
+        InputName = genJets.GetOutputJetsName(),
+        OutputName = 'FilteredGenJets',
+        PtMin = 20.,
+        EtaMax = 10.
+    )
+    storedGenJets.PublishPerEvent(False)
 
-    for mod in [smearedJets, smearedJetsJESUp, smearedJetsJESDown, smearedJetsJERUp, smearedJetsJERDown]:
-        mod.SetGenJetsName(genJets.GetOutputJetsName())
-
-    ntuples.SetJetsResUpName(smearedJetsJERUp.GetOutputName())
-    ntuples.SetJetsResDownName(smearedJetsJERDown.GetOutputName())
-    ntuples.SetResUpMetName(correctedMetJERUp.GetOutputName())
-    ntuples.SetResDownMetName(correctedMetJERDown.GetOutputName())
+    recoSequence *= generator * mcParticlesNoNu * genJets * storedGenJets
 
     ntuples.SetGenMetName(generator.GetMCMETName())
-    ntuples.SetGenJetsName(genJets.GetOutputJetsName())
+    ntuples.SetGenJetsName(storedGenJets.GetOutputName())
 
     if 'pdfrwgt' in analysis.custom and analysis.custom['pdfrwgt'] != '-':
         ntuples.SetPdfReweight(analysis.custom['pdfrwgt'])
 
-else:
-    genSequence = []
+    if jerVersion != '':
+        smearedJets = mithep.JetCorrectionMod('JetSmearing',
+            InputName = correctedJets.GetOutputName(),
+            CorrectedJetsName = 'SmearedJets',
+            GenJetsName = genJets.GetOutputJetsName()
+        )
 
+        jc = mithep.JetCorrector.Corrector
+        for level, ftype in [('PtResolution', jc.kPtResolution), ('PhiResolution', jc.kPhiResolution), ('SF', jc.nFactorTypes)]:
+            smearedJets.AddCorrectionFromFile(jecPattern.format(version = jerVersion, level = level), ftype)
 
-sequence = goodPVFilterMod * (
-    Chain(jetPreSequence) * jetLooseId * dijetFilter +
-    baselinePhotons * photonHighPtFilter
-)
+        correctedMetJER = correctedMet.clone('MetCorrectionJER',
+            OutputName = 'PFType1MetJER',
+            JetsName = smearedJets.GetOutputName()
+        )
+    
+        recoSequence *= smearedJets * correctedMetJER
 
-BExpr = mithep.BooleanMod.Expression
-skim = mithep.BooleanMod('Skim',
-    Expression = BExpr(photonHighPtFilter, dijetFilter, BExpr.kOR)
-)
+        ntuples.SetJetsResCorrName(smearedJets.GetOutputName())
+        ntuples.SetJetResMetName(correctedMetJER.GetOutputName())
 
-recoChain = genSequence + \
-[
-    separatePileUpMod,
-    baselineElectrons,
-    vetoElectronId,
-    looseElectronId,
-    tightElectronId,
-    looseMuons,
-    tightMuonId,
-    looseTaus
-] + \
-jetMetCorrSequence + \
-[
-    photonLooseId,
-    photonMediumId,
-    photonTightId,
-    photonHighPtId
-]
+ntuples.SetCondition(list(recoSequence)[-1])
 
-ntuples.SetCondition(recoChain[-1])
-
-sequence += skim * Chain(recoChain)
-sequence += ntuples
-
-analysis.setSequence(sequence)
+analysis.setSequence(preskimSequence + (skim * recoSequence) + ntuples)

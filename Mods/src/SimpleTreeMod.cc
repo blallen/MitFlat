@@ -235,6 +235,7 @@ mithep::SimpleTreeMod::Process()
     auto* filterResults = GetObject<NFArrBool>(fMetFilterName);
 
     fEvent.metFilters.cschalo = false;
+    fEvent.metFilters.globalHalo16 = false;
     fEvent.metFilters.hbhe = false;
     fEvent.metFilters.hbheIso = false;
     fEvent.metFilters.badsc = false;
@@ -246,15 +247,17 @@ mithep::SimpleTreeMod::Process()
 
       if (name == "CSCTightHaloFilter")
         fEvent.metFilters.cschalo |= filterResults->At(iF);
+      else if (name == "GlobalTightHaloFilter")
+        fEvent.metFilters.globalHalo16 |= filterResults->At(iF);
       else if (name == "HBHENoiseFilter")
         fEvent.metFilters.hbhe |= filterResults->At(iF);
       else if (name == "HBHENoiseIsoFilter")
         fEvent.metFilters.hbheIso |= filterResults->At(iF);
       else if (name == "EEBadScFilter")
         fEvent.metFilters.badsc |= filterResults->At(iF);
-      else if (name == "CHTrackResolutionFilter")
+      else if (name == "BadChargedCandidateFilter")
         fEvent.metFilters.badTrack |= filterResults->At(iF);
-      else if (name == "MuBadTrackFilter")
+      else if (name == "BadPFMuonFilter")
         fEvent.metFilters.badMuonTrack |= filterResults->At(iF);
       else
         SendError(kWarning, "Process", "MET filter " + name + " is not supported");
@@ -456,12 +459,14 @@ mithep::SimpleTreeMod::Process()
   simpletree::Met* outMets[] = {
     &fEvent.rawMet,
     &fEvent.t1Met,
+    &fEvent.caloMet,
     &fEvent.genMet
   };
 
   TString metNames[] = {
     fRawMetName,
     fT1MetName,
+    fCaloMetName,
     fGenMetName
   };
 
@@ -484,8 +489,7 @@ mithep::SimpleTreeMod::Process()
   TString varNames[] = {
     fCorrUpMetName,
     fCorrDownMetName,
-    fResUpMetName,
-    fResDownMetName,
+    fJetResMetName,
     fUnclUpMetName,
     fUnclDownMetName
   };
@@ -493,8 +497,7 @@ mithep::SimpleTreeMod::Process()
   float* varMets[][2] = {
     {&fEvent.t1Met.metCorrUp, &fEvent.t1Met.phiCorrUp},
     {&fEvent.t1Met.metCorrDown, &fEvent.t1Met.phiCorrDown},
-    {&fEvent.t1Met.metResUp, &fEvent.t1Met.phiResUp},
-    {&fEvent.t1Met.metResDown, &fEvent.t1Met.phiResDown},
+    {&fEvent.t1Met.metJetRes, &fEvent.t1Met.phiJetRes},
     {&fEvent.t1Met.metUnclUp, &fEvent.t1Met.phiUnclUp},
     {&fEvent.t1Met.metUnclDown, &fEvent.t1Met.phiUnclDown}
   };
@@ -542,6 +545,8 @@ mithep::SimpleTreeMod::Process()
       auto& outPhoton(fEvent.photons[nP++]);
 
       double scEta(superCluster.AbsEta());
+
+      outPhoton.scRawPt = superCluster.RawEnergy() / std::cosh(scEta);
 
       outPhoton.isEB = (scEta < mithep::gkPhoEBEtaMax);
 
@@ -594,6 +599,9 @@ mithep::SimpleTreeMod::Process()
       outPhoton.mipIntercept = inPhoton.MipIntercept();
       outPhoton.mipNhitCone = inPhoton.MipNhitCone();
       outPhoton.mipIsHalo = inPhoton.MipIsHalo();
+      outPhoton.scPt = superCluster.Et();
+      outPhoton.scEta = superCluster.Eta();
+      outPhoton.scPhi = superCluster.Phi();
       outPhoton.e13 = seedCluster.E1x3();
       outPhoton.e31 = seedCluster.E3x1();
       outPhoton.e15 = inPhoton.E15();
@@ -925,12 +933,9 @@ mithep::SimpleTreeMod::Process()
 
     auto* jetsCorrUp = GetObject<mithep::JetCol>(fJetsCorrUpName);
     auto* jetsCorrDown = GetObject<mithep::JetCol>(fJetsCorrDownName);
-    mithep::JetCol* jetsResUp(0);
-    mithep::JetCol* jetsResDown(0);
-    if (fJetsResUpName.Length() != 0)
-      jetsResUp = GetObject<mithep::JetCol>(fJetsResUpName);
-    if (fJetsResDownName.Length() != 0)
-      jetsResDown = GetObject<mithep::JetCol>(fJetsResDownName);
+    mithep::JetCol* jetsResCorr(0);
+    if (fJetsResCorrName.Length() != 0)
+      jetsResCorr = GetObject<mithep::JetCol>(fJetsResCorrName);
 
     unsigned nJ(0);
 
@@ -948,14 +953,12 @@ mithep::SimpleTreeMod::Process()
       mithep::JetCol* corrs[] = {
         jetsCorrUp,
         jetsCorrDown,
-        jetsResUp,
-        jetsResDown
+        jetsResCorr,
       };
       float* targs[] = {
         &outJet.ptCorrUp,
         &outJet.ptCorrDown,
-        &outJet.ptResUp,
-        &outJet.ptResDown
+        &outJet.ptResCorr,
       };
 
       for (unsigned iC(0); iC != sizeof(corrs) / sizeof(mithep::JetCol*); ++iC) {
@@ -977,6 +980,9 @@ mithep::SimpleTreeMod::Process()
       auto&& pRaw(inJet.RawMom());
 
       outJet.ptRaw = pRaw.Pt();
+
+      if (jetsResCorr)
+        outJet.phiResCorr = jetsResCorr->At(iJ)->Phi();
 
       if (inJet.ObjType() == mithep::kPFJet) {
         auto& inPFJet(static_cast<PFJet const&>(inJet));
@@ -1017,15 +1023,14 @@ mithep::SimpleTreeMod::SlaveBegin()
       "promptFinalStates",
       "genJets",
       "genMet",
-      "jets.ptResUp",
-      "jets.ptResDown",
-      "t1Met.ptResUp",
-      "t1Met.phiResUp",
-      "t1Met.ptResDown",
-      "t1Met.phiResDown",
+      "jets.ptResCorr",
+      "t1Met.metJetRes",
+      "t1Met.phiJetRes",
       "*.genIso",
       "*.matchedGen",
-      "*.genMatchDR"
+      "*.genMatchDR",
+      "*.tauDecay",
+      "*.hadDecay"
     };
 
   if (!fPhotonDetails) {

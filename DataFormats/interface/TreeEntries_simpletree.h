@@ -40,6 +40,7 @@ namespace simpletree {
     TauCollection taus = TauCollection("taus");
     Met rawMet = Met("rawMet");
     CorrectedMet t1Met = CorrectedMet("t1Met");
+    Met caloMet = Met("caloMet");
     Met genMet = Met("genMet");
     HLTBits hltBits = HLTBits("hltBits");
     MetFilters metFilters = MetFilters("metFilters");

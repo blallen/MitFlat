@@ -139,8 +139,8 @@ namespace simpletree {
       Float_t ptRaw[NMAX]{};
       Float_t ptCorrUp[NMAX]{};
       Float_t ptCorrDown[NMAX]{};
-      Float_t ptResUp[NMAX]{};
-      Float_t ptResDown[NMAX]{};
+      Float_t ptResCorr[NMAX]{};
+      Float_t phiResCorr[NMAX]{};
       Float_t cisv[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -159,8 +159,8 @@ namespace simpletree {
     Float_t& ptRaw;
     Float_t& ptCorrUp;
     Float_t& ptCorrDown;
-    Float_t& ptResUp;
-    Float_t& ptResDown;
+    Float_t& ptResCorr;
+    Float_t& phiResCorr;
     Float_t& cisv;
   };
 
@@ -206,10 +206,8 @@ namespace simpletree {
     Float_t phiCorrUp{};
     Float_t metCorrDown{};
     Float_t phiCorrDown{};
-    Float_t metResUp{};
-    Float_t phiResUp{};
-    Float_t metResDown{};
-    Float_t phiResDown{};
+    Float_t metJetRes{};
+    Float_t phiJetRes{};
     Float_t metUnclUp{};
     Float_t phiUnclUp{};
     Float_t metUnclDown{};
@@ -227,6 +225,7 @@ namespace simpletree {
     struct array_data : public Particle::array_data {
       array_data();
 
+      Float_t scRawPt[NMAX]{};
       Float_t chIso[NMAX]{};
       Float_t chWorstIso[NMAX]{};
       Float_t chIsoMax[NMAX]{};
@@ -245,6 +244,9 @@ namespace simpletree {
       Float_t mipIntercept[NMAX]{};
       UShort_t mipNhitCone[NMAX]{};
       Bool_t mipIsHalo[NMAX]{};
+      Float_t scPt[NMAX]{};
+      Float_t scEta[NMAX]{};
+      Float_t scPhi[NMAX]{};
       Float_t e13[NMAX]{};
       Float_t e31[NMAX]{};
       Float_t e15[NMAX]{};
@@ -292,6 +294,7 @@ namespace simpletree {
     bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
 
   public:
+    Float_t& scRawPt;
     Float_t& chIso;
     Float_t& chWorstIso;
     Float_t& chIsoMax;
@@ -310,6 +313,9 @@ namespace simpletree {
     Float_t& mipIntercept;
     UShort_t& mipNhitCone;
     Bool_t& mipIsHalo;
+    Float_t& scPt;
+    Float_t& scEta;
+    Float_t& scPhi;
     Float_t& e13;
     Float_t& e31;
     Float_t& e15;
@@ -573,13 +579,14 @@ namespace simpletree {
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
-    virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+    virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
   protected:
     TString name_;
 
   public:
     Bool_t cschalo{};
+    Bool_t globalHalo16{};
     Bool_t hbhe{};
     Bool_t hbheIso{};
     Bool_t badsc{};
