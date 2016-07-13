@@ -215,7 +215,7 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
     // photon.matchHLT[simpletree::fPh120] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
     // photon.matchHLT[simpletree::fPh135] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
-    // photon.matchHLT[simpletree::fPh165HE10] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
+    // photon.matchHLT[simpletree::fPh165HE10] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::TriggerHelp);
     // photon.matchHLT[simpletree::fPh175] = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
 
     // printf("  got through triggers \n");
@@ -281,7 +281,8 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
   // printf("\nntrig %zu \n", inTrigger_.triggerNames->size());
   for (unsigned iT(0); iT != inTrigger_.triggerNames->size(); ++iT) {
-      event_.hltBits.set(iT);
+    event_.hltBits.set(iT);
+    // printf("Added trigger %u \n", iT);
   }
 
   if (!inEvent_.isRealData) {
@@ -314,10 +315,10 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   }
 }
 
-/*
+
 bool
 NeroToSimple::triggerMatch(std::vector<int> const& _inBits, unsigned _objIdx, unsigned _trigIdx)
 {
-  return triggerIndices_[_trigIdx] < 32 && (_inBits.at(_objIdx) & (0x1 << triggerIndices_[_trigIdx])) != 0;
+  return _trigIdx < 32 && (_inBits.at(_objIdx) & (0x1 << _trigIdx)) != 0;
 }
-*/
+
