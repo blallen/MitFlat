@@ -140,6 +140,7 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
   // in simpletree 1 means tagged by filter; in nero 1 means passing filter
   event_.metFilters.cschalo = (inEvent_.selBits & BareEvent::CSCTightHalo2015Filter) == 0;
+  event_.metFilters.globalHalo16 = (inEvent_.selBits & BareEvent::GlobalTightHalo2016) == 0;
   event_.metFilters.hbhe = (inEvent_.selBits & BareEvent::HBHENoiseFilter) == 0;
   event_.metFilters.hbheIso = (inEvent_.selBits & BareEvent::HBHENoiseIsoFilter) == 0;
   event_.metFilters.badsc = (inEvent_.selBits & BareEvent::eeBadScFilter) == 0;
