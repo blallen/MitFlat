@@ -96,6 +96,7 @@ phiUnclDown/F
 virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
 [Photon:Particle]
+scRawPt/F
 chIso/F
 chWorstIso/F
 chIsoMax/F

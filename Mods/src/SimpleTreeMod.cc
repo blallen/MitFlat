@@ -545,6 +545,8 @@ mithep::SimpleTreeMod::Process()
 
       double scEta(superCluster.AbsEta());
 
+      outPhoton.scRawPt = superCluster.RawEnergy() / std::cosh(scEta);
+
       outPhoton.isEB = (scEta < mithep::gkPhoEBEtaMax);
 
       fillP4_(outPhoton, inPhoton);

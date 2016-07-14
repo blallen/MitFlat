@@ -412,6 +412,7 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
 {
   Particle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
+  flatutils::setStatus(_tree, _name, "scRawPt", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "chIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "chWorstIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "chIsoMax", _status, _branches, _whitelist);
@@ -465,6 +466,7 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
 {
   Particle::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
+  flatutils::setStatusAndAddress(_tree, _name, "scRawPt", scRawPt, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "chIso", chIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "chWorstIso", chWorstIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "chIsoMax", chIsoMax, _branches, _whitelist);
@@ -518,6 +520,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
 {
   Particle::array_data::book(_tree, _name, _branches, _whitelist);
 
+  flatutils::book(_tree, _name, "scRawPt", "[" + _name + ".size]", 'F', scRawPt, _branches, _whitelist);
   flatutils::book(_tree, _name, "chIso", "[" + _name + ".size]", 'F', chIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "chWorstIso", "[" + _name + ".size]", 'F', chWorstIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "chIsoMax", "[" + _name + ".size]", 'F', chIsoMax, _branches, _whitelist);
@@ -568,6 +571,7 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
 
 simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   Particle(_data, _idx),
+  scRawPt(_data.scRawPt[_idx]),
   chIso(_data.chIso[_idx]),
   chWorstIso(_data.chWorstIso[_idx]),
   chIsoMax(_data.chIsoMax[_idx]),
@@ -619,6 +623,7 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
 
 simpletree::Photon::Photon(Photon const& _src) :
   Particle(_src),
+  scRawPt(_src.scRawPt),
   chIso(_src.chIso),
   chWorstIso(_src.chWorstIso),
   chIsoMax(_src.chIsoMax),
@@ -673,6 +678,7 @@ simpletree::Photon::operator=(Photon const& _rhs)
 {
   Particle::operator=(_rhs);
 
+  scRawPt = _rhs.scRawPt;
   chIso = _rhs.chIso;
   chWorstIso = _rhs.chWorstIso;
   chIsoMax = _rhs.chIsoMax;
@@ -727,6 +733,7 @@ simpletree::Photon::init()
 {
   Particle::init();
 
+  scRawPt = 0.;
   chIso = 0.;
   chWorstIso = 0.;
   chIsoMax = 0.;
