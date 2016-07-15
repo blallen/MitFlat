@@ -219,6 +219,7 @@ namespace simpletree {
     struct array_data : public Particle::array_data {
       array_data();
 
+      Float_t scRawPt[NMAX]{};
       Float_t chIso[NMAX]{};
       Float_t chWorstIso[NMAX]{};
       Float_t chIsoMax[NMAX]{};
@@ -284,6 +285,7 @@ namespace simpletree {
     bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
 
   public:
+    Float_t& scRawPt;
     Float_t& chIso;
     Float_t& chWorstIso;
     Float_t& chIsoMax;
