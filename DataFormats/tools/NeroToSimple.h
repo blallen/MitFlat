@@ -167,6 +167,7 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     // auto& photon(event_.photons[iP]);
 
     p4ToParticle(inPhotons_, iP, photon);
+    // photon.scRawPt = (inPhotons_.scRawEnergy->at(iP) / TMath::CosH(photon.eta));
     
     // printf("  pho eta %f \n", photon.eta);
     
@@ -206,6 +207,9 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     photon.sieip = inPhotons_.sieip->at(iP);
     photon.r9 = inPhotons_.r9->at(iP);
 
+    // photon.emax = inPhotons_.emax->at(iP);
+    // photon.e2nd = inPhotons_.e2nd->at(iP);
+    // photon.e33 = inPhotons_.e33->at(iP);
     photon.e55 = inPhotons_.e55->at(iP);
 
     photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
