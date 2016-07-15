@@ -221,7 +221,7 @@ hbheIso/O
 badsc/O
 badTrack/O
 badMuonTrack/O
-virtual bool pass() const { return !cschalo && !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
 {Event}
 run/i

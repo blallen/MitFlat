@@ -571,7 +571,7 @@ namespace simpletree {
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
-    virtual bool pass() const { return !cschalo && !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+    virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
   protected:
     TString name_;
