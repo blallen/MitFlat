@@ -571,13 +571,14 @@ namespace simpletree {
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
-    virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+    virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
   protected:
     TString name_;
 
   public:
     Bool_t cschalo{};
+    Bool_t globalHalo16{};
     Bool_t hbhe{};
     Bool_t hbheIso{};
     Bool_t badsc{};

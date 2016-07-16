@@ -215,12 +215,13 @@ words[16]/i
 
 [MetFilters:SINGLE]
 cschalo/O
+globalHalo16/O
 hbhe/O
 hbheIso/O
 badsc/O
 badTrack/O
 badMuonTrack/O
-virtual bool pass() const { return !cschalo && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
 {Event}
 run/i

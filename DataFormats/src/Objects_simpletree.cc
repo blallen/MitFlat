@@ -1365,6 +1365,7 @@ simpletree::MetFilters::MetFilters(TString const& _name) :
 simpletree::MetFilters::MetFilters(MetFilters const& _src) :
   name_(_src.name_),
   cschalo(_src.cschalo),
+  globalHalo16(_src.globalHalo16),
   hbhe(_src.hbhe),
   hbheIso(_src.hbheIso),
   badsc(_src.badsc),
@@ -1377,6 +1378,7 @@ void
 simpletree::MetFilters::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
   flatutils::setStatus(_tree, name_, "cschalo", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "globalHalo16", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "hbhe", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "hbheIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "badsc", _status, _branches, _whitelist);
@@ -1388,6 +1390,7 @@ void
 simpletree::MetFilters::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
   flatutils::setStatusAndAddress(_tree, name_, "cschalo", &cschalo, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "globalHalo16", &globalHalo16, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "hbhe", &hbhe, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "hbheIso", &hbheIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "badsc", &badsc, _branches, _whitelist);
@@ -1399,6 +1402,7 @@ void
 simpletree::MetFilters::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
 {
   flatutils::book(_tree, name_, "cschalo", "", 'O', &cschalo, _branches, _whitelist);
+  flatutils::book(_tree, name_, "globalHalo16", "", 'O', &globalHalo16, _branches, _whitelist);
   flatutils::book(_tree, name_, "hbhe", "", 'O', &hbhe, _branches, _whitelist);
   flatutils::book(_tree, name_, "hbheIso", "", 'O', &hbheIso, _branches, _whitelist);
   flatutils::book(_tree, name_, "badsc", "", 'O', &badsc, _branches, _whitelist);
@@ -1410,6 +1414,7 @@ simpletree::MetFilters&
 simpletree::MetFilters::operator=(MetFilters const& _rhs)
 {
   cschalo = _rhs.cschalo;
+  globalHalo16 = _rhs.globalHalo16;
   hbhe = _rhs.hbhe;
   hbheIso = _rhs.hbheIso;
   badsc = _rhs.badsc;
@@ -1422,6 +1427,7 @@ void
 simpletree::MetFilters::init()
 {
   cschalo = false;
+  globalHalo16 = false;
   hbhe = false;
   hbheIso = false;
   badsc = false;
