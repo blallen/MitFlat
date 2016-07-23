@@ -15,6 +15,7 @@
 #include "TString.h"
 
 #include <stdexcept>
+#include <limits>
 
 class NeroToSimple {
  public:
@@ -166,8 +167,10 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     auto& photon(event_.photons.back());
     // auto& photon(event_.photons[iP]);
 
+    double etaSC(std::abs(inPhotons_.etaSC->at(iP)));
+
     p4ToParticle(inPhotons_, iP, photon);
-    photon.scRawPt = (inPhotons_.rawScEnergy->at(iP) / TMath::CosH(inPhotons_.etaSC->at(iP)));
+    photon.scRawPt = (inPhotons_.rawScEnergy->at(iP) / TMath::CosH(etaSC));
     
     // printf("  pho eta %f \n", photon.eta);
     
@@ -189,9 +192,17 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     // printf("  sieie %f \n", inPhotons_.sieie->at(iP));
     // printf("  hOverE %f \n", inPhotons_.hOverE->at(iP));
 
+    // Spring15 EA
+    double eaNH[] = {0.0599, 0.0819, 0.0696, 0.0360, 0.0360, 0.0462, 0.0656};
+    double eaPh[] = {0.1271, 0.1101, 0.0756, 0.1175, 0.1498, 0.1857, 0.2183};
+    double etaBounds[] = {1., 1.479, 2., 2.2, 2.3, 2.4, std::numeric_limits<double>::max()};
+    unsigned iEtaBin(0);
+    while (etaSC < etaBounds[iEtaBin])
+      ++iEtaBin;
+
     photon.chIso = inPhotons_.chIso->at(iP);
-    photon.nhIso = inPhotons_.nhIso->at(iP) - 0.014 * photon.pt - 0.000019 * photon.pt * photon.pt;
-    photon.phIso = inPhotons_.phoIso->at(iP) - 0.0053 * photon.pt;
+    photon.nhIso = inPhotons_.nhIso->at(iP) - 0.014 * photon.pt - 0.000019 * photon.pt * photon.pt - eaNH[iEtaBin] * event_.rho;
+    photon.phIso = inPhotons_.phoIso->at(iP) - 0.0053 * photon.pt - eaPh[iEtaBin] * event_.rho;
     photon.sieie = inPhotons_.sieie->at(iP);
     photon.hOverE = inPhotons_.hOverE->at(iP);
 
