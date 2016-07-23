@@ -190,8 +190,8 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     // printf("  hOverE %f \n", inPhotons_.hOverE->at(iP));
 
     photon.chIso = inPhotons_.chIso->at(iP);
-    photon.nhIso = inPhotons_.nhIso->at(iP);
-    photon.phIso = inPhotons_.phoIso->at(iP);
+    photon.nhIso = inPhotons_.nhIso->at(iP) - 0.014 * photon.pt - 0.000019 * photon.pt * photon.pt;
+    photon.phIso = inPhotons_.phoIso->at(iP) - 0.0053 * photon.pt;
     photon.sieie = inPhotons_.sieie->at(iP);
     photon.hOverE = inPhotons_.hOverE->at(iP);
 
