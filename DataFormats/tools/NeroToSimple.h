@@ -197,22 +197,24 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     double eaPh[] = {0.1271, 0.1101, 0.0756, 0.1175, 0.1498, 0.1857, 0.2183};
     double etaBounds[] = {1., 1.479, 2., 2.2, 2.3, 2.4, std::numeric_limits<double>::max()};
     unsigned iEtaBin(0);
-    while (etaSC < etaBounds[iEtaBin])
+    while (etaSC > etaBounds[iEtaBin])
       ++iEtaBin;
 
     photon.chIso = inPhotons_.chIso->at(iP);
-    photon.nhIso = inPhotons_.nhIso->at(iP) - 0.014 * photon.pt - 0.000019 * photon.pt * photon.pt - eaNH[iEtaBin] * event_.rho;
-    photon.phIso = inPhotons_.phoIso->at(iP) - 0.0053 * photon.pt - eaPh[iEtaBin] * event_.rho;
+    photon.nhIso = std::max(0., inPhotons_.nhIso->at(iP) - 0.014 * photon.pt - 0.000019 * photon.pt * photon.pt - eaNH[iEtaBin] * event_.rho);
+    photon.phIso = std::max(0., inPhotons_.phoIso->at(iP) - 0.0053 * photon.pt - eaPh[iEtaBin] * event_.rho);
     photon.sieie = inPhotons_.sieie->at(iP);
     photon.hOverE = inPhotons_.hOverE->at(iP);
 
     // printf("  got through ID variables \n");
 
-    double eaCHW = 0.;
-    if(etaSC >= 0.0   && etaSC < 1.0   ) eaCHW = 0.078;
-    if(etaSC >= 1.0   && etaSC < 1.479 ) eaCHW = 0.089;
-
-    photon.chWorstIso = inPhotons_.chWorstIso->at(iP) - eaCHW * event_.rho;
+    photon.chWorstIso = inPhotons_.chWorstIso->at(iP);
+    if (etaSC < 1.)
+      photon.chWorstIso -= 0.078 * event_.rho;
+    else
+      photon.chWorstIso -= 0.089 * event_.rho;
+    if (photon.chWorstIso < 0.)
+      photon.chWorstIso = 0.;
 
     // printf("  sipip %f \n", inPhotons_.sipip->at(iP));
     // printf("  sieip %f \n", inPhotons_.sieip->at(iP));
