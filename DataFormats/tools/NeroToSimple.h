@@ -208,7 +208,11 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
     // printf("  got through ID variables \n");
 
-    photon.chWorstIso = inPhotons_.chWorstIso->at(iP);
+    double eaCHW = 0.;
+    if(etaSC >= 0.0   && etaSC < 1.0   ) eaCHW = 0.078;
+    if(etaSC >= 1.0   && etaSC < 1.479 ) eaCHW = 0.089;
+
+    photon.chWorstIso = inPhotons_.chWorstIso->at(iP) - eaCHW * event_.rho;
 
     // printf("  sipip %f \n", inPhotons_.sipip->at(iP));
     // printf("  sieip %f \n", inPhotons_.sieip->at(iP));
