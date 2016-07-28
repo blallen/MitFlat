@@ -73,6 +73,8 @@ NeroToSimple::NeroToSimple(TTree& _neroTree, simpletree::Event& _outEvent) :
   inMC_.SetExtend(true);
   inTrigger_.SetExtend(true);
   inVertex_.SetExtend(true);
+
+  inPhotons_.SetMatch(true);
   
   inEvent_.setBranchAddresses(&input_);
   inJets_.setBranchAddresses(&input_);
@@ -138,6 +140,7 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   event_.weight = inEvent_.isRealData ? 1. : inMC_.mcWeight;
   event_.rho = inEvent_.rho;
   event_.npv = inVertex_.npv;
+  event_.npvTrue = inMC_.puTrueInt;
 
   // in simpletree 1 means tagged by filter; in nero 1 means passing filter
   event_.metFilters.cschalo = (inEvent_.selBits & BareEvent::CSCTightHalo2015Filter) == 0;
@@ -232,6 +235,10 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
     
     photon.time = inPhotons_.time->at(iP); // fails on Zeynep's ntuples
+
+    if (inPhotons_.match->at(iP) == 1) {
+      photon.matchedGen = -22;
+    }
 
     // printf("  got through extra variables \n");
 
