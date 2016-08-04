@@ -264,6 +264,11 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
 
       // electron.matchHLT[simpletree::fEl23Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle23Loose);
       // electron.matchHLT[simpletree::fEl27Loose] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle27Loose);
+
+      electron.tight = (inLeptons_.selBits->at(iL) & BareLeptons::LepTight) != 0;
+
+      double combRelIso(inLeptons_.iso->at(iL) / static_cast<TLorentzVector*>(inLeptons_.p4->At(iL))->Pt());
+      electron.combRelIso = combRelIso;
     }
     else {
       event_.muons.resize(event_.muons.size() + 1);
@@ -274,12 +279,16 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
       // muon.matchHLT[simpletree::fMuTrk20] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kTrkMu20);
       // muon.matchHLT[simpletree::fMu24] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu24eta2p1);
       // muon.matchHLT[simpletree::fMu27] = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu27);
+
+      double combRelIso(inLeptons_.iso->at(iL) / static_cast<TLorentzVector*>(inLeptons_.p4->At(iL))->Pt());
+      // at some point POG switched to 0.15, but MitPhysics uses 0.12
+      muon.tight = (inLeptons_.selBits->at(iL) & BareLeptons::LepTight) != 0 && combRelIso < 0.12;
+      muon.combRelIso = combRelIso;
     }
 
     p4ToParticle(inLeptons_, iL, *lepton);
     lepton->positive = inLeptons_.pdgId->at(iL) < 0; // -11/-13 -> anti-particle = positive
     lepton->loose = (inLeptons_.selBits->at(iL) & BareLeptons::LepLoose) != 0;
-    lepton->tight = (inLeptons_.selBits->at(iL) & BareLeptons::LepTight) != 0;
   }
 
   // printf("\nntau %u \n", inTaus_.size());
