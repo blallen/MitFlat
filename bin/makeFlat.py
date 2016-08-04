@@ -221,8 +221,8 @@ if not os.path.isdir(args.package + '/src'):
     os.makedirs(args.package + '/src')
 
 isCMSSW = False
-if os.path.exists(args.package + '/../../.SCRAM/Environment'):
-    with open(args.package + '/../../.SCRAM/Environment') as environment:
+if os.path.exists(args.package + '/../../../.SCRAM/Environment'):
+    with open(args.package + '/../../../.SCRAM/Environment') as environment:
         isCMSSW = 'CMSSW' in environment.readline()
 
 if isCMSSW and not os.path.exists(args.package + '/BuildFile.xml'):
