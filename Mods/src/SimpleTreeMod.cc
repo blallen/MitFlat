@@ -1024,6 +1024,7 @@ mithep::SimpleTreeMod::SlaveBegin()
       "genJets",
       "genMet",
       "jets.ptResCorr",
+      "jets.phiResCorr",
       "t1Met.metJetRes",
       "t1Met.phiJetRes",
       "*.genIso",
