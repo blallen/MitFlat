@@ -15,6 +15,7 @@
 #include "TString.h"
 
 #include <stdexcept>
+#include <limits>
 
 class NeroToSimple {
  public:
@@ -39,8 +40,6 @@ class NeroToSimple {
   BareTrigger inTrigger_;
   BareVertex inVertex_;
   
-  unsigned triggerIndices_[simpletree::nHLTPaths];
-
   simpletree::Event& event_;
 };
 
@@ -65,6 +64,16 @@ NeroToSimple::NeroToSimple(TTree& _neroTree, simpletree::Event& _outEvent) :
  input_(_neroTree),
  event_(_outEvent)             
 {
+  inEvent_.SetExtend(true);
+  inJets_.SetExtend(true);
+  inMet_.SetExtend(true);
+  inPhotons_.SetExtend(true);
+  inLeptons_.SetExtend(true);
+  inTaus_.SetExtend(true);
+  inMC_.SetExtend(true);
+  inTrigger_.SetExtend(true);
+  inVertex_.SetExtend(true);
+  
   inEvent_.setBranchAddresses(&input_);
   inJets_.setBranchAddresses(&input_);
   inMet_.setBranchAddresses(&input_);
@@ -75,38 +84,33 @@ NeroToSimple::NeroToSimple(TTree& _neroTree, simpletree::Event& _outEvent) :
   inTrigger_.setBranchAddresses(&input_);
   inVertex_.setBranchAddresses(&input_);
 
-  for (unsigned& idx : triggerIndices_)
-    idx = -1;
+  inEvent_.init();
+  inJets_.init();
+  inMet_.init();
+  inPhotons_.init();
+  inLeptons_.init();
+  inTaus_.init();
+  inMC_.init();
+  inTrigger_.init();
+  inVertex_.init();
+
 }
 
 inline
 void
 NeroToSimple::setTriggerNames(TString const& _triggerNames)
 {
-  TString matchNames[simpletree::nHLTPaths] = {
-    "Photon120",
-    "Photon135_PFMET100_JetIdCleaned",
-    "Photon165_HE10",
-    "Photon175",
-    "Ele23_WPLoose_Gsf",
-    "Ele27_eta2p1_WPLoose_Gsf",
-    "IsoMu20",
-    "IsoTkMu20",
-    "IsoMu24_eta2p1",
-    "IsoMu27",
-    "PFMET170_NoiseCleaned",
-    "PFMETNoMu90_JetIdCleaned_PFMHTNoMu90_IDTight",
-    "PFMETNoMu120_JetIdCleaned_PFMHTNoMu120_IDTight"
-  };
-
   auto* names(_triggerNames.Tokenize(","));
+  printf("Before loop: inTrigger_.size() = %u \n", inTrigger_.size());
   for (int iT(0); iT != names->GetEntries(); ++iT) {
-    TString name(names->GetName());
-    for (unsigned iM(0); iM != simpletree::nHLTPaths; ++iM) {
-      if (name.Index("HLT_" + matchNames[iM]) == 0)
-        triggerIndices_[iM] = iT;
-    }      
+    TString name(names->At(iT)->GetName());
+    name = name.ReplaceAll("_v", "");
+
+    simpletree::TriggerHelper::assignIndex(name, iT);
+    inTrigger_.triggerNames->emplace_back(name);
+
   }
+  printf("After loop: inTrigger_.size() = %u \n", inTrigger_.size());
   delete names;
 }
 
@@ -124,28 +128,74 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   event_.rho = inEvent_.rho;
   event_.npv = inVertex_.npv;
 
-  event_.jets.resize(inJets_.size());
-  for (unsigned iJ(0); iJ != inJets_.size(); ++iJ)
-    p4ToParticle(inJets_, iJ, event_.jets[iJ]);
+  // in simpletree 1 means tagged by filter; in nero 1 means passing filter
+  event_.metFilters.cschalo = (inEvent_.selBits & BareEvent::CSCTightHalo2015Filter) == 0;
+  event_.metFilters.globalHalo16 = (inEvent_.selBits & BareEvent::GlobalTightHalo2016) == 0;
+  event_.metFilters.hbhe = (inEvent_.selBits & BareEvent::HBHENoiseFilter) == 0;
+  event_.metFilters.hbheIso = (inEvent_.selBits & BareEvent::HBHENoiseIsoFilter) == 0;
+  event_.metFilters.badsc = (inEvent_.selBits & BareEvent::eeBadScFilter) == 0;
+  event_.metFilters.badTrack = 0;
+  event_.metFilters.badMuonTrack = 0;
 
-  event_.photons.resize(inPhotons_.size());
+  event_.jets.clear();
+  for (unsigned iJ(0); iJ != inJets_.size(); ++iJ) {
+    event_.jets.resize(event_.jets.size() + 1);
+    auto& jet(event_.jets.back());
+    p4ToParticle(inJets_, iJ, jet);
+  }
+
+  event_.photons.clear();
   for (unsigned iP(0); iP != inPhotons_.size(); ++iP) {
-    auto& photon(event_.photons[iP]);
+    event_.photons.resize(event_.photons.size() + 1);
+    auto& photon(event_.photons.back());
+
+    double etaSC(std::abs(inPhotons_.etaSC->at(iP)));
 
     p4ToParticle(inPhotons_, iP, photon);
-    photon.chIso = inPhotons_.chIso->at(iP);
-    photon.nhIso = inPhotons_.nhIso->at(iP);
-    photon.phIso = inPhotons_.phoIso->at(iP);
-    photon.sieie = inPhotons_.sieie->at(iP);
+    photon.scRawPt = (inPhotons_.rawScEnergy->at(iP) / TMath::CosH(etaSC));
+    
+    photon.isEB = (TMath::Abs(photon.eta) < 1.5) ? 1 : 0;
+
     photon.csafeVeto = (inPhotons_.selBits->at(iP) & BarePhotons::PhoElectronVeto) != 0;
+    photon.pixelVeto = (inPhotons_.selBits->at(iP) & BarePhotons::PhoPixelSeedVeto) != 0;
     photon.loose = (inPhotons_.selBits->at(iP) & BarePhotons::PhoLoose) != 0;
     photon.medium = (inPhotons_.selBits->at(iP) & BarePhotons::PhoMedium) != 0;
     photon.tight = (inPhotons_.selBits->at(iP) & BarePhotons::PhoTight) != 0;
 
-    photon.matchHLT120 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton120);
-    photon.matchHLT135MET100 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton135MET100);
-    photon.matchHLT165HE10 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton165HE10);
-    photon.matchHLT175 = triggerMatch(*inTrigger_.triggerPhotons, iP, simpletree::kPhoton175);
+    // Spring15 EA
+    double eaNH[] = {0.0599, 0.0819, 0.0696, 0.0360, 0.0360, 0.0462, 0.0656};
+    double eaPh[] = {0.1271, 0.1101, 0.0756, 0.1175, 0.1498, 0.1857, 0.2183};
+    double etaBounds[] = {1., 1.479, 2., 2.2, 2.3, 2.4, std::numeric_limits<double>::max()};
+    unsigned iEtaBin(0);
+    while (etaSC > etaBounds[iEtaBin])
+      ++iEtaBin;
+
+    photon.chIso = inPhotons_.chIso->at(iP);
+    photon.nhIso = std::max(0., inPhotons_.nhIso->at(iP) - 0.014 * photon.pt - 0.000019 * photon.pt * photon.pt - eaNH[iEtaBin] * event_.rho);
+    photon.phIso = std::max(0., inPhotons_.phoIso->at(iP) - 0.0053 * photon.pt - eaPh[iEtaBin] * event_.rho);
+    photon.sieie = inPhotons_.sieie->at(iP);
+    photon.hOverE = inPhotons_.hOverE->at(iP);
+
+    photon.chWorstIso = inPhotons_.chWorstIso->at(iP);
+    if (etaSC < 1.)
+      photon.chWorstIso -= 0.078 * event_.rho;
+    else
+      photon.chWorstIso -= 0.089 * event_.rho;
+    if (photon.chWorstIso < 0.)
+      photon.chWorstIso = 0.;
+
+    photon.sipip = inPhotons_.sipip->at(iP);
+    photon.sieip = inPhotons_.sieip->at(iP);
+    photon.r9 = inPhotons_.r9->at(iP);
+
+    photon.emax = inPhotons_.emax->at(iP);
+    photon.e2nd = inPhotons_.e2nd->at(iP);
+    photon.e33 = inPhotons_.e33->at(iP);
+    photon.e55 = inPhotons_.e55->at(iP);
+
+    photon.mipEnergy = inPhotons_.mipEnergy->at(iP);
+    
+    photon.time = inPhotons_.time->at(iP); // fails on Zeynep's ntuples
   }
 
   event_.electrons.clear();
@@ -158,29 +208,31 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
       auto& electron(event_.electrons.back());
       lepton = &electron;
 
-      electron.matchHLT23Loose = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle23Loose);
-      electron.matchHLT27Loose = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kEle27Loose);
+      electron.tight = (inLeptons_.selBits->at(iL) & BareLeptons::LepTight) != 0;
+
+      double combRelIso(inLeptons_.iso->at(iL) / static_cast<TLorentzVector*>(inLeptons_.p4->At(iL))->Pt());
+      electron.combRelIso = combRelIso;
     }
     else {
       event_.muons.resize(event_.muons.size() + 1);
       auto& muon(event_.muons.back());
       lepton = &muon;
 
-      muon.matchHLT20 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu20);
-      muon.matchHLTTrk20 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kTrkMu20);
-      muon.matchHLT24 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu24eta2p1);
-      muon.matchHLT27 = triggerMatch(*inTrigger_.triggerLeps, iL, simpletree::kMu27);
+      double combRelIso(inLeptons_.iso->at(iL) / static_cast<TLorentzVector*>(inLeptons_.p4->At(iL))->Pt());
+      // at some point POG switched to 0.15, but MitPhysics uses 0.12
+      muon.tight = (inLeptons_.selBits->at(iL) & BareLeptons::LepTight) != 0 && combRelIso < 0.12;
+      muon.combRelIso = combRelIso;
     }
 
     p4ToParticle(inLeptons_, iL, *lepton);
     lepton->positive = inLeptons_.pdgId->at(iL) < 0; // -11/-13 -> anti-particle = positive
     lepton->loose = (inLeptons_.selBits->at(iL) & BareLeptons::LepLoose) != 0;
-    lepton->tight = (inLeptons_.selBits->at(iL) & BareLeptons::LepTight) != 0;
   }
 
-  event_.taus.resize(inTaus_.size());
+  event_.taus.clear();
   for (unsigned iT(0); iT != inTaus_.size(); ++iT) {
-    auto& tau(event_.taus[iT]);
+    event_.taus.resize(event_.taus.size() + 1);
+    auto& tau(event_.taus.back());
 
     p4ToParticle(inTaus_, iT, tau);
     tau.combIso = inTaus_.iso->at(iT);
@@ -191,12 +243,11 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
   event_.t1Met.met = inMet_.momentum(0).Pt();
   event_.t1Met.phi = inMet_.momentum(0).Phi();
 
-  for (unsigned iT(0); iT != simpletree::nHLTPaths; ++iT) {
-    if (triggerIndices_[iT] >= inTrigger_.triggerNames->size())
-      continue;
+  for (unsigned iWord(0); iWord != 16; ++iWord)
+    event_.hltBits.words[iWord] = 0;
 
-    event_.hlt[iT].pass = inTrigger_.triggerFired->at(triggerIndices_[iT]) != 0;
-  }
+  for (unsigned iT(0); iT != inTrigger_.triggerNames->size(); ++iT)
+    event_.hltBits.set(iT);
 
   if (!inEvent_.isRealData) {
     event_.genJets.resize(inMC_.jetP4->GetEntries());
@@ -212,24 +263,13 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     auto& inGenMet(*static_cast<TLorentzVector*>(inMet_.genP4->At(0)));
     event_.genMet.met = inGenMet.Pt();
     event_.genMet.phi = inGenMet.Phi();
-
-    event_.reweight.resize(6 + inMC_.pdfRwgt->size());
-
-    event_.reweight[0].scale = inMC_.r1f2;
-    event_.reweight[1].scale = inMC_.r1f5;
-    event_.reweight[2].scale = inMC_.r2f1;
-    event_.reweight[3].scale = inMC_.r2f2;
-    event_.reweight[4].scale = inMC_.r5f1;
-    event_.reweight[5].scale = inMC_.r5f5;
-
-    unsigned iW(6);
-    for (float w : *inMC_.pdfRwgt)
-      event_.reweight[iW++].scale = w;
   }
 }
+
 
 bool
 NeroToSimple::triggerMatch(std::vector<int> const& _inBits, unsigned _objIdx, unsigned _trigIdx)
 {
-  return triggerIndices_[_trigIdx] < 32 && (_inBits.at(_objIdx) & (0x1 << triggerIndices_[_trigIdx])) != 0;
+  return _trigIdx < 32 && (_inBits.at(_objIdx) & (0x1 << _trigIdx)) != 0;
 }
+

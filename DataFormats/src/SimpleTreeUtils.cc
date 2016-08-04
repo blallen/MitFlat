@@ -142,6 +142,7 @@ simpletree::TriggerHelper::TriggerHelper(char const* _path)
   }
 }
 
+/*static*/
 void
 simpletree::TriggerHelper::assignIndex(char const* _path, unsigned _index)
 {
