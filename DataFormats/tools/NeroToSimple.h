@@ -103,7 +103,7 @@ void
 NeroToSimple::setTriggerNames(TString const& _triggerNames)
 {
   auto* names(_triggerNames.Tokenize(","));
-  printf("Before loop: inTrigger_.size() = %u \n", inTrigger_.size());
+  // printf("Before loop: inTrigger_.size() = %u \n", inTrigger_.size());
   for (int iT(0); iT != names->GetEntries(); ++iT) {
     TString name(names->At(iT)->GetName());
     name = name.ReplaceAll("_v", "");
@@ -112,7 +112,7 @@ NeroToSimple::setTriggerNames(TString const& _triggerNames)
     inTrigger_.triggerNames->emplace_back(name);
 
   }
-  printf("After loop: inTrigger_.size() = %u \n", inTrigger_.size());
+  // printf("After loop: inTrigger_.size() = %u \n", inTrigger_.size());
   delete names;
 }
 
