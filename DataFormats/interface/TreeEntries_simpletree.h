@@ -7,12 +7,13 @@ namespace simpletree {
 
   typedef flatutils::Collection<Particle, flatutils::DynamicCollection> ParticleCollection;
   typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
-  typedef flatutils::Collection<Jet, ParticleMCollection> JetCollection;
-  typedef flatutils::Collection<Photon, ParticleCollection> PhotonCollection;
-  typedef flatutils::Collection<Lepton, ParticleCollection> LeptonCollection;
+  typedef flatutils::Collection<ParticleReco, ParticleMCollection> ParticleRecoCollection;
+  typedef flatutils::Collection<Jet, ParticleRecoCollection> JetCollection;
+  typedef flatutils::Collection<Photon, ParticleRecoCollection> PhotonCollection;
+  typedef flatutils::Collection<Lepton, ParticleRecoCollection> LeptonCollection;
   typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
   typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
-  typedef flatutils::Collection<Tau, ParticleMCollection> TauCollection;
+  typedef flatutils::Collection<Tau, ParticleRecoCollection> TauCollection;
   typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
   typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
   typedef flatutils::Collection<GenJet, ParticleMCollection> GenJetCollection;

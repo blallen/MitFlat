@@ -6,6 +6,7 @@
 #include "TLorentzVector.h"
 #include "TVector2.h"
 #include <cmath>
+#include <algorithm>
 #include "TString.h"
 #include "Rtypes.h"
 class TTree;
@@ -130,9 +131,39 @@ namespace simpletree {
     Float_t& mass;
   };
 
-  class Jet : public ParticleM {
+  class ParticleReco : public ParticleM {
   public:
     struct array_data : public ParticleM::array_data {
+      array_data();
+
+      Bool_t positive[NMAX]{};
+      Bool_t loose[NMAX]{};
+      Bool_t medium[NMAX]{};
+      Bool_t tight[NMAX]{};
+      Bool_t matchHLT[NMAX][nMaxHLTObjects]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    ParticleReco(array_data&, UInt_t idx);
+    ParticleReco(ParticleReco const&);
+    virtual ~ParticleReco() {}
+    ParticleReco& operator=(ParticleReco const&);
+    void init() override;
+
+  public:
+    Bool_t& positive;
+    Bool_t& loose;
+    Bool_t& medium;
+    Bool_t& tight;
+    Bool_t* matchHLT{0}; //[nMaxHLTObjects]
+  };
+
+  class Jet : public ParticleReco {
+  public:
+    struct array_data : public ParticleReco::array_data {
       array_data();
 
       Bool_t mjid[NMAX]{};
@@ -214,7 +245,7 @@ namespace simpletree {
     Float_t phiUnclDown{};
   };
 
-  class Photon : public Particle {
+  class Photon : public ParticleReco {
   public:
     static double const chIsoCuts[2][3];
     static double const nhIsoCuts[2][3];
@@ -222,7 +253,7 @@ namespace simpletree {
     static double const sieieCuts[2][3];
     static double const hOverECuts[2][3];
 
-    struct array_data : public Particle::array_data {
+    struct array_data : public ParticleReco::array_data {
       array_data();
 
       Float_t scRawPt[NMAX]{};
@@ -269,12 +300,8 @@ namespace simpletree {
       Bool_t pixelVeto[NMAX]{};
       Bool_t electronVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t medium[NMAX]{};
-      Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
       Bool_t matchL1[NMAX][nPhotonL1Objects]{};
-      Bool_t matchHLT[NMAX][nPhotonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -287,6 +314,8 @@ namespace simpletree {
     Photon& operator=(Photon const&);
     void init() override;
 
+    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.); }
+    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
     bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
     bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
@@ -338,25 +367,18 @@ namespace simpletree {
     Bool_t& pixelVeto;
     Bool_t& electronVeto;
     Bool_t& csafeVeto;
-    Bool_t& loose;
-    Bool_t& medium;
-    Bool_t& tight;
     Bool_t& highpt;
     Bool_t* matchL1{0}; //[nPhotonL1Objects]
-    Bool_t* matchHLT{0}; //[nPhotonHLTObjects]
   };
 
-  class Lepton : public Particle {
+  class Lepton : public ParticleReco {
   public:
-    struct array_data : public Particle::array_data {
+    struct array_data : public ParticleReco::array_data {
       array_data();
 
       Int_t matchedGen[NMAX]{};
       Bool_t tauDecay[NMAX]{};
       Bool_t hadDecay[NMAX]{};
-      Bool_t positive[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t tight[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -375,9 +397,6 @@ namespace simpletree {
     Int_t& matchedGen;
     Bool_t& tauDecay;
     Bool_t& hadDecay;
-    Bool_t& positive;
-    Bool_t& loose;
-    Bool_t& tight;
   };
 
   class Electron : public Lepton {
@@ -397,7 +416,6 @@ namespace simpletree {
       Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t veto[NMAX]{};
-      Bool_t matchHLT[NMAX][nElectronHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -431,7 +449,6 @@ namespace simpletree {
     Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& veto;
-    Bool_t* matchHLT{0}; //[nElectronHLTObjects]
   };
 
   class Muon : public Lepton {
@@ -440,7 +457,6 @@ namespace simpletree {
       array_data();
 
       Float_t combRelIso[NMAX]{};
-      Bool_t matchHLT[NMAX][nMuonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -458,12 +474,11 @@ namespace simpletree {
 
   public:
     Float_t& combRelIso;
-    Bool_t* matchHLT{0}; //[nMuonHLTObjects]
   };
 
-  class Tau : public ParticleM {
+  class Tau : public ParticleReco {
   public:
-    struct array_data : public ParticleM::array_data {
+    struct array_data : public ParticleReco::array_data {
       array_data();
 
       Bool_t decayMode[NMAX]{};

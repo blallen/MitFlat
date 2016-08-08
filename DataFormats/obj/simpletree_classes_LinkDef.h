@@ -1,4 +1,4 @@
-#include "MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
+#include "/home/ballen/cms/cmssw/044/CMSSW_8_0_7_patch3/src/MitMonoX/monophoton/MitFlat/DataFormats/interface/TreeEntries_simpletree.h"
 
 #ifdef __CLING__
 #pragma link off all globals;
@@ -11,6 +11,7 @@
 
 #pragma link C++ class simpletree::Particle;
 #pragma link C++ class simpletree::ParticleM;
+#pragma link C++ class simpletree::ParticleReco;
 #pragma link C++ class simpletree::Jet;
 #pragma link C++ class simpletree::Met;
 #pragma link C++ class simpletree::CorrectedMet;
@@ -28,17 +29,19 @@
 #pragma link C++ typedef simpletree::ParticleCollection;
 #pragma link C++ class flatutils::Collection<simpletree::ParticleM, simpletree::ParticleCollection>;
 #pragma link C++ typedef simpletree::ParticleMCollection;
-#pragma link C++ class flatutils::Collection<simpletree::Jet, simpletree::ParticleMCollection>;
+#pragma link C++ class flatutils::Collection<simpletree::ParticleReco, simpletree::ParticleMCollection>;
+#pragma link C++ typedef simpletree::ParticleRecoCollection;
+#pragma link C++ class flatutils::Collection<simpletree::Jet, simpletree::ParticleRecoCollection>;
 #pragma link C++ typedef simpletree::JetCollection;
-#pragma link C++ class flatutils::Collection<simpletree::Photon, simpletree::ParticleCollection>;
+#pragma link C++ class flatutils::Collection<simpletree::Photon, simpletree::ParticleRecoCollection>;
 #pragma link C++ typedef simpletree::PhotonCollection;
-#pragma link C++ class flatutils::Collection<simpletree::Lepton, simpletree::ParticleCollection>;
+#pragma link C++ class flatutils::Collection<simpletree::Lepton, simpletree::ParticleRecoCollection>;
 #pragma link C++ typedef simpletree::LeptonCollection;
 #pragma link C++ class flatutils::Collection<simpletree::Electron, simpletree::LeptonCollection>;
 #pragma link C++ typedef simpletree::ElectronCollection;
 #pragma link C++ class flatutils::Collection<simpletree::Muon, simpletree::LeptonCollection>;
 #pragma link C++ typedef simpletree::MuonCollection;
-#pragma link C++ class flatutils::Collection<simpletree::Tau, simpletree::ParticleMCollection>;
+#pragma link C++ class flatutils::Collection<simpletree::Tau, simpletree::ParticleRecoCollection>;
 #pragma link C++ typedef simpletree::TauCollection;
 #pragma link C++ class flatutils::Collection<simpletree::Parton, simpletree::ParticleMCollection>;
 #pragma link C++ typedef simpletree::PartonCollection;

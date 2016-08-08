@@ -4,6 +4,7 @@
 #include "TVector2.h"
 
 #include <cmath>
+#include <algorithm>
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
@@ -55,6 +56,8 @@ enum MuonHLTObject {
   nMuonHLTObjects
 };
 
+unsigned nMaxHLTObjects = std::max(nPhotonHLTObjects, std::max(nElectronHLTObjects, nMuonHLTObjects));
+
 [Particle:MAX=256]
 pt/F
 eta/F
@@ -71,7 +74,14 @@ mass/F
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
 
-[Jet:ParticleM]
+[ParticleReco:ParticleM]
+positive/O
+loose/O
+medium/O
+tight/O
+matchHLT[nMaxHLTObjects]/O	
+
+[Jet:ParticleReco]
 mjid/O
 ptRaw/F
 ptCorrUp/F
@@ -99,7 +109,7 @@ metUnclDown/F
 phiUnclDown/F
 virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
-[Photon:Particle]
+[Photon:ParticleReco]
 scRawPt/F
 chIso/F
 chWorstIso/F
@@ -144,12 +154,11 @@ isEB/O
 pixelVeto/O
 electronVeto/O
 csafeVeto/O
-loose/O
-medium/O
-tight/O
 highpt/O
 matchL1[nPhotonL1Objects]/O
-matchHLT[nPhotonHLTObjects]/O
+
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.); }
+TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
 
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -162,14 +171,11 @@ static double const phIsoCuts[2][3]{{0.81, 0.28, 0.08}, {0.83, 0.39, 0.16}};
 static double const sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.0274, 0.0268, 0.0268}};
 static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
-[Lepton:Particle]
+[Lepton:ParticleReco]
 int charge() const { return positive ? 1 : -1; }
 matchedGen/I
 tauDecay/O
 hadDecay/O
-positive/O
-loose/O
-tight/O
 
 [Electron:Lepton]
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 5.11e-4); }
@@ -186,7 +192,6 @@ sieip/F
 hOverE/F
 isEB/O
 veto/O
-matchHLT[nElectronHLTObjects]/O
 
 bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -198,9 +203,8 @@ bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0
 LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.1057); }
 TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.1057); return p4; }
 combRelIso/F
-matchHLT[nMuonHLTObjects]/O
 
-[Tau:ParticleM]
+[Tau:ParticleReco]
 decayMode/O
 combIso/F
 
