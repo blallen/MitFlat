@@ -70,6 +70,8 @@ namespace simpletree {
 
   extern TString MuonHLTObjectName[nMuonHLTObjects];
 
+  unsigned const nMaxHLTObjects(nElectronHLTObjects);
+
   class Particle {
   public:
     struct array_data {
@@ -92,8 +94,14 @@ namespace simpletree {
     Particle& operator=(Particle const&);
     virtual void init();
 
-    virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
-    virtual TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
+    LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, m()); }
+    TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, m()); return p4; }
+    virtual double e() const { return pt * std::cosh(eta); }
+    double p() const { return pt * std::cosh(eta); }
+    double px() const { return pt * std::cos(phi); }
+    double py() const { return pt * std::sin(phi); }
+    double pz() const { return pt * std::sinh(eta); }
+    virtual double m() const { return 0.; }
     double dEta(Particle const& p) const { return eta - p.eta; }
     double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
     double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
@@ -123,98 +131,69 @@ namespace simpletree {
     ParticleM& operator=(ParticleM const&);
     void init() override;
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
+    double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
+    double m() const override { return mass; }
 
   public:
     Float_t& mass;
   };
 
-  class Jet : public ParticleM {
+  class RecoParticle : public Particle {
   public:
-    struct array_data : public ParticleM::array_data {
+    struct array_data : public Particle::array_data {
       array_data();
 
-      Bool_t mjid[NMAX]{};
-      Float_t ptRaw[NMAX]{};
-      Float_t ptCorrUp[NMAX]{};
-      Float_t ptCorrDown[NMAX]{};
-      Float_t ptResCorr[NMAX]{};
-      Float_t phiResCorr[NMAX]{};
-      Float_t cisv[NMAX]{};
+      Bool_t loose[NMAX]{};
+      Bool_t medium[NMAX]{};
+      Bool_t tight[NMAX]{};
+      Int_t matchedGen[NMAX]{};
+      Bool_t matchHLT[NMAX][nMaxHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
-    Jet(array_data&, UInt_t idx);
-    Jet(Jet const&);
-    virtual ~Jet() {}
-    Jet& operator=(Jet const&);
+    RecoParticle(array_data&, UInt_t idx);
+    RecoParticle(RecoParticle const&);
+    virtual ~RecoParticle() {}
+    RecoParticle& operator=(RecoParticle const&);
     void init() override;
 
   public:
-    Bool_t& mjid;
-    Float_t& ptRaw;
-    Float_t& ptCorrUp;
-    Float_t& ptCorrDown;
-    Float_t& ptResCorr;
-    Float_t& phiResCorr;
-    Float_t& cisv;
+    Bool_t& loose;
+    Bool_t& medium;
+    Bool_t& tight;
+    Int_t& matchedGen;
+    Bool_t* matchHLT{0}; //[nMaxHLTObjects]
   };
 
-  class Met {
+  class RecoParticleM : public RecoParticle {
   public:
-    Met(TString const& name);
-    Met(Met const&);
-    virtual ~Met() {}
-    Met& operator=(Met const&);
+    struct array_data : public RecoParticle::array_data {
+      array_data();
 
-    void setName(TString const& name) { name_ = name; }
-    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    virtual void init();
+      Float_t mass[NMAX]{};
 
-    virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
 
-  protected:
-    TString name_;
-
-  public:
-    Float_t met{};
-    Float_t phi{};
-    Float_t sumEt{};
-  };
-
-  class CorrectedMet : public Met {
-  public:
-    CorrectedMet(TString const& name);
-    CorrectedMet(CorrectedMet const&);
-    virtual ~CorrectedMet() {}
-    CorrectedMet& operator=(CorrectedMet const&);
-    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
-    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
-    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    RecoParticleM(array_data&, UInt_t idx);
+    RecoParticleM(RecoParticleM const&);
+    virtual ~RecoParticleM() {}
+    RecoParticleM& operator=(RecoParticleM const&);
     void init() override;
 
-    virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
+    double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
+    double m() const override { return mass; }
 
   public:
-    Float_t metCorrUp{};
-    Float_t phiCorrUp{};
-    Float_t metCorrDown{};
-    Float_t phiCorrDown{};
-    Float_t metJetRes{};
-    Float_t phiJetRes{};
-    Float_t metUnclUp{};
-    Float_t phiUnclUp{};
-    Float_t metUnclDown{};
-    Float_t phiUnclDown{};
+    Float_t& mass;
   };
 
-  class Photon : public Particle {
+  class Photon : public RecoParticle {
   public:
     static double const chIsoCuts[2][3];
     static double const nhIsoCuts[2][3];
@@ -222,7 +201,7 @@ namespace simpletree {
     static double const sieieCuts[2][3];
     static double const hOverECuts[2][3];
 
-    struct array_data : public Particle::array_data {
+    struct array_data : public RecoParticle::array_data {
       array_data();
 
       Float_t scRawPt[NMAX]{};
@@ -264,17 +243,13 @@ namespace simpletree {
       Float_t time[NMAX]{};
       Float_t timeSpan[NMAX]{};
       Float_t genMatchDR[NMAX]{};
-      Int_t matchedGen[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t pixelVeto[NMAX]{};
       Bool_t electronVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
       Bool_t matchL1[NMAX][nPhotonL1Objects]{};
-      Bool_t matchHLT[NMAX][nPhotonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -333,30 +308,23 @@ namespace simpletree {
     Float_t& time;
     Float_t& timeSpan;
     Float_t& genMatchDR;
-    Int_t& matchedGen;
     Bool_t& isEB;
     Bool_t& pixelVeto;
     Bool_t& electronVeto;
     Bool_t& csafeVeto;
-    Bool_t& loose;
-    Bool_t& medium;
     Bool_t& tight;
     Bool_t& highpt;
     Bool_t* matchL1{0}; //[nPhotonL1Objects]
-    Bool_t* matchHLT{0}; //[nPhotonHLTObjects]
   };
 
-  class Lepton : public Particle {
+  class Lepton : public RecoParticle {
   public:
-    struct array_data : public Particle::array_data {
+    struct array_data : public RecoParticle::array_data {
       array_data();
 
-      Int_t matchedGen[NMAX]{};
       Bool_t tauDecay[NMAX]{};
       Bool_t hadDecay[NMAX]{};
       Bool_t positive[NMAX]{};
-      Bool_t loose[NMAX]{};
-      Bool_t tight[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -372,12 +340,9 @@ namespace simpletree {
     int charge() const { return positive ? 1 : -1; }
 
   public:
-    Int_t& matchedGen;
     Bool_t& tauDecay;
     Bool_t& hadDecay;
     Bool_t& positive;
-    Bool_t& loose;
-    Bool_t& tight;
   };
 
   class Electron : public Lepton {
@@ -410,8 +375,7 @@ namespace simpletree {
     Electron& operator=(Electron const&);
     void init() override;
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 5.11e-4); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 5.11e-4); return p4; }
+    double m() const override { return 5.109989e-4; }
     bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
     bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
     bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
@@ -453,17 +417,16 @@ namespace simpletree {
     Muon& operator=(Muon const&);
     void init() override;
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.1057); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.1057); return p4; }
+    double m() const override { return 1.05658e-2; }
 
   public:
     Float_t& combRelIso;
     Bool_t* matchHLT{0}; //[nMuonHLTObjects]
   };
 
-  class Tau : public ParticleM {
+  class Tau : public RecoParticleM {
   public:
-    struct array_data : public ParticleM::array_data {
+    struct array_data : public RecoParticleM::array_data {
       array_data();
 
       Bool_t decayMode[NMAX]{};
@@ -483,6 +446,88 @@ namespace simpletree {
   public:
     Bool_t& decayMode;
     Float_t& combIso;
+  };
+
+  class Jet : public RecoParticleM {
+  public:
+    struct array_data : public RecoParticleM::array_data {
+      array_data();
+
+      Float_t ptRaw[NMAX]{};
+      Float_t ptCorrUp[NMAX]{};
+      Float_t ptCorrDown[NMAX]{};
+      Float_t ptResCorr[NMAX]{};
+      Float_t phiResCorr[NMAX]{};
+      Float_t cisv[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Jet(array_data&, UInt_t idx);
+    Jet(Jet const&);
+    virtual ~Jet() {}
+    Jet& operator=(Jet const&);
+    void init() override;
+
+  public:
+    Float_t& ptRaw;
+    Float_t& ptCorrUp;
+    Float_t& ptCorrDown;
+    Float_t& ptResCorr;
+    Float_t& phiResCorr;
+    Float_t& cisv;
+  };
+
+  class Met {
+  public:
+    Met(TString const& name);
+    Met(Met const&);
+    virtual ~Met() {}
+    Met& operator=(Met const&);
+
+    void setName(TString const& name) { name_ = name; }
+    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void init();
+
+    virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+
+  protected:
+    TString name_;
+
+  public:
+    Float_t met{};
+    Float_t phi{};
+    Float_t sumEt{};
+  };
+
+  class CorrectedMet : public Met {
+  public:
+    CorrectedMet(TString const& name);
+    CorrectedMet(CorrectedMet const&);
+    virtual ~CorrectedMet() {}
+    CorrectedMet& operator=(CorrectedMet const&);
+    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void init() override;
+
+    virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
+
+  public:
+    Float_t metCorrUp{};
+    Float_t phiCorrUp{};
+    Float_t metCorrDown{};
+    Float_t phiCorrDown{};
+    Float_t metJetRes{};
+    Float_t phiJetRes{};
+    Float_t metUnclUp{};
+    Float_t phiUnclUp{};
+    Float_t metUnclDown{};
+    Float_t phiUnclDown{};
   };
 
   class Parton : public ParticleM {

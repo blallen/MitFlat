@@ -168,275 +168,159 @@ simpletree::ParticleM::init()
   mass = 0.;
 }
 
-simpletree::Jet::array_data::array_data() :
-  ParticleM::array_data()
+simpletree::RecoParticle::array_data::array_data() :
+  Particle::array_data()
 {
 }
 
 void
-simpletree::Jet::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+simpletree::RecoParticle::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+  Particle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
-  flatutils::setStatus(_tree, _name, "mjid", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "ptRaw", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "ptCorrUp", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "ptCorrDown", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "ptResCorr", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "phiResCorr", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "cisv", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "loose", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "medium", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "tight", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "matchHLT", _status, _branches, _whitelist);
 }
 
 void
-simpletree::Jet::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+simpletree::RecoParticle::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
+  Particle::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
-  flatutils::setStatusAndAddress(_tree, _name, "mjid", mjid, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "ptRaw", ptRaw, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "ptCorrUp", ptCorrUp, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "ptCorrDown", ptCorrDown, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "ptResCorr", ptResCorr, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "phiResCorr", phiResCorr, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "cisv", cisv, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "loose", loose, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "medium", medium, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "tight", tight, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "matchHLT", matchHLT, _branches, _whitelist);
 }
 
 void
-simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+simpletree::RecoParticle::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
+  Particle::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "mjid", "[" + _name + ".size]", 'O', mjid, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptRaw", "[" + _name + ".size]", 'F', ptRaw, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptCorrUp", "[" + _name + ".size]", 'F', ptCorrUp, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptCorrDown", "[" + _name + ".size]", 'F', ptCorrDown, _branches, _whitelist);
-  flatutils::book(_tree, _name, "ptResCorr", "[" + _name + ".size]", 'F', ptResCorr, _branches, _whitelist);
-  flatutils::book(_tree, _name, "phiResCorr", "[" + _name + ".size]", 'F', phiResCorr, _branches, _whitelist);
-  flatutils::book(_tree, _name, "cisv", "[" + _name + ".size]", 'F', cisv, _branches, _whitelist);
+  flatutils::book(_tree, _name, "loose", "[" + _name + ".size]", 'O', loose, _branches, _whitelist);
+  flatutils::book(_tree, _name, "medium", "[" + _name + ".size]", 'O', medium, _branches, _whitelist);
+  flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
+  flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nMaxHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
-simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
-  ParticleM(_data, _idx),
-  mjid(_data.mjid[_idx]),
-  ptRaw(_data.ptRaw[_idx]),
-  ptCorrUp(_data.ptCorrUp[_idx]),
-  ptCorrDown(_data.ptCorrDown[_idx]),
-  ptResCorr(_data.ptResCorr[_idx]),
-  phiResCorr(_data.phiResCorr[_idx]),
-  cisv(_data.cisv[_idx])
+simpletree::RecoParticle::RecoParticle(array_data& _data, UInt_t _idx) :
+  Particle(_data, _idx),
+  loose(_data.loose[_idx]),
+  medium(_data.medium[_idx]),
+  tight(_data.tight[_idx]),
+  matchedGen(_data.matchedGen[_idx]),
+  matchHLT(_data.matchHLT[_idx])
 {
 }
 
-simpletree::Jet::Jet(Jet const& _src) :
-  ParticleM(_src),
-  mjid(_src.mjid),
-  ptRaw(_src.ptRaw),
-  ptCorrUp(_src.ptCorrUp),
-  ptCorrDown(_src.ptCorrDown),
-  ptResCorr(_src.ptResCorr),
-  phiResCorr(_src.phiResCorr),
-  cisv(_src.cisv)
+simpletree::RecoParticle::RecoParticle(RecoParticle const& _src) :
+  Particle(_src),
+  loose(_src.loose),
+  medium(_src.medium),
+  tight(_src.tight),
+  matchedGen(_src.matchedGen)
 {
+  std::copy_n(_src.matchHLT, nMaxHLTObjects, matchHLT);
 }
 
-simpletree::Jet&
-simpletree::Jet::operator=(Jet const& _rhs)
+simpletree::RecoParticle&
+simpletree::RecoParticle::operator=(RecoParticle const& _rhs)
 {
-  ParticleM::operator=(_rhs);
+  Particle::operator=(_rhs);
 
-  mjid = _rhs.mjid;
-  ptRaw = _rhs.ptRaw;
-  ptCorrUp = _rhs.ptCorrUp;
-  ptCorrDown = _rhs.ptCorrDown;
-  ptResCorr = _rhs.ptResCorr;
-  phiResCorr = _rhs.phiResCorr;
-  cisv = _rhs.cisv;
+  loose = _rhs.loose;
+  medium = _rhs.medium;
+  tight = _rhs.tight;
+  matchedGen = _rhs.matchedGen;
+  std::copy_n(_rhs.matchHLT, nMaxHLTObjects, matchHLT);
   return *this;
 }
 
 void
-simpletree::Jet::init()
+simpletree::RecoParticle::init()
 {
-  ParticleM::init();
+  Particle::init();
 
-  mjid = false;
-  ptRaw = 0.;
-  ptCorrUp = 0.;
-  ptCorrDown = 0.;
-  ptResCorr = 0.;
-  phiResCorr = 0.;
-  cisv = 0.;
+  loose = false;
+  medium = false;
+  tight = false;
+  matchedGen = 0;
+  std::fill(matchHLT, matchHLT + nMaxHLTObjects, false);
 }
 
-simpletree::Met::Met(TString const& _name) :
-  name_(_name)
-{
-}
-
-simpletree::Met::Met(Met const& _src) :
-  name_(_src.name_),
-  met(_src.met),
-  phi(_src.phi),
-  sumEt(_src.sumEt)
+simpletree::RecoParticleM::array_data::array_data() :
+  RecoParticle::array_data()
 {
 }
 
 void
-simpletree::Met::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+simpletree::RecoParticleM::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::setStatus(_tree, name_, "met", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "phi", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "sumEt", _status, _branches, _whitelist);
+  RecoParticle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+
+  flatutils::setStatus(_tree, _name, "mass", _status, _branches, _whitelist);
 }
 
 void
-simpletree::Met::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+simpletree::RecoParticleM::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::setStatusAndAddress(_tree, name_, "met", &met, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "phi", &phi, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "sumEt", &sumEt, _branches, _whitelist);
+  RecoParticle::array_data::setAddress(_tree, _name, _branches, _whitelist);
+
+  flatutils::setStatusAndAddress(_tree, _name, "mass", mass, _branches, _whitelist);
 }
 
 void
-simpletree::Met::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
+simpletree::RecoParticleM::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  flatutils::book(_tree, name_, "met", "", 'F', &met, _branches, _whitelist);
-  flatutils::book(_tree, name_, "phi", "", 'F', &phi, _branches, _whitelist);
-  flatutils::book(_tree, name_, "sumEt", "", 'F', &sumEt, _branches, _whitelist);
+  RecoParticle::array_data::book(_tree, _name, _branches, _whitelist);
+
+  flatutils::book(_tree, _name, "mass", "[" + _name + ".size]", 'F', mass, _branches, _whitelist);
 }
 
-simpletree::Met&
-simpletree::Met::operator=(Met const& _rhs)
+simpletree::RecoParticleM::RecoParticleM(array_data& _data, UInt_t _idx) :
+  RecoParticle(_data, _idx),
+  mass(_data.mass[_idx])
 {
-  met = _rhs.met;
-  phi = _rhs.phi;
-  sumEt = _rhs.sumEt;
+}
+
+simpletree::RecoParticleM::RecoParticleM(RecoParticleM const& _src) :
+  RecoParticle(_src),
+  mass(_src.mass)
+{
+}
+
+simpletree::RecoParticleM&
+simpletree::RecoParticleM::operator=(RecoParticleM const& _rhs)
+{
+  RecoParticle::operator=(_rhs);
+
+  mass = _rhs.mass;
   return *this;
 }
 
 void
-simpletree::Met::init()
+simpletree::RecoParticleM::init()
 {
-  met = 0.;
-  phi = 0.;
-  sumEt = 0.;
-}
+  RecoParticle::init();
 
-simpletree::CorrectedMet::CorrectedMet(TString const& _name) :
-  Met(_name)
-{
-}
-
-simpletree::CorrectedMet::CorrectedMet(CorrectedMet const& _src) :
-  Met(_src),
-  metCorrUp(_src.metCorrUp),
-  phiCorrUp(_src.phiCorrUp),
-  metCorrDown(_src.metCorrDown),
-  phiCorrDown(_src.phiCorrDown),
-  metJetRes(_src.metJetRes),
-  phiJetRes(_src.phiJetRes),
-  metUnclUp(_src.metUnclUp),
-  phiUnclUp(_src.phiUnclUp),
-  metUnclDown(_src.metUnclDown),
-  phiUnclDown(_src.phiUnclDown)
-{
-}
-
-void
-simpletree::CorrectedMet::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
-{
-  Met::setStatus(_tree, _status, _branches, _whitelist);
-
-  flatutils::setStatus(_tree, name_, "metCorrUp", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "phiCorrUp", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "metCorrDown", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "phiCorrDown", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "metJetRes", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "phiJetRes", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "metUnclUp", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "phiUnclUp", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "metUnclDown", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, name_, "phiUnclDown", _status, _branches, _whitelist);
-}
-
-void
-simpletree::CorrectedMet::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
-{
-  Met::setAddress(_tree, _branches, _whitelist);
-
-  flatutils::setStatusAndAddress(_tree, name_, "metCorrUp", &metCorrUp, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "phiCorrUp", &phiCorrUp, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "metCorrDown", &metCorrDown, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "phiCorrDown", &phiCorrDown, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "metJetRes", &metJetRes, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "phiJetRes", &phiJetRes, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "metUnclUp", &metUnclUp, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "phiUnclUp", &phiUnclUp, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "metUnclDown", &metUnclDown, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, name_, "phiUnclDown", &phiUnclDown, _branches, _whitelist);
-}
-
-void
-simpletree::CorrectedMet::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
-{
-  Met::book(_tree, _branches, _whitelist);
-
-  flatutils::book(_tree, name_, "metCorrUp", "", 'F', &metCorrUp, _branches, _whitelist);
-  flatutils::book(_tree, name_, "phiCorrUp", "", 'F', &phiCorrUp, _branches, _whitelist);
-  flatutils::book(_tree, name_, "metCorrDown", "", 'F', &metCorrDown, _branches, _whitelist);
-  flatutils::book(_tree, name_, "phiCorrDown", "", 'F', &phiCorrDown, _branches, _whitelist);
-  flatutils::book(_tree, name_, "metJetRes", "", 'F', &metJetRes, _branches, _whitelist);
-  flatutils::book(_tree, name_, "phiJetRes", "", 'F', &phiJetRes, _branches, _whitelist);
-  flatutils::book(_tree, name_, "metUnclUp", "", 'F', &metUnclUp, _branches, _whitelist);
-  flatutils::book(_tree, name_, "phiUnclUp", "", 'F', &phiUnclUp, _branches, _whitelist);
-  flatutils::book(_tree, name_, "metUnclDown", "", 'F', &metUnclDown, _branches, _whitelist);
-  flatutils::book(_tree, name_, "phiUnclDown", "", 'F', &phiUnclDown, _branches, _whitelist);
-}
-
-simpletree::CorrectedMet&
-simpletree::CorrectedMet::operator=(CorrectedMet const& _rhs)
-{
-  Met::operator=(_rhs);
-
-  metCorrUp = _rhs.metCorrUp;
-  phiCorrUp = _rhs.phiCorrUp;
-  metCorrDown = _rhs.metCorrDown;
-  phiCorrDown = _rhs.phiCorrDown;
-  metJetRes = _rhs.metJetRes;
-  phiJetRes = _rhs.phiJetRes;
-  metUnclUp = _rhs.metUnclUp;
-  phiUnclUp = _rhs.phiUnclUp;
-  metUnclDown = _rhs.metUnclDown;
-  phiUnclDown = _rhs.phiUnclDown;
-  return *this;
-}
-
-void
-simpletree::CorrectedMet::init()
-{
-  Met::init();
-
-  metCorrUp = 0.;
-  phiCorrUp = 0.;
-  metCorrDown = 0.;
-  phiCorrDown = 0.;
-  metJetRes = 0.;
-  phiJetRes = 0.;
-  metUnclUp = 0.;
-  phiUnclUp = 0.;
-  metUnclDown = 0.;
-  phiUnclDown = 0.;
+  mass = 0.;
 }
 
 simpletree::Photon::array_data::array_data() :
-  Particle::array_data()
+  RecoParticle::array_data()
 {
 }
 
 void
 simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  Particle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+  RecoParticle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "scRawPt", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "chIso", _status, _branches, _whitelist);
@@ -477,23 +361,19 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "time", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "timeSpan", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "genMatchDR", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "pixelVeto", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "electronVeto", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "csafeVeto", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "loose", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "medium", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "tight", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "highpt", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "matchL1", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "matchHLT", _status, _branches, _whitelist);
 }
 
 void
 simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  Particle::array_data::setAddress(_tree, _name, _branches, _whitelist);
+  RecoParticle::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "scRawPt", scRawPt, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "chIso", chIso, _branches, _whitelist);
@@ -534,23 +414,19 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "time", time, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "timeSpan", timeSpan, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "genMatchDR", genMatchDR, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "pixelVeto", pixelVeto, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "electronVeto", electronVeto, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "csafeVeto", csafeVeto, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "loose", loose, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "medium", medium, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "tight", tight, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "highpt", highpt, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "matchL1", matchL1, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "matchHLT", matchHLT, _branches, _whitelist);
 }
 
 void
 simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  Particle::array_data::book(_tree, _name, _branches, _whitelist);
+  RecoParticle::array_data::book(_tree, _name, _branches, _whitelist);
 
   flatutils::book(_tree, _name, "scRawPt", "[" + _name + ".size]", 'F', scRawPt, _branches, _whitelist);
   flatutils::book(_tree, _name, "chIso", "[" + _name + ".size]", 'F', chIso, _branches, _whitelist);
@@ -591,21 +467,17 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "time", "[" + _name + ".size]", 'F', time, _branches, _whitelist);
   flatutils::book(_tree, _name, "timeSpan", "[" + _name + ".size]", 'F', timeSpan, _branches, _whitelist);
   flatutils::book(_tree, _name, "genMatchDR", "[" + _name + ".size]", 'F', genMatchDR, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
   flatutils::book(_tree, _name, "isEB", "[" + _name + ".size]", 'O', isEB, _branches, _whitelist);
   flatutils::book(_tree, _name, "pixelVeto", "[" + _name + ".size]", 'O', pixelVeto, _branches, _whitelist);
   flatutils::book(_tree, _name, "electronVeto", "[" + _name + ".size]", 'O', electronVeto, _branches, _whitelist);
   flatutils::book(_tree, _name, "csafeVeto", "[" + _name + ".size]", 'O', csafeVeto, _branches, _whitelist);
-  flatutils::book(_tree, _name, "loose", "[" + _name + ".size]", 'O', loose, _branches, _whitelist);
-  flatutils::book(_tree, _name, "medium", "[" + _name + ".size]", 'O', medium, _branches, _whitelist);
   flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
   flatutils::book(_tree, _name, "highpt", "[" + _name + ".size]", 'O', highpt, _branches, _whitelist);
   flatutils::book(_tree, _name, "matchL1", TString::Format("[" + _name + ".size][%d]", nPhotonL1Objects), 'O', matchL1, _branches, _whitelist);
-  flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nPhotonHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
 simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
-  Particle(_data, _idx),
+  RecoParticle(_data, _idx),
   scRawPt(_data.scRawPt[_idx]),
   chIso(_data.chIso[_idx]),
   chWorstIso(_data.chWorstIso[_idx]),
@@ -645,22 +517,18 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   time(_data.time[_idx]),
   timeSpan(_data.timeSpan[_idx]),
   genMatchDR(_data.genMatchDR[_idx]),
-  matchedGen(_data.matchedGen[_idx]),
   isEB(_data.isEB[_idx]),
   pixelVeto(_data.pixelVeto[_idx]),
   electronVeto(_data.electronVeto[_idx]),
   csafeVeto(_data.csafeVeto[_idx]),
-  loose(_data.loose[_idx]),
-  medium(_data.medium[_idx]),
   tight(_data.tight[_idx]),
   highpt(_data.highpt[_idx]),
-  matchL1(_data.matchL1[_idx]),
-  matchHLT(_data.matchHLT[_idx])
+  matchL1(_data.matchL1[_idx])
 {
 }
 
 simpletree::Photon::Photon(Photon const& _src) :
-  Particle(_src),
+  RecoParticle(_src),
   scRawPt(_src.scRawPt),
   chIso(_src.chIso),
   chWorstIso(_src.chWorstIso),
@@ -700,24 +568,20 @@ simpletree::Photon::Photon(Photon const& _src) :
   time(_src.time),
   timeSpan(_src.timeSpan),
   genMatchDR(_src.genMatchDR),
-  matchedGen(_src.matchedGen),
   isEB(_src.isEB),
   pixelVeto(_src.pixelVeto),
   electronVeto(_src.electronVeto),
   csafeVeto(_src.csafeVeto),
-  loose(_src.loose),
-  medium(_src.medium),
   tight(_src.tight),
   highpt(_src.highpt)
 {
   std::copy_n(_src.matchL1, nPhotonL1Objects, matchL1);
-  std::copy_n(_src.matchHLT, nPhotonHLTObjects, matchHLT);
 }
 
 simpletree::Photon&
 simpletree::Photon::operator=(Photon const& _rhs)
 {
-  Particle::operator=(_rhs);
+  RecoParticle::operator=(_rhs);
 
   scRawPt = _rhs.scRawPt;
   chIso = _rhs.chIso;
@@ -758,24 +622,20 @@ simpletree::Photon::operator=(Photon const& _rhs)
   time = _rhs.time;
   timeSpan = _rhs.timeSpan;
   genMatchDR = _rhs.genMatchDR;
-  matchedGen = _rhs.matchedGen;
   isEB = _rhs.isEB;
   pixelVeto = _rhs.pixelVeto;
   electronVeto = _rhs.electronVeto;
   csafeVeto = _rhs.csafeVeto;
-  loose = _rhs.loose;
-  medium = _rhs.medium;
   tight = _rhs.tight;
   highpt = _rhs.highpt;
   std::copy_n(_rhs.matchL1, nPhotonL1Objects, matchL1);
-  std::copy_n(_rhs.matchHLT, nPhotonHLTObjects, matchHLT);
   return *this;
 }
 
 void
 simpletree::Photon::init()
 {
-  Particle::init();
+  RecoParticle::init();
 
   scRawPt = 0.;
   chIso = 0.;
@@ -816,17 +676,13 @@ simpletree::Photon::init()
   time = 0.;
   timeSpan = 0.;
   genMatchDR = 0.;
-  matchedGen = 0;
   isEB = false;
   pixelVeto = false;
   electronVeto = false;
   csafeVeto = false;
-  loose = false;
-  medium = false;
   tight = false;
   highpt = false;
   std::fill(matchL1, matchL1 + nPhotonL1Objects, false);
-  std::fill(matchHLT, matchHLT + nPhotonHLTObjects, false);
 }
 
 double const simpletree::Photon::chIsoCuts[2][3]{{3.32, 1.37, 0.76}, {1.97, 1.10, 0.56}};
@@ -836,96 +692,75 @@ double const simpletree::Photon::sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.02
 double const simpletree::Photon::hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
 simpletree::Lepton::array_data::array_data() :
-  Particle::array_data()
+  RecoParticle::array_data()
 {
 }
 
 void
 simpletree::Lepton::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  Particle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+  RecoParticle::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
-  flatutils::setStatus(_tree, _name, "matchedGen", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "tauDecay", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hadDecay", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "positive", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "loose", _status, _branches, _whitelist);
-  flatutils::setStatus(_tree, _name, "tight", _status, _branches, _whitelist);
 }
 
 void
 simpletree::Lepton::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  Particle::array_data::setAddress(_tree, _name, _branches, _whitelist);
+  RecoParticle::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
-  flatutils::setStatusAndAddress(_tree, _name, "matchedGen", matchedGen, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "tauDecay", tauDecay, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hadDecay", hadDecay, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "positive", positive, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "loose", loose, _branches, _whitelist);
-  flatutils::setStatusAndAddress(_tree, _name, "tight", tight, _branches, _whitelist);
 }
 
 void
 simpletree::Lepton::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  Particle::array_data::book(_tree, _name, _branches, _whitelist);
+  RecoParticle::array_data::book(_tree, _name, _branches, _whitelist);
 
-  flatutils::book(_tree, _name, "matchedGen", "[" + _name + ".size]", 'I', matchedGen, _branches, _whitelist);
   flatutils::book(_tree, _name, "tauDecay", "[" + _name + ".size]", 'O', tauDecay, _branches, _whitelist);
   flatutils::book(_tree, _name, "hadDecay", "[" + _name + ".size]", 'O', hadDecay, _branches, _whitelist);
   flatutils::book(_tree, _name, "positive", "[" + _name + ".size]", 'O', positive, _branches, _whitelist);
-  flatutils::book(_tree, _name, "loose", "[" + _name + ".size]", 'O', loose, _branches, _whitelist);
-  flatutils::book(_tree, _name, "tight", "[" + _name + ".size]", 'O', tight, _branches, _whitelist);
 }
 
 simpletree::Lepton::Lepton(array_data& _data, UInt_t _idx) :
-  Particle(_data, _idx),
-  matchedGen(_data.matchedGen[_idx]),
+  RecoParticle(_data, _idx),
   tauDecay(_data.tauDecay[_idx]),
   hadDecay(_data.hadDecay[_idx]),
-  positive(_data.positive[_idx]),
-  loose(_data.loose[_idx]),
-  tight(_data.tight[_idx])
+  positive(_data.positive[_idx])
 {
 }
 
 simpletree::Lepton::Lepton(Lepton const& _src) :
-  Particle(_src),
-  matchedGen(_src.matchedGen),
+  RecoParticle(_src),
   tauDecay(_src.tauDecay),
   hadDecay(_src.hadDecay),
-  positive(_src.positive),
-  loose(_src.loose),
-  tight(_src.tight)
+  positive(_src.positive)
 {
 }
 
 simpletree::Lepton&
 simpletree::Lepton::operator=(Lepton const& _rhs)
 {
-  Particle::operator=(_rhs);
+  RecoParticle::operator=(_rhs);
 
-  matchedGen = _rhs.matchedGen;
   tauDecay = _rhs.tauDecay;
   hadDecay = _rhs.hadDecay;
   positive = _rhs.positive;
-  loose = _rhs.loose;
-  tight = _rhs.tight;
   return *this;
 }
 
 void
 simpletree::Lepton::init()
 {
-  Particle::init();
+  RecoParticle::init();
 
-  matchedGen = 0;
   tauDecay = false;
   hadDecay = false;
   positive = false;
-  loose = false;
-  tight = false;
 }
 
 simpletree::Electron::array_data::array_data() :
@@ -1136,14 +971,14 @@ simpletree::Muon::init()
 }
 
 simpletree::Tau::array_data::array_data() :
-  ParticleM::array_data()
+  RecoParticleM::array_data()
 {
 }
 
 void
 simpletree::Tau::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+  RecoParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
 
   flatutils::setStatus(_tree, _name, "decayMode", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "combIso", _status, _branches, _whitelist);
@@ -1152,7 +987,7 @@ simpletree::Tau::array_data::setStatus(TTree& _tree, TString const& _name, Bool_
 void
 simpletree::Tau::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
+  RecoParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
 
   flatutils::setStatusAndAddress(_tree, _name, "decayMode", decayMode, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "combIso", combIso, _branches, _whitelist);
@@ -1161,21 +996,21 @@ simpletree::Tau::array_data::setAddress(TTree& _tree, TString const& _name, flat
 void
 simpletree::Tau::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
 {
-  ParticleM::array_data::book(_tree, _name, _branches, _whitelist);
+  RecoParticleM::array_data::book(_tree, _name, _branches, _whitelist);
 
   flatutils::book(_tree, _name, "decayMode", "[" + _name + ".size]", 'O', decayMode, _branches, _whitelist);
   flatutils::book(_tree, _name, "combIso", "[" + _name + ".size]", 'F', combIso, _branches, _whitelist);
 }
 
 simpletree::Tau::Tau(array_data& _data, UInt_t _idx) :
-  ParticleM(_data, _idx),
+  RecoParticleM(_data, _idx),
   decayMode(_data.decayMode[_idx]),
   combIso(_data.combIso[_idx])
 {
 }
 
 simpletree::Tau::Tau(Tau const& _src) :
-  ParticleM(_src),
+  RecoParticleM(_src),
   decayMode(_src.decayMode),
   combIso(_src.combIso)
 {
@@ -1184,7 +1019,7 @@ simpletree::Tau::Tau(Tau const& _src) :
 simpletree::Tau&
 simpletree::Tau::operator=(Tau const& _rhs)
 {
-  ParticleM::operator=(_rhs);
+  RecoParticleM::operator=(_rhs);
 
   decayMode = _rhs.decayMode;
   combIso = _rhs.combIso;
@@ -1194,10 +1029,263 @@ simpletree::Tau::operator=(Tau const& _rhs)
 void
 simpletree::Tau::init()
 {
-  ParticleM::init();
+  RecoParticleM::init();
 
   decayMode = false;
   combIso = 0.;
+}
+
+simpletree::Jet::array_data::array_data() :
+  RecoParticleM::array_data()
+{
+}
+
+void
+simpletree::Jet::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  RecoParticleM::array_data::setStatus(_tree, _name, _status, _branches, _whitelist);
+
+  flatutils::setStatus(_tree, _name, "ptRaw", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptCorrUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptCorrDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ptResCorr", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "phiResCorr", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "cisv", _status, _branches, _whitelist);
+}
+
+void
+simpletree::Jet::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  RecoParticleM::array_data::setAddress(_tree, _name, _branches, _whitelist);
+
+  flatutils::setStatusAndAddress(_tree, _name, "ptRaw", ptRaw, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptCorrUp", ptCorrUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptCorrDown", ptCorrDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ptResCorr", ptResCorr, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "phiResCorr", phiResCorr, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "cisv", cisv, _branches, _whitelist);
+}
+
+void
+simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  RecoParticleM::array_data::book(_tree, _name, _branches, _whitelist);
+
+  flatutils::book(_tree, _name, "ptRaw", "[" + _name + ".size]", 'F', ptRaw, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptCorrUp", "[" + _name + ".size]", 'F', ptCorrUp, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptCorrDown", "[" + _name + ".size]", 'F', ptCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ptResCorr", "[" + _name + ".size]", 'F', ptResCorr, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phiResCorr", "[" + _name + ".size]", 'F', phiResCorr, _branches, _whitelist);
+  flatutils::book(_tree, _name, "cisv", "[" + _name + ".size]", 'F', cisv, _branches, _whitelist);
+}
+
+simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
+  RecoParticleM(_data, _idx),
+  ptRaw(_data.ptRaw[_idx]),
+  ptCorrUp(_data.ptCorrUp[_idx]),
+  ptCorrDown(_data.ptCorrDown[_idx]),
+  ptResCorr(_data.ptResCorr[_idx]),
+  phiResCorr(_data.phiResCorr[_idx]),
+  cisv(_data.cisv[_idx])
+{
+}
+
+simpletree::Jet::Jet(Jet const& _src) :
+  RecoParticleM(_src),
+  ptRaw(_src.ptRaw),
+  ptCorrUp(_src.ptCorrUp),
+  ptCorrDown(_src.ptCorrDown),
+  ptResCorr(_src.ptResCorr),
+  phiResCorr(_src.phiResCorr),
+  cisv(_src.cisv)
+{
+}
+
+simpletree::Jet&
+simpletree::Jet::operator=(Jet const& _rhs)
+{
+  RecoParticleM::operator=(_rhs);
+
+  ptRaw = _rhs.ptRaw;
+  ptCorrUp = _rhs.ptCorrUp;
+  ptCorrDown = _rhs.ptCorrDown;
+  ptResCorr = _rhs.ptResCorr;
+  phiResCorr = _rhs.phiResCorr;
+  cisv = _rhs.cisv;
+  return *this;
+}
+
+void
+simpletree::Jet::init()
+{
+  RecoParticleM::init();
+
+  ptRaw = 0.;
+  ptCorrUp = 0.;
+  ptCorrDown = 0.;
+  ptResCorr = 0.;
+  phiResCorr = 0.;
+  cisv = 0.;
+}
+
+simpletree::Met::Met(TString const& _name) :
+  name_(_name)
+{
+}
+
+simpletree::Met::Met(Met const& _src) :
+  name_(_src.name_),
+  met(_src.met),
+  phi(_src.phi),
+  sumEt(_src.sumEt)
+{
+}
+
+void
+simpletree::Met::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatus(_tree, name_, "met", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phi", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "sumEt", _status, _branches, _whitelist);
+}
+
+void
+simpletree::Met::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatusAndAddress(_tree, name_, "met", &met, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phi", &phi, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "sumEt", &sumEt, _branches, _whitelist);
+}
+
+void
+simpletree::Met::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
+{
+  flatutils::book(_tree, name_, "met", "", 'F', &met, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phi", "", 'F', &phi, _branches, _whitelist);
+  flatutils::book(_tree, name_, "sumEt", "", 'F', &sumEt, _branches, _whitelist);
+}
+
+simpletree::Met&
+simpletree::Met::operator=(Met const& _rhs)
+{
+  met = _rhs.met;
+  phi = _rhs.phi;
+  sumEt = _rhs.sumEt;
+  return *this;
+}
+
+void
+simpletree::Met::init()
+{
+  met = 0.;
+  phi = 0.;
+  sumEt = 0.;
+}
+
+simpletree::CorrectedMet::CorrectedMet(TString const& _name) :
+  Met(_name)
+{
+}
+
+simpletree::CorrectedMet::CorrectedMet(CorrectedMet const& _src) :
+  Met(_src),
+  metCorrUp(_src.metCorrUp),
+  phiCorrUp(_src.phiCorrUp),
+  metCorrDown(_src.metCorrDown),
+  phiCorrDown(_src.phiCorrDown),
+  metJetRes(_src.metJetRes),
+  phiJetRes(_src.phiJetRes),
+  metUnclUp(_src.metUnclUp),
+  phiUnclUp(_src.phiUnclUp),
+  metUnclDown(_src.metUnclDown),
+  phiUnclDown(_src.phiUnclDown)
+{
+}
+
+void
+simpletree::CorrectedMet::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  Met::setStatus(_tree, _status, _branches, _whitelist);
+
+  flatutils::setStatus(_tree, name_, "metCorrUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiCorrUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metCorrDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiCorrDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metJetRes", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiJetRes", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metUnclUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiUnclUp", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "metUnclDown", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "phiUnclDown", _status, _branches, _whitelist);
+}
+
+void
+simpletree::CorrectedMet::setAddress(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  Met::setAddress(_tree, _branches, _whitelist);
+
+  flatutils::setStatusAndAddress(_tree, name_, "metCorrUp", &metCorrUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiCorrUp", &phiCorrUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metCorrDown", &metCorrDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiCorrDown", &phiCorrDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metJetRes", &metJetRes, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiJetRes", &phiJetRes, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metUnclUp", &metUnclUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiUnclUp", &phiUnclUp, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "metUnclDown", &metUnclDown, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "phiUnclDown", &phiUnclDown, _branches, _whitelist);
+}
+
+void
+simpletree::CorrectedMet::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
+{
+  Met::book(_tree, _branches, _whitelist);
+
+  flatutils::book(_tree, name_, "metCorrUp", "", 'F', &metCorrUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiCorrUp", "", 'F', &phiCorrUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metCorrDown", "", 'F', &metCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiCorrDown", "", 'F', &phiCorrDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metJetRes", "", 'F', &metJetRes, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiJetRes", "", 'F', &phiJetRes, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metUnclUp", "", 'F', &metUnclUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiUnclUp", "", 'F', &phiUnclUp, _branches, _whitelist);
+  flatutils::book(_tree, name_, "metUnclDown", "", 'F', &metUnclDown, _branches, _whitelist);
+  flatutils::book(_tree, name_, "phiUnclDown", "", 'F', &phiUnclDown, _branches, _whitelist);
+}
+
+simpletree::CorrectedMet&
+simpletree::CorrectedMet::operator=(CorrectedMet const& _rhs)
+{
+  Met::operator=(_rhs);
+
+  metCorrUp = _rhs.metCorrUp;
+  phiCorrUp = _rhs.phiCorrUp;
+  metCorrDown = _rhs.metCorrDown;
+  phiCorrDown = _rhs.phiCorrDown;
+  metJetRes = _rhs.metJetRes;
+  phiJetRes = _rhs.phiJetRes;
+  metUnclUp = _rhs.metUnclUp;
+  phiUnclUp = _rhs.phiUnclUp;
+  metUnclDown = _rhs.metUnclDown;
+  phiUnclDown = _rhs.phiUnclDown;
+  return *this;
+}
+
+void
+simpletree::CorrectedMet::init()
+{
+  Met::init();
+
+  metCorrUp = 0.;
+  phiCorrUp = 0.;
+  metCorrDown = 0.;
+  phiCorrDown = 0.;
+  metJetRes = 0.;
+  phiJetRes = 0.;
+  metUnclUp = 0.;
+  phiUnclUp = 0.;
+  metUnclDown = 0.;
+  phiUnclDown = 0.;
 }
 
 simpletree::Parton::array_data::array_data() :

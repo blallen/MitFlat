@@ -62,14 +62,16 @@ argParser.add_argument('-L', '--linkdef', action = 'store_true', dest = 'makeLin
 
 args = argParser.parse_args()
 
-objPat = re.compile('^\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
-brnPat = re.compile('^([a-zA-Z_][a-zA-Z0-9_]*)(|\\[.+\\])/([^ ]+)(?:| += +(.*))$')
-fncPat = re.compile('^.* +\\{.*; *\\}$')
-statPat = re.compile('^static .+$')
+objPat = re.compile('\\[([A-Z][a-zA-Z0-9]+)(?:|\\:(SINGLE|MAX=.+|SIZE=.+|[A-Z][a-zA-Z0-9]+))\\]$')
+brnPat = re.compile('([a-zA-Z_][a-zA-Z0-9_]*)(|\\[.+\\])/([^ ]+)(?:| += +(.*))$')
+fncPat = re.compile('.* +\\{.*; *\\}$')
+statPat = re.compile('static .+$')
 incPat = re.compile('#include [^ ]+$')
 typedefPat = re.compile('typedef [^ ]+ [^ ]+$')
 enumPat = re.compile('enum *([^ ]+) *\\{')
-treePat = re.compile('^\\{([^\\}]+)\\}$')
+constPat = re.compile('([a-zA-Z_][a-zA-Z0-9_]*) +const +([a-zA-Z0-9_]+)(\([a-zA-Z0-9_]+\)| *= *[a-zA-Z0-9_]+);')
+treePat = re.compile('\\{([^\\}]+)\\}$')
+assertPat = re.compile('ASSERT +(.+)')
 
 ObjDef = collections.namedtuple('ObjDef', ['branches', 'functions', 'statics'])
 BranchDef = collections.namedtuple('BranchDef', ['name', 'type', 'size', 'init'])
@@ -77,6 +79,8 @@ BranchDef = collections.namedtuple('BranchDef', ['name', 'type', 'size', 'init']
 includes = []
 typedefs = []
 enums = []
+consts = []
+assertions = []
 objs = [] # keep object declarations in order of appearance in the input
 inheritance = {}
 trees = []
@@ -107,8 +111,10 @@ with open(args.config) as configFile:
                     if elem:
                         enums[-1][1].append(elem)
 
-        elif objPat.match(line):
-            matches = objPat.match(line)
+            continue
+
+        matches = objPat.match(line)
+        if matches:
             objName, colSpec = [matches.group(i) for i in range(1, 3)]
             currentObj = objName
             objs.append(currentObj)
@@ -139,8 +145,10 @@ with open(args.config) as configFile:
             else:
                 sizes[currentObj] = 32
 
-        elif brnPat.match(line):
-            matches = brnPat.match(line)
+            continue
+
+        matches = brnPat.match(line)
+        if matches:
             brName, arrSize, brType, brInit = [matches.group(i) for i in range(1, 5)]
             if arrSize:
                 try:
@@ -157,7 +165,10 @@ with open(args.config) as configFile:
             else:
                 raise RuntimeError('Branch given with no context')
 
-        elif fncPat.match(line):
+            continue
+
+        matches = fncPat.match(line)
+        if matches:
             if currentObj:
                 defs[currentObj].functions.append(line)
             elif currentTree:
@@ -165,7 +176,10 @@ with open(args.config) as configFile:
             else:
                 raise RuntimeError('Function given with no context')
 
-        elif statPat.match(line):
+            continue
+
+        matches = statPat.match(line)
+        if matches:
             if currentObj:
                 defs[currentObj].statics.append(line)
             elif currentTree:
@@ -173,37 +187,63 @@ with open(args.config) as configFile:
             else:
                 raise RuntimeError('Static given with no context')
 
-        elif incPat.match(line):
+            continue
+
+        matches = incPat.match(line)
+        if matches:
             currentObj = ''
             currentTree = ''
 
             includes.append(line)
 
-        elif typedefPat.match(line):
+            continue
+
+        matches = typedefPat.match(line)
+        if matches:
             currentObj = ''
             currentTree = ''
 
             typedefs.append(line)
 
-        elif enumPat.match(line):
+            continue
+
+        matches = enumPat.match(line)
+        if matches:
             currentObj = ''
             currentTree = ''
 
             enclosure = 'enum'
-            matches = enumPat.match(line)
             enums.append((matches.group(1), []))
 
-        elif treePat.match(line):
-            matches = treePat.match(line)
+            continue
+
+        matches = constPat.match(line)
+        if matches:
+            currentObj = ''
+            currentTree = ''
+            
+            consts.append((matches.group(1), matches.group(2), matches.group(3)))
+
+            continue
+
+        matches = assertPat.match(line)
+        if matches:
+            assertions.append(matches.group(1))
+
+            continue
+
+        matches = treePat.match(line)
+        if matches:
             treeName = matches.group(1)
             currentTree = treeName
             trees.append(currentTree)
             treeDefs[currentTree] = ObjDef([], [], [])
             currentObj = '' # no more object definitions
 
-        else:
-            if line and not line.startswith('%'):
-                print 'Skipping unrecognized pattern:', line
+            continue
+
+        if line and not line.startswith('%'):
+            print 'Skipping unrecognized pattern:', line
 
 if len(treeDefs) == 0:
     treeDefs['Event'] = ObjDef([('runNumber', 'i'), ('lumiNumber', 'i'), ('eventNumber', 'i'), ('weight', 'D')], [], [])
@@ -267,6 +307,10 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
             header.write('\n  };\n')
 
             header.write('\n  extern TString ' + name + 'Name[' + items[-1] +'];\n')
+
+    if len(consts) != 0:
+        for typename, name, init in consts:
+            header.write('\n  ' + typename + ' const ' + name + init + ';\n')
 
     # define all objects
     for obj in objs:
@@ -372,6 +416,16 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
     header.write('#include "Objects_' + namespace + '.h"\n')
 
     header.write('\nnamespace ' + namespace + ' {\n')
+
+    if len(assertions) != 0:
+        header.write('\n  enum {\n')
+        for iA, ast in enumerate(assertions):
+            header.write('    AST%d = sizeof(char[(%s) ? 1 : -1])' % (iA, ast))
+            if iA != len(assertions) - 1:
+                header.write(',\n')
+            else:
+                header.write('\n')
+        header.write('  };\n')
 
     if len(colObjs) != 0:
         for obj in colObjs:

@@ -55,12 +55,24 @@ enum MuonHLTObject {
   nMuonHLTObjects
 };
 
+unsigned const nMaxHLTObjects(nElectronHLTObjects);
+
+ASSERT nMaxHLTObjects >= nPhotonHLTObjects
+ASSERT nMaxHLTObjects >= nElectronHLTObjects
+ASSERT nMaxHLTObjects >= nMuonHLTObjects
+
 [Particle:MAX=256]
 pt/F
 eta/F
 phi/F
-virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
-virtual TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
+LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, m()); }
+TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, m()); return p4; }
+virtual double e() const { return pt * std::cosh(eta); }
+double p() const { return pt * std::cosh(eta); }
+double px() const { return pt * std::cos(phi); }
+double py() const { return pt * std::sin(phi); }
+double pz() const { return pt * std::sinh(eta); }
+virtual double m() const { return 0.; }
 double dEta(Particle const& p) const { return eta - p.eta; }
 double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
 double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
@@ -68,38 +80,22 @@ double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
 
 [ParticleM:Particle]
 mass/F
-LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
-TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
+double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
+double m() const override { return mass; }
 
-[Jet:ParticleM]
-mjid/O
-ptRaw/F
-ptCorrUp/F
-ptCorrDown/F
-ptResCorr/F
-phiResCorr/F
-cisv/F
+[RecoParticle:Particle]
+loose/O
+medium/O
+tight/O
+matchedGen/I
+matchHLT[nMaxHLTObjects]/O
 
-[Met:SINGLE]
-met/F
-phi/F
-sumEt/F
-virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+[RecoParticleM:RecoParticle]
+mass/F
+double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
+double m() const override { return mass; }
 
-[CorrectedMet:Met]
-metCorrUp/F
-phiCorrUp/F
-metCorrDown/F
-phiCorrDown/F
-metJetRes/F
-phiJetRes/F
-metUnclUp/F
-phiUnclUp/F
-metUnclDown/F
-phiUnclDown/F
-virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
-
-[Photon:Particle]
+[Photon:RecoParticle]
 scRawPt/F
 chIso/F
 chWorstIso/F
@@ -139,17 +135,13 @@ phiWidth/F
 time/F
 timeSpan/F
 genMatchDR/F
-matchedGen/I
 isEB/O
 pixelVeto/O
 electronVeto/O
 csafeVeto/O
-loose/O
-medium/O
 tight/O
 highpt/O
 matchL1[nPhotonL1Objects]/O
-matchHLT[nPhotonHLTObjects]/O
 
 bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
@@ -162,18 +154,13 @@ static double const phIsoCuts[2][3]{{0.81, 0.28, 0.08}, {0.83, 0.39, 0.16}};
 static double const sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.0274, 0.0268, 0.0268}};
 static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
-[Lepton:Particle]
+[Lepton:RecoParticle]
 int charge() const { return positive ? 1 : -1; }
-matchedGen/I
 tauDecay/O
 hadDecay/O
 positive/O
-loose/O
-tight/O
 
 [Electron:Lepton]
-LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 5.11e-4); }
-TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 5.11e-4); return p4; }
 chIsoPh/F
 nhIsoPh/F
 phIsoPh/F
@@ -188,6 +175,7 @@ isEB/O
 veto/O
 matchHLT[nElectronHLTObjects]/O
 
+double m() const override { return 5.109989e-4; }
 bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
 bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
 bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
@@ -195,14 +183,41 @@ bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 
 bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
 
 [Muon:Lepton]
-LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.1057); }
-TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.1057); return p4; }
 combRelIso/F
 matchHLT[nMuonHLTObjects]/O
 
-[Tau:ParticleM]
+double m() const override { return 1.05658e-2; }
+
+[Tau:RecoParticleM]
 decayMode/O
 combIso/F
+
+[Jet:RecoParticleM]
+ptRaw/F
+ptCorrUp/F
+ptCorrDown/F
+ptResCorr/F
+phiResCorr/F
+cisv/F
+
+[Met:SINGLE]
+met/F
+phi/F
+sumEt/F
+virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
+
+[CorrectedMet:Met]
+metCorrUp/F
+phiCorrUp/F
+metCorrDown/F
+phiCorrDown/F
+metJetRes/F
+phiJetRes/F
+metUnclUp/F
+phiUnclUp/F
+metUnclDown/F
+phiUnclDown/F
+virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
 [Parton:ParticleM]
 pid/B
