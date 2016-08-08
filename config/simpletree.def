@@ -4,7 +4,6 @@
 #include "TVector2.h"
 
 #include <cmath>
-#include <algorithm>
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 

@@ -1,4 +1,4 @@
-#include "/home/ballen/cms/cmssw/044/CMSSW_8_0_7_patch3/src/MitMonoX/monophoton/MitFlat/DataFormats/interface/Objects_simpletree.h"
+#include "MitFlat/DataFormats/interface/Objects_simpletree.h"
 
 #ifdef __CLING__
 #pragma link off all globals;
