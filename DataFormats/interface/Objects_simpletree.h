@@ -6,7 +6,6 @@
 #include "TLorentzVector.h"
 #include "TVector2.h"
 #include <cmath>
-#include <algorithm>
 #include "TString.h"
 #include "Rtypes.h"
 class TTree;
