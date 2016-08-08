@@ -5,15 +5,22 @@
 
 namespace simpletree {
 
+  enum {
+    AST0 = sizeof(char[(nMaxHLTObjects >= nPhotonHLTObjects) ? 1 : -1]),
+    AST1 = sizeof(char[(nMaxHLTObjects >= nElectronHLTObjects) ? 1 : -1]),
+    AST2 = sizeof(char[(nMaxHLTObjects >= nMuonHLTObjects) ? 1 : -1])
+  };
+
   typedef flatutils::Collection<Particle, flatutils::DynamicCollection> ParticleCollection;
   typedef flatutils::Collection<ParticleM, ParticleCollection> ParticleMCollection;
-  typedef flatutils::Collection<ParticleReco, ParticleMCollection> ParticleRecoCollection;
-  typedef flatutils::Collection<Jet, ParticleRecoCollection> JetCollection;
-  typedef flatutils::Collection<Photon, ParticleRecoCollection> PhotonCollection;
-  typedef flatutils::Collection<Lepton, ParticleRecoCollection> LeptonCollection;
+  typedef flatutils::Collection<RecoParticle, ParticleCollection> RecoParticleCollection;
+  typedef flatutils::Collection<RecoParticleM, RecoParticleCollection> RecoParticleMCollection;
+  typedef flatutils::Collection<Photon, RecoParticleCollection> PhotonCollection;
+  typedef flatutils::Collection<Lepton, RecoParticleCollection> LeptonCollection;
   typedef flatutils::Collection<Electron, LeptonCollection> ElectronCollection;
   typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
-  typedef flatutils::Collection<Tau, ParticleRecoCollection> TauCollection;
+  typedef flatutils::Collection<Tau, RecoParticleMCollection> TauCollection;
+  typedef flatutils::Collection<Jet, RecoParticleMCollection> JetCollection;
   typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
   typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
   typedef flatutils::Collection<GenJet, ParticleMCollection> GenJetCollection;

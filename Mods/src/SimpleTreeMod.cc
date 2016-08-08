@@ -987,7 +987,7 @@ mithep::SimpleTreeMod::Process()
       if (inJet.ObjType() == mithep::kPFJet) {
         auto& inPFJet(static_cast<PFJet const&>(inJet));
         double eRaw(pRaw.E());
-        outJet.mjid = (inPFJet.NeutralHadronEnergy() / eRaw < 0.8 && inPFJet.ChargedHadronEnergy() / eRaw > 0.1);
+        outJet.medium = (inPFJet.NeutralHadronEnergy() / eRaw < 0.8 && inPFJet.ChargedHadronEnergy() / eRaw > 0.1);
       }
 
       outJet.cisv = inJet.BJetTagsDisc(mithep::Jet::kCombinedInclusiveSecondaryVertexV2);

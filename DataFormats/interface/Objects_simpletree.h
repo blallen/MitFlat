@@ -71,6 +71,8 @@ namespace simpletree {
 
   extern TString MuonHLTObjectName[nMuonHLTObjects];
 
+  unsigned const nMaxHLTObjects(nElectronHLTObjects);
+
   class Particle {
   public:
     struct array_data {
@@ -93,8 +95,14 @@ namespace simpletree {
     Particle& operator=(Particle const&);
     virtual void init();
 
-    virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
-    virtual TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
+    LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, m()); }
+    TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, m()); return p4; }
+    virtual double e() const { return pt * std::cosh(eta); }
+    double p() const { return pt * std::cosh(eta); }
+    double px() const { return pt * std::cos(phi); }
+    double py() const { return pt * std::sin(phi); }
+    double pz() const { return pt * std::sinh(eta); }
+    virtual double m() const { return 0.; }
     double dEta(Particle const& p) const { return eta - p.eta; }
     double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
     double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
@@ -124,22 +132,23 @@ namespace simpletree {
     ParticleM& operator=(ParticleM const&);
     void init() override;
 
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, mass); return p4; }
+    double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
+    double m() const override { return mass; }
 
   public:
     Float_t& mass;
   };
 
-  class ParticleReco : public ParticleM {
+  class RecoParticle : public Particle {
   public:
-    struct array_data : public ParticleM::array_data {
+    struct array_data : public Particle::array_data {
       array_data();
 
       Bool_t positive[NMAX]{};
       Bool_t loose[NMAX]{};
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
+      Int_t matchedGen[NMAX]{};
       Bool_t matchHLT[NMAX][nMaxHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -147,10 +156,10 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
-    ParticleReco(array_data&, UInt_t idx);
-    ParticleReco(ParticleReco const&);
-    virtual ~ParticleReco() {}
-    ParticleReco& operator=(ParticleReco const&);
+    RecoParticle(array_data&, UInt_t idx);
+    RecoParticle(RecoParticle const&);
+    virtual ~RecoParticle() {}
+    RecoParticle& operator=(RecoParticle const&);
     void init() override;
 
   public:
@@ -158,15 +167,287 @@ namespace simpletree {
     Bool_t& loose;
     Bool_t& medium;
     Bool_t& tight;
+    Int_t& matchedGen;
     Bool_t* matchHLT{0}; //[nMaxHLTObjects]
   };
 
-  class Jet : public ParticleReco {
+  class RecoParticleM : public RecoParticle {
   public:
-    struct array_data : public ParticleReco::array_data {
+    struct array_data : public RecoParticle::array_data {
       array_data();
 
-      Bool_t mjid[NMAX]{};
+      Float_t mass[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    RecoParticleM(array_data&, UInt_t idx);
+    RecoParticleM(RecoParticleM const&);
+    virtual ~RecoParticleM() {}
+    RecoParticleM& operator=(RecoParticleM const&);
+    void init() override;
+
+    double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
+    double m() const override { return mass; }
+
+  public:
+    Float_t& mass;
+  };
+
+  class Photon : public RecoParticle {
+  public:
+    static double const chIsoCuts[2][3];
+    static double const nhIsoCuts[2][3];
+    static double const phIsoCuts[2][3];
+    static double const sieieCuts[2][3];
+    static double const hOverECuts[2][3];
+
+    struct array_data : public RecoParticle::array_data {
+      array_data();
+
+      Float_t scRawPt[NMAX]{};
+      Float_t chIso[NMAX]{};
+      Float_t chWorstIso[NMAX]{};
+      Float_t chIsoMax[NMAX]{};
+      Float_t nhIso[NMAX]{};
+      Float_t phIso[NMAX]{};
+      Float_t ecalIso[NMAX]{};
+      Float_t hcalIso[NMAX]{};
+      Float_t sieie[NMAX]{};
+      Float_t sipip[NMAX]{};
+      Float_t sieip[NMAX]{};
+      Float_t hOverE[NMAX]{};
+      Float_t genIso[NMAX]{};
+      Float_t mipEnergy[NMAX]{};
+      Float_t mipChi2[NMAX]{};
+      Float_t mipSlope[NMAX]{};
+      Float_t mipIntercept[NMAX]{};
+      UShort_t mipNhitCone[NMAX]{};
+      Bool_t mipIsHalo[NMAX]{};
+      Float_t scPt[NMAX]{};
+      Float_t scEta[NMAX]{};
+      Float_t scPhi[NMAX]{};
+      Float_t e13[NMAX]{};
+      Float_t e31[NMAX]{};
+      Float_t e15[NMAX]{};
+      Float_t e22[NMAX]{};
+      Float_t e25[NMAX]{};
+      Float_t e33[NMAX]{};
+      Float_t e44[NMAX]{};
+      Float_t e55[NMAX]{};
+      Float_t emax[NMAX]{};
+      Float_t e2nd[NMAX]{};
+      Float_t e4[NMAX]{};
+      Float_t r9[NMAX]{};
+      Float_t etaWidth[NMAX]{};
+      Float_t phiWidth[NMAX]{};
+      Float_t time[NMAX]{};
+      Float_t timeSpan[NMAX]{};
+      Float_t genMatchDR[NMAX]{};
+      Bool_t isEB[NMAX]{};
+      Bool_t pixelVeto[NMAX]{};
+      Bool_t electronVeto[NMAX]{};
+      Bool_t csafeVeto[NMAX]{};
+      Bool_t highpt[NMAX]{};
+      Bool_t matchL1[NMAX][nPhotonL1Objects]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Photon(array_data&, UInt_t idx);
+    Photon(Photon const&);
+    virtual ~Photon() {}
+    Photon& operator=(Photon const&);
+    void init() override;
+
+    bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passSieie(UInt_t wp) const { return sieie < sieieCuts[isEB ? 0 : 1][wp]; }
+    bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
+
+  public:
+    Float_t& scRawPt;
+    Float_t& chIso;
+    Float_t& chWorstIso;
+    Float_t& chIsoMax;
+    Float_t& nhIso;
+    Float_t& phIso;
+    Float_t& ecalIso;
+    Float_t& hcalIso;
+    Float_t& sieie;
+    Float_t& sipip;
+    Float_t& sieip;
+    Float_t& hOverE;
+    Float_t& genIso;
+    Float_t& mipEnergy;
+    Float_t& mipChi2;
+    Float_t& mipSlope;
+    Float_t& mipIntercept;
+    UShort_t& mipNhitCone;
+    Bool_t& mipIsHalo;
+    Float_t& scPt;
+    Float_t& scEta;
+    Float_t& scPhi;
+    Float_t& e13;
+    Float_t& e31;
+    Float_t& e15;
+    Float_t& e22;
+    Float_t& e25;
+    Float_t& e33;
+    Float_t& e44;
+    Float_t& e55;
+    Float_t& emax;
+    Float_t& e2nd;
+    Float_t& e4;
+    Float_t& r9;
+    Float_t& etaWidth;
+    Float_t& phiWidth;
+    Float_t& time;
+    Float_t& timeSpan;
+    Float_t& genMatchDR;
+    Bool_t& isEB;
+    Bool_t& pixelVeto;
+    Bool_t& electronVeto;
+    Bool_t& csafeVeto;
+    Bool_t& highpt;
+    Bool_t* matchL1{0}; //[nPhotonL1Objects]
+  };
+
+  class Lepton : public RecoParticle {
+  public:
+    struct array_data : public RecoParticle::array_data {
+      array_data();
+
+      Bool_t tauDecay[NMAX]{};
+      Bool_t hadDecay[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Lepton(array_data&, UInt_t idx);
+    Lepton(Lepton const&);
+    virtual ~Lepton() {}
+    Lepton& operator=(Lepton const&);
+    void init() override;
+
+    int charge() const { return positive ? 1 : -1; }
+
+  public:
+    Bool_t& tauDecay;
+    Bool_t& hadDecay;
+  };
+
+  class Electron : public Lepton {
+  public:
+    struct array_data : public Lepton::array_data {
+      array_data();
+
+      Float_t chIsoPh[NMAX]{};
+      Float_t nhIsoPh[NMAX]{};
+      Float_t phIsoPh[NMAX]{};
+      Float_t combRelIso[NMAX]{};
+      Float_t ecalIso[NMAX]{};
+      Float_t hcalIso[NMAX]{};
+      Float_t sieie[NMAX]{};
+      Float_t sipip[NMAX]{};
+      Float_t sieip[NMAX]{};
+      Float_t hOverE[NMAX]{};
+      Bool_t isEB[NMAX]{};
+      Bool_t veto[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Electron(array_data&, UInt_t idx);
+    Electron(Electron const&);
+    virtual ~Electron() {}
+    Electron& operator=(Electron const&);
+    void init() override;
+
+    double m() const override { return 5.109989e-4; }
+    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
+    bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 1][wp]; }
+    bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
+
+  public:
+    Float_t& chIsoPh;
+    Float_t& nhIsoPh;
+    Float_t& phIsoPh;
+    Float_t& combRelIso;
+    Float_t& ecalIso;
+    Float_t& hcalIso;
+    Float_t& sieie;
+    Float_t& sipip;
+    Float_t& sieip;
+    Float_t& hOverE;
+    Bool_t& isEB;
+    Bool_t& veto;
+  };
+
+  class Muon : public Lepton {
+  public:
+    struct array_data : public Lepton::array_data {
+      array_data();
+
+      Float_t combRelIso[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Muon(array_data&, UInt_t idx);
+    Muon(Muon const&);
+    virtual ~Muon() {}
+    Muon& operator=(Muon const&);
+    void init() override;
+
+    double m() const override { return 1.05658e-2; }
+
+  public:
+    Float_t& combRelIso;
+  };
+
+  class Tau : public RecoParticleM {
+  public:
+    struct array_data : public RecoParticleM::array_data {
+      array_data();
+
+      Bool_t decayMode[NMAX]{};
+      Float_t combIso[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Tau(array_data&, UInt_t idx);
+    Tau(Tau const&);
+    virtual ~Tau() {}
+    Tau& operator=(Tau const&);
+    void init() override;
+
+  public:
+    Bool_t& decayMode;
+    Float_t& combIso;
+  };
+
+  class Jet : public RecoParticleM {
+  public:
+    struct array_data : public RecoParticleM::array_data {
+      array_data();
+
       Float_t ptRaw[NMAX]{};
       Float_t ptCorrUp[NMAX]{};
       Float_t ptCorrDown[NMAX]{};
@@ -186,7 +467,6 @@ namespace simpletree {
     void init() override;
 
   public:
-    Bool_t& mjid;
     Float_t& ptRaw;
     Float_t& ptCorrUp;
     Float_t& ptCorrDown;
@@ -243,261 +523,6 @@ namespace simpletree {
     Float_t phiUnclUp{};
     Float_t metUnclDown{};
     Float_t phiUnclDown{};
-  };
-
-  class Photon : public ParticleReco {
-  public:
-    static double const chIsoCuts[2][3];
-    static double const nhIsoCuts[2][3];
-    static double const phIsoCuts[2][3];
-    static double const sieieCuts[2][3];
-    static double const hOverECuts[2][3];
-
-    struct array_data : public ParticleReco::array_data {
-      array_data();
-
-      Float_t scRawPt[NMAX]{};
-      Float_t chIso[NMAX]{};
-      Float_t chWorstIso[NMAX]{};
-      Float_t chIsoMax[NMAX]{};
-      Float_t nhIso[NMAX]{};
-      Float_t phIso[NMAX]{};
-      Float_t ecalIso[NMAX]{};
-      Float_t hcalIso[NMAX]{};
-      Float_t sieie[NMAX]{};
-      Float_t sipip[NMAX]{};
-      Float_t sieip[NMAX]{};
-      Float_t hOverE[NMAX]{};
-      Float_t genIso[NMAX]{};
-      Float_t mipEnergy[NMAX]{};
-      Float_t mipChi2[NMAX]{};
-      Float_t mipSlope[NMAX]{};
-      Float_t mipIntercept[NMAX]{};
-      UShort_t mipNhitCone[NMAX]{};
-      Bool_t mipIsHalo[NMAX]{};
-      Float_t scPt[NMAX]{};
-      Float_t scEta[NMAX]{};
-      Float_t scPhi[NMAX]{};
-      Float_t e13[NMAX]{};
-      Float_t e31[NMAX]{};
-      Float_t e15[NMAX]{};
-      Float_t e22[NMAX]{};
-      Float_t e25[NMAX]{};
-      Float_t e33[NMAX]{};
-      Float_t e44[NMAX]{};
-      Float_t e55[NMAX]{};
-      Float_t emax[NMAX]{};
-      Float_t e2nd[NMAX]{};
-      Float_t e4[NMAX]{};
-      Float_t r9[NMAX]{};
-      Float_t etaWidth[NMAX]{};
-      Float_t phiWidth[NMAX]{};
-      Float_t time[NMAX]{};
-      Float_t timeSpan[NMAX]{};
-      Float_t genMatchDR[NMAX]{};
-      Int_t matchedGen[NMAX]{};
-      Bool_t isEB[NMAX]{};
-      Bool_t pixelVeto[NMAX]{};
-      Bool_t electronVeto[NMAX]{};
-      Bool_t csafeVeto[NMAX]{};
-      Bool_t highpt[NMAX]{};
-      Bool_t matchL1[NMAX][nPhotonL1Objects]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    Photon(array_data&, UInt_t idx);
-    Photon(Photon const&);
-    virtual ~Photon() {}
-    Photon& operator=(Photon const&);
-    void init() override;
-
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.); return p4; }
-    bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passSieie(UInt_t wp) const { return sieie < sieieCuts[isEB ? 0 : 1][wp]; }
-    bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
-
-  public:
-    Float_t& scRawPt;
-    Float_t& chIso;
-    Float_t& chWorstIso;
-    Float_t& chIsoMax;
-    Float_t& nhIso;
-    Float_t& phIso;
-    Float_t& ecalIso;
-    Float_t& hcalIso;
-    Float_t& sieie;
-    Float_t& sipip;
-    Float_t& sieip;
-    Float_t& hOverE;
-    Float_t& genIso;
-    Float_t& mipEnergy;
-    Float_t& mipChi2;
-    Float_t& mipSlope;
-    Float_t& mipIntercept;
-    UShort_t& mipNhitCone;
-    Bool_t& mipIsHalo;
-    Float_t& scPt;
-    Float_t& scEta;
-    Float_t& scPhi;
-    Float_t& e13;
-    Float_t& e31;
-    Float_t& e15;
-    Float_t& e22;
-    Float_t& e25;
-    Float_t& e33;
-    Float_t& e44;
-    Float_t& e55;
-    Float_t& emax;
-    Float_t& e2nd;
-    Float_t& e4;
-    Float_t& r9;
-    Float_t& etaWidth;
-    Float_t& phiWidth;
-    Float_t& time;
-    Float_t& timeSpan;
-    Float_t& genMatchDR;
-    Int_t& matchedGen;
-    Bool_t& isEB;
-    Bool_t& pixelVeto;
-    Bool_t& electronVeto;
-    Bool_t& csafeVeto;
-    Bool_t& highpt;
-    Bool_t* matchL1{0}; //[nPhotonL1Objects]
-  };
-
-  class Lepton : public ParticleReco {
-  public:
-    struct array_data : public ParticleReco::array_data {
-      array_data();
-
-      Int_t matchedGen[NMAX]{};
-      Bool_t tauDecay[NMAX]{};
-      Bool_t hadDecay[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    Lepton(array_data&, UInt_t idx);
-    Lepton(Lepton const&);
-    virtual ~Lepton() {}
-    Lepton& operator=(Lepton const&);
-    void init() override;
-
-    int charge() const { return positive ? 1 : -1; }
-
-  public:
-    Int_t& matchedGen;
-    Bool_t& tauDecay;
-    Bool_t& hadDecay;
-  };
-
-  class Electron : public Lepton {
-  public:
-    struct array_data : public Lepton::array_data {
-      array_data();
-
-      Float_t chIsoPh[NMAX]{};
-      Float_t nhIsoPh[NMAX]{};
-      Float_t phIsoPh[NMAX]{};
-      Float_t combRelIso[NMAX]{};
-      Float_t ecalIso[NMAX]{};
-      Float_t hcalIso[NMAX]{};
-      Float_t sieie[NMAX]{};
-      Float_t sipip[NMAX]{};
-      Float_t sieip[NMAX]{};
-      Float_t hOverE[NMAX]{};
-      Bool_t isEB[NMAX]{};
-      Bool_t veto[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    Electron(array_data&, UInt_t idx);
-    Electron(Electron const&);
-    virtual ~Electron() {}
-    Electron& operator=(Electron const&);
-    void init() override;
-
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 5.11e-4); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 5.11e-4); return p4; }
-    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 1][wp]; }
-    bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
-
-  public:
-    Float_t& chIsoPh;
-    Float_t& nhIsoPh;
-    Float_t& phIsoPh;
-    Float_t& combRelIso;
-    Float_t& ecalIso;
-    Float_t& hcalIso;
-    Float_t& sieie;
-    Float_t& sipip;
-    Float_t& sieip;
-    Float_t& hOverE;
-    Bool_t& isEB;
-    Bool_t& veto;
-  };
-
-  class Muon : public Lepton {
-  public:
-    struct array_data : public Lepton::array_data {
-      array_data();
-
-      Float_t combRelIso[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    Muon(array_data&, UInt_t idx);
-    Muon(Muon const&);
-    virtual ~Muon() {}
-    Muon& operator=(Muon const&);
-    void init() override;
-
-    LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, 0.1057); }
-    TLorentzVector p4v() const override { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, 0.1057); return p4; }
-
-  public:
-    Float_t& combRelIso;
-  };
-
-  class Tau : public ParticleReco {
-  public:
-    struct array_data : public ParticleReco::array_data {
-      array_data();
-
-      Bool_t decayMode[NMAX]{};
-      Float_t combIso[NMAX]{};
-
-      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
-    };
-
-    Tau(array_data&, UInt_t idx);
-    Tau(Tau const&);
-    virtual ~Tau() {}
-    Tau& operator=(Tau const&);
-    void init() override;
-
-  public:
-    Bool_t& decayMode;
-    Float_t& combIso;
   };
 
   class Parton : public ParticleM {
