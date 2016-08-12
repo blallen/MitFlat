@@ -171,7 +171,7 @@ namespace flatutils {
   typename Collection<T, B>::const_reference
   Collection<T, B>::at(UInt_t _idx) const
   {
-    if (_idx < this->base_type::size_)
+    if (_idx >= this->base_type::size_)
       throw std::out_of_range((this->base_type::name_ + "::at").Data());
   
     Char_t* p(this->base_type::array_);
