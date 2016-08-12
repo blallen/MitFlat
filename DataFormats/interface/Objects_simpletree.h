@@ -143,6 +143,7 @@ namespace simpletree {
     struct array_data : public Particle::array_data {
       array_data();
 
+      Bool_t positive[NMAX]{};
       Bool_t loose[NMAX]{};
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
@@ -161,6 +162,7 @@ namespace simpletree {
     void init() override;
 
   public:
+    Bool_t& positive;
     Bool_t& loose;
     Bool_t& medium;
     Bool_t& tight;
@@ -247,7 +249,6 @@ namespace simpletree {
       Bool_t pixelVeto[NMAX]{};
       Bool_t electronVeto[NMAX]{};
       Bool_t csafeVeto[NMAX]{};
-      Bool_t tight[NMAX]{};
       Bool_t highpt[NMAX]{};
       Bool_t matchL1[NMAX][nPhotonL1Objects]{};
 
@@ -312,7 +313,6 @@ namespace simpletree {
     Bool_t& pixelVeto;
     Bool_t& electronVeto;
     Bool_t& csafeVeto;
-    Bool_t& tight;
     Bool_t& highpt;
     Bool_t* matchL1{0}; //[nPhotonL1Objects]
   };
@@ -324,7 +324,6 @@ namespace simpletree {
 
       Bool_t tauDecay[NMAX]{};
       Bool_t hadDecay[NMAX]{};
-      Bool_t positive[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -342,7 +341,6 @@ namespace simpletree {
   public:
     Bool_t& tauDecay;
     Bool_t& hadDecay;
-    Bool_t& positive;
   };
 
   class Electron : public Lepton {
@@ -362,7 +360,6 @@ namespace simpletree {
       Float_t hOverE[NMAX]{};
       Bool_t isEB[NMAX]{};
       Bool_t veto[NMAX]{};
-      Bool_t matchHLT[NMAX][nElectronHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -395,7 +392,6 @@ namespace simpletree {
     Float_t& hOverE;
     Bool_t& isEB;
     Bool_t& veto;
-    Bool_t* matchHLT{0}; //[nElectronHLTObjects]
   };
 
   class Muon : public Lepton {
@@ -404,7 +400,6 @@ namespace simpletree {
       array_data();
 
       Float_t combRelIso[NMAX]{};
-      Bool_t matchHLT[NMAX][nMuonHLTObjects]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -421,7 +416,6 @@ namespace simpletree {
 
   public:
     Float_t& combRelIso;
-    Bool_t* matchHLT{0}; //[nMuonHLTObjects]
   };
 
   class Tau : public RecoParticleM {

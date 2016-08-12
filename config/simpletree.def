@@ -84,6 +84,7 @@ double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) +
 double m() const override { return mass; }
 
 [RecoParticle:Particle]
+positive/O
 loose/O
 medium/O
 tight/O
@@ -139,7 +140,6 @@ isEB/O
 pixelVeto/O
 electronVeto/O
 csafeVeto/O
-tight/O
 highpt/O
 matchL1[nPhotonL1Objects]/O
 
@@ -158,7 +158,6 @@ static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 int charge() const { return positive ? 1 : -1; }
 tauDecay/O
 hadDecay/O
-positive/O
 
 [Electron:Lepton]
 chIsoPh/F
@@ -173,7 +172,6 @@ sieip/F
 hOverE/F
 isEB/O
 veto/O
-matchHLT[nElectronHLTObjects]/O
 
 double m() const override { return 5.109989e-4; }
 bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
@@ -184,7 +182,6 @@ bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0
 
 [Muon:Lepton]
 combRelIso/F
-matchHLT[nMuonHLTObjects]/O
 
 double m() const override { return 1.05658e-2; }
 
