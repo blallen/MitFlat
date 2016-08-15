@@ -8,10 +8,14 @@
 #include <cmath>
 #include "TString.h"
 #include "Rtypes.h"
+#include <memory>
+#include <set>
+#include <utility>
 class TTree;
 
 namespace simpletree {
 
+  typedef std::pair<unsigned, unsigned> SinglesPos;
   typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
   enum PhotonL1Object {
@@ -88,9 +92,10 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Particle();
     Particle(array_data&, UInt_t idx);
     Particle(Particle const&);
-    virtual ~Particle() {}
+    virtual ~Particle();
     Particle& operator=(Particle const&);
     virtual void init();
 
@@ -106,6 +111,15 @@ namespace simpletree {
     double dPhi(Particle const& p) const { return TVector2::Phi_mpi_pi(phi - p.phi); }
     double dR2(Particle const& p) const { double d1(dEta(p)); double d2(dPhi(p)); return d1 * d1 + d2 * d2; }
     double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
+
+  protected:
+    SinglesPos pos_{-1, -1};
 
   public:
     Float_t& pt;
@@ -125,14 +139,21 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    ParticleM();
     ParticleM(array_data&, UInt_t idx);
     ParticleM(ParticleM const&);
-    virtual ~ParticleM() {}
+    virtual ~ParticleM();
     ParticleM& operator=(ParticleM const&);
     void init() override;
 
     double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
     double m() const override { return mass; }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Float_t& mass;
@@ -155,11 +176,18 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    RecoParticle();
     RecoParticle(array_data&, UInt_t idx);
     RecoParticle(RecoParticle const&);
-    virtual ~RecoParticle() {}
+    virtual ~RecoParticle();
     RecoParticle& operator=(RecoParticle const&);
     void init() override;
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Bool_t& positive;
@@ -182,14 +210,21 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    RecoParticleM();
     RecoParticleM(array_data&, UInt_t idx);
     RecoParticleM(RecoParticleM const&);
-    virtual ~RecoParticleM() {}
+    virtual ~RecoParticleM();
     RecoParticleM& operator=(RecoParticleM const&);
     void init() override;
 
     double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
     double m() const override { return mass; }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Float_t& mass;
@@ -257,9 +292,10 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Photon();
     Photon(array_data&, UInt_t idx);
     Photon(Photon const&);
-    virtual ~Photon() {}
+    virtual ~Photon();
     Photon& operator=(Photon const&);
     void init() override;
 
@@ -268,6 +304,12 @@ namespace simpletree {
     bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
     bool passSieie(UInt_t wp) const { return sieie < sieieCuts[isEB ? 0 : 1][wp]; }
     bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Float_t& scRawPt;
@@ -330,13 +372,20 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Lepton();
     Lepton(array_data&, UInt_t idx);
     Lepton(Lepton const&);
-    virtual ~Lepton() {}
+    virtual ~Lepton();
     Lepton& operator=(Lepton const&);
     void init() override;
 
     int charge() const { return positive ? 1 : -1; }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Bool_t& tauDecay;
@@ -366,9 +415,10 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Electron();
     Electron(array_data&, UInt_t idx);
     Electron(Electron const&);
-    virtual ~Electron() {}
+    virtual ~Electron();
     Electron& operator=(Electron const&);
     void init() override;
 
@@ -378,6 +428,12 @@ namespace simpletree {
     bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
     bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 1][wp]; }
     bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Float_t& chIsoPh;
@@ -406,13 +462,20 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Muon();
     Muon(array_data&, UInt_t idx);
     Muon(Muon const&);
-    virtual ~Muon() {}
+    virtual ~Muon();
     Muon& operator=(Muon const&);
     void init() override;
 
     double m() const override { return 1.05658e-2; }
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Float_t& combRelIso;
@@ -431,11 +494,18 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Tau();
     Tau(array_data&, UInt_t idx);
     Tau(Tau const&);
-    virtual ~Tau() {}
+    virtual ~Tau();
     Tau& operator=(Tau const&);
     void init() override;
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Bool_t& decayMode;
@@ -459,11 +529,18 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Jet();
     Jet(array_data&, UInt_t idx);
     Jet(Jet const&);
-    virtual ~Jet() {}
+    virtual ~Jet();
     Jet& operator=(Jet const&);
     void init() override;
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Float_t& ptRaw;
@@ -478,7 +555,7 @@ namespace simpletree {
   public:
     Met(TString const& name);
     Met(Met const&);
-    virtual ~Met() {}
+    virtual ~Met();
     Met& operator=(Met const&);
 
     void setName(TString const& name) { name_ = name; }
@@ -502,7 +579,7 @@ namespace simpletree {
   public:
     CorrectedMet(TString const& name);
     CorrectedMet(CorrectedMet const&);
-    virtual ~CorrectedMet() {}
+    virtual ~CorrectedMet();
     CorrectedMet& operator=(CorrectedMet const&);
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
@@ -536,11 +613,18 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    Parton();
     Parton(array_data&, UInt_t idx);
     Parton(Parton const&);
-    virtual ~Parton() {}
+    virtual ~Parton();
     Parton& operator=(Parton const&);
     void init() override;
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Char_t& pid;
@@ -559,11 +643,18 @@ namespace simpletree {
       void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     };
 
+    MCParticle();
     MCParticle(array_data&, UInt_t idx);
     MCParticle(MCParticle const&);
-    virtual ~MCParticle() {}
+    virtual ~MCParticle();
     MCParticle& operator=(MCParticle const&);
     void init() override;
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
 
   public:
     Int_t& pid;
@@ -575,18 +666,25 @@ namespace simpletree {
     struct array_data : public ParticleM::array_data {
     };
 
+    GenJet();
     GenJet(array_data&, UInt_t idx);
     GenJet(GenJet const&);
-    virtual ~GenJet() {}
+    virtual ~GenJet();
     GenJet& operator=(GenJet const&);
     void init() override;
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
   };
 
   class HLTBits {
   public:
     HLTBits(TString const& name);
     HLTBits(HLTBits const&);
-    virtual ~HLTBits() {}
+    virtual ~HLTBits();
     HLTBits& operator=(HLTBits const&);
 
     void setName(TString const& name) { name_ = name; }
@@ -609,7 +707,7 @@ namespace simpletree {
   public:
     MetFilters(TString const& name);
     MetFilters(MetFilters const&);
-    virtual ~MetFilters() {}
+    virtual ~MetFilters();
     MetFilters& operator=(MetFilters const&);
 
     void setName(TString const& name) { name_ = name; }

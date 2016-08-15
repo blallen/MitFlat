@@ -282,18 +282,22 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
 
     header.write('#include "TString.h"\n')
     header.write('#include "Rtypes.h"\n')
+    header.write('#include <memory>\n')
+    header.write('#include <set>\n')
+    header.write('#include <utility>\n')
     header.write('class TTree;\n\n')
 
     header.write('namespace ' + namespace + ' {\n')
 
     # typedefs
-    if len(typedefs) != 0:
-        for typedef in typedefs:
-            if not typedef.endswith(';'):
-                typedef += ';'
-            header.write('\n  ' + typedef)
+    header.write('\n  typedef std::pair<unsigned, unsigned> SinglesPos;')
 
-        header.write('\n')
+    for typedef in typedefs:
+        if not typedef.endswith(';'):
+            typedef += ';'
+        header.write('\n  ' + typedef)
+
+    header.write('\n')
 
     # define enums + declare TString arrays.
     # assuming the last item of enum gives the array length (n{EnumName}s)
@@ -354,11 +358,12 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
                 header.write('\n      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
 
             header.write('\n    };\n')
-
+            
+            header.write('\n    ' + obj + '();')
             header.write('\n    ' + obj + '(array_data&, UInt_t idx);')
 
         header.write('\n    ' + obj + '(' + obj + ' const&);')
-        header.write('\n    virtual ~' + obj + '() {}')
+        header.write('\n    virtual ~' + obj + '();')
         header.write('\n    ' + obj + '& operator=(' + obj + ' const&);')
 
         if obj in singleObjs:
@@ -386,6 +391,17 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
         if obj in singleObjs and obj not in inheritance:
             header.write('\n\n  protected:')
             header.write('\n    TString name_;')
+
+        if obj not in singleObjs:
+            header.write('\n\n  private:')
+            header.write('\n    static std::vector<std::auto_ptr<array_data>> singlesData_;')
+            header.write('\n    static SinglesPos singlesPos_;')
+            header.write('\n    static std::set<SinglesPos> usedSinglesPos_;')
+            header.write('\n    static SinglesPos const& nextSinglesPos_();')
+
+            if obj not in inheritance:
+                header.write('\n\n  protected:')
+                header.write('\n    SinglesPos pos_{-1, -1};')
 
         if len(defs[obj].branches) != 0:
             header.write('\n\n  public:')
@@ -541,6 +557,9 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
             src.write('\n}\n\n')
 
+            src.write(namespace + '::' + obj + '::~' + obj + '()\n')
+            src.write('{\n}\n\n')
+
             src.write('void\n')
             src.write(namespace + '::' + obj + '::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
             src.write('{\n')
@@ -639,6 +658,47 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
                 src.write('}\n\n')
 
+            src.write('/*static*/\n')
+            src.write('std::vector<std::auto_ptr<' + namespace + '::' + obj + '::array_data>> ' + namespace + '::' + obj + '::singlesData_{};\n')
+            src.write('/*static*/\n')
+            src.write(namespace + '::SinglesPos ' + namespace + '::' + obj + '::singlesPos_(-1, ' + namespace + '::' + obj + '::array_data::NMAX - 1);\n')
+            src.write('/*static*/\n')
+            src.write('std::set<' + namespace + '::SinglesPos> ' + namespace + '::' + obj + '::usedSinglesPos_{};\n\n')
+            src.write('/*static*/\n')
+            src.write(namespace + '::SinglesPos const&\n')
+            src.write(namespace + '::' + obj + '::nextSinglesPos_()\n')
+            src.write('{\n')
+            src.write('  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {\n')
+            src.write('    singlesPos_.first = iC;\n')
+            src.write('    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {\n')
+            src.write('      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())\n')
+            src.write('        break;\n')
+            src.write('    }\n')
+            src.write('  }\n\n')
+            src.write('  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {\n')
+            src.write('    singlesData_.emplace_back(new array_data);\n')
+            src.write('    singlesPos_.first = singlesData_.size() - 1;\n')
+            src.write('    singlesPos_.second = 0;\n')
+            src.write('  }\n\n')
+            src.write('  return singlesPos_;\n')
+            src.write('}\n\n')
+
+            src.write(namespace + '::' + obj + '::' + obj + '() :')
+            
+            if obj in inheritance:
+                src.write('\n  ' + inheritance[obj] + '(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second)')
+            else:
+                src.write('\n  pos_(nextSinglesPos_())')
+
+            for br in defs[obj].branches:
+                src.write(',\n  ' + br.name + '(singlesData_.at(singlesPos_.first)->' + br.name + '[singlesPos_.second])')
+
+            src.write('\n{')
+            if obj in inheritance:
+                src.write('\n  pos_ = singlesPos_;')
+            src.write('\n  usedSinglesPos_.insert(pos_);')
+            src.write('\n}\n\n')
+
             src.write(namespace + '::' + obj + '::' + obj + '(array_data& _data, UInt_t _idx) :')
             if obj in inheritance:
                 src.write('\n  ' + inheritance[obj] + '(_data, _idx)')
@@ -670,6 +730,14 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                     src.write('\n  std::copy_n(_src.' + br.name + ', ' + str(br.size) + ', ' + br.name + ');')
 
             src.write('\n}\n\n')
+
+            src.write(namespace + '::' + obj + '::~' + obj + '()\n')
+            src.write('{\n')
+            src.write('  if (pos_.first != unsigned(-1)) {\n')
+            src.write('    usedSinglesPos_.erase(pos_);\n')
+            src.write('    pos_.first = -1;\n')
+            src.write('  }\n')
+            src.write('}\n\n')
 
         src.write(namespace + '::' + obj + '&\n')
         src.write(namespace + '::' + obj + '::operator=(' + obj + ' const& _rhs)\n')

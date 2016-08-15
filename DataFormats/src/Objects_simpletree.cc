@@ -79,6 +79,43 @@ simpletree::Particle::array_data::book(TTree& _tree, TString const& _name, flatu
   flatutils::book(_tree, _name, "phi", "[" + _name + ".size]", 'F', phi, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Particle::array_data>> simpletree::Particle::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Particle::singlesPos_(-1, simpletree::Particle::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Particle::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Particle::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Particle::Particle() :
+  pos_(nextSinglesPos_()),
+  pt(singlesData_.at(singlesPos_.first)->pt[singlesPos_.second]),
+  eta(singlesData_.at(singlesPos_.first)->eta[singlesPos_.second]),
+  phi(singlesData_.at(singlesPos_.first)->phi[singlesPos_.second])
+{
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Particle::Particle(array_data& _data, UInt_t _idx) :
   pt(_data.pt[_idx]),
   eta(_data.eta[_idx]),
@@ -91,6 +128,14 @@ simpletree::Particle::Particle(Particle const& _src) :
   eta(_src.eta),
   phi(_src.phi)
 {
+}
+
+simpletree::Particle::~Particle()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Particle&
@@ -139,6 +184,42 @@ simpletree::ParticleM::array_data::book(TTree& _tree, TString const& _name, flat
   flatutils::book(_tree, _name, "mass", "[" + _name + ".size]", 'F', mass, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::ParticleM::array_data>> simpletree::ParticleM::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::ParticleM::singlesPos_(-1, simpletree::ParticleM::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::ParticleM::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::ParticleM::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::ParticleM::ParticleM() :
+  Particle(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  mass(singlesData_.at(singlesPos_.first)->mass[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::ParticleM::ParticleM(array_data& _data, UInt_t _idx) :
   Particle(_data, _idx),
   mass(_data.mass[_idx])
@@ -149,6 +230,14 @@ simpletree::ParticleM::ParticleM(ParticleM const& _src) :
   Particle(_src),
   mass(_src.mass)
 {
+}
+
+simpletree::ParticleM::~ParticleM()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::ParticleM&
@@ -212,6 +301,47 @@ simpletree::RecoParticle::array_data::book(TTree& _tree, TString const& _name, f
   flatutils::book(_tree, _name, "matchHLT", TString::Format("[" + _name + ".size][%d]", nMaxHLTObjects), 'O', matchHLT, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::RecoParticle::array_data>> simpletree::RecoParticle::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::RecoParticle::singlesPos_(-1, simpletree::RecoParticle::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::RecoParticle::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::RecoParticle::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::RecoParticle::RecoParticle() :
+  Particle(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  positive(singlesData_.at(singlesPos_.first)->positive[singlesPos_.second]),
+  loose(singlesData_.at(singlesPos_.first)->loose[singlesPos_.second]),
+  medium(singlesData_.at(singlesPos_.first)->medium[singlesPos_.second]),
+  tight(singlesData_.at(singlesPos_.first)->tight[singlesPos_.second]),
+  matchedGen(singlesData_.at(singlesPos_.first)->matchedGen[singlesPos_.second]),
+  matchHLT(singlesData_.at(singlesPos_.first)->matchHLT[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::RecoParticle::RecoParticle(array_data& _data, UInt_t _idx) :
   Particle(_data, _idx),
   positive(_data.positive[_idx]),
@@ -232,6 +362,14 @@ simpletree::RecoParticle::RecoParticle(RecoParticle const& _src) :
   matchedGen(_src.matchedGen)
 {
   std::copy_n(_src.matchHLT, nMaxHLTObjects, matchHLT);
+}
+
+simpletree::RecoParticle::~RecoParticle()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::RecoParticle&
@@ -290,6 +428,42 @@ simpletree::RecoParticleM::array_data::book(TTree& _tree, TString const& _name, 
   flatutils::book(_tree, _name, "mass", "[" + _name + ".size]", 'F', mass, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::RecoParticleM::array_data>> simpletree::RecoParticleM::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::RecoParticleM::singlesPos_(-1, simpletree::RecoParticleM::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::RecoParticleM::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::RecoParticleM::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::RecoParticleM::RecoParticleM() :
+  RecoParticle(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  mass(singlesData_.at(singlesPos_.first)->mass[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::RecoParticleM::RecoParticleM(array_data& _data, UInt_t _idx) :
   RecoParticle(_data, _idx),
   mass(_data.mass[_idx])
@@ -300,6 +474,14 @@ simpletree::RecoParticleM::RecoParticleM(RecoParticleM const& _src) :
   RecoParticle(_src),
   mass(_src.mass)
 {
+}
+
+simpletree::RecoParticleM::~RecoParticleM()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::RecoParticleM&
@@ -480,6 +662,86 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "matchL1", TString::Format("[" + _name + ".size][%d]", nPhotonL1Objects), 'O', matchL1, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Photon::array_data>> simpletree::Photon::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Photon::singlesPos_(-1, simpletree::Photon::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Photon::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Photon::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Photon::Photon() :
+  RecoParticle(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  scRawPt(singlesData_.at(singlesPos_.first)->scRawPt[singlesPos_.second]),
+  chIso(singlesData_.at(singlesPos_.first)->chIso[singlesPos_.second]),
+  chWorstIso(singlesData_.at(singlesPos_.first)->chWorstIso[singlesPos_.second]),
+  chIsoMax(singlesData_.at(singlesPos_.first)->chIsoMax[singlesPos_.second]),
+  nhIso(singlesData_.at(singlesPos_.first)->nhIso[singlesPos_.second]),
+  phIso(singlesData_.at(singlesPos_.first)->phIso[singlesPos_.second]),
+  ecalIso(singlesData_.at(singlesPos_.first)->ecalIso[singlesPos_.second]),
+  hcalIso(singlesData_.at(singlesPos_.first)->hcalIso[singlesPos_.second]),
+  sieie(singlesData_.at(singlesPos_.first)->sieie[singlesPos_.second]),
+  sipip(singlesData_.at(singlesPos_.first)->sipip[singlesPos_.second]),
+  sieip(singlesData_.at(singlesPos_.first)->sieip[singlesPos_.second]),
+  hOverE(singlesData_.at(singlesPos_.first)->hOverE[singlesPos_.second]),
+  genIso(singlesData_.at(singlesPos_.first)->genIso[singlesPos_.second]),
+  mipEnergy(singlesData_.at(singlesPos_.first)->mipEnergy[singlesPos_.second]),
+  mipChi2(singlesData_.at(singlesPos_.first)->mipChi2[singlesPos_.second]),
+  mipSlope(singlesData_.at(singlesPos_.first)->mipSlope[singlesPos_.second]),
+  mipIntercept(singlesData_.at(singlesPos_.first)->mipIntercept[singlesPos_.second]),
+  mipNhitCone(singlesData_.at(singlesPos_.first)->mipNhitCone[singlesPos_.second]),
+  mipIsHalo(singlesData_.at(singlesPos_.first)->mipIsHalo[singlesPos_.second]),
+  scPt(singlesData_.at(singlesPos_.first)->scPt[singlesPos_.second]),
+  scEta(singlesData_.at(singlesPos_.first)->scEta[singlesPos_.second]),
+  scPhi(singlesData_.at(singlesPos_.first)->scPhi[singlesPos_.second]),
+  e13(singlesData_.at(singlesPos_.first)->e13[singlesPos_.second]),
+  e31(singlesData_.at(singlesPos_.first)->e31[singlesPos_.second]),
+  e15(singlesData_.at(singlesPos_.first)->e15[singlesPos_.second]),
+  e22(singlesData_.at(singlesPos_.first)->e22[singlesPos_.second]),
+  e25(singlesData_.at(singlesPos_.first)->e25[singlesPos_.second]),
+  e33(singlesData_.at(singlesPos_.first)->e33[singlesPos_.second]),
+  e44(singlesData_.at(singlesPos_.first)->e44[singlesPos_.second]),
+  e55(singlesData_.at(singlesPos_.first)->e55[singlesPos_.second]),
+  emax(singlesData_.at(singlesPos_.first)->emax[singlesPos_.second]),
+  e2nd(singlesData_.at(singlesPos_.first)->e2nd[singlesPos_.second]),
+  e4(singlesData_.at(singlesPos_.first)->e4[singlesPos_.second]),
+  r9(singlesData_.at(singlesPos_.first)->r9[singlesPos_.second]),
+  etaWidth(singlesData_.at(singlesPos_.first)->etaWidth[singlesPos_.second]),
+  phiWidth(singlesData_.at(singlesPos_.first)->phiWidth[singlesPos_.second]),
+  time(singlesData_.at(singlesPos_.first)->time[singlesPos_.second]),
+  timeSpan(singlesData_.at(singlesPos_.first)->timeSpan[singlesPos_.second]),
+  genMatchDR(singlesData_.at(singlesPos_.first)->genMatchDR[singlesPos_.second]),
+  isEB(singlesData_.at(singlesPos_.first)->isEB[singlesPos_.second]),
+  pixelVeto(singlesData_.at(singlesPos_.first)->pixelVeto[singlesPos_.second]),
+  electronVeto(singlesData_.at(singlesPos_.first)->electronVeto[singlesPos_.second]),
+  csafeVeto(singlesData_.at(singlesPos_.first)->csafeVeto[singlesPos_.second]),
+  highpt(singlesData_.at(singlesPos_.first)->highpt[singlesPos_.second]),
+  matchL1(singlesData_.at(singlesPos_.first)->matchL1[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   RecoParticle(_data, _idx),
   scRawPt(_data.scRawPt[_idx]),
@@ -578,6 +840,14 @@ simpletree::Photon::Photon(Photon const& _src) :
   highpt(_src.highpt)
 {
   std::copy_n(_src.matchL1, nPhotonL1Objects, matchL1);
+}
+
+simpletree::Photon::~Photon()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Photon&
@@ -723,6 +993,43 @@ simpletree::Lepton::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "hadDecay", "[" + _name + ".size]", 'O', hadDecay, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Lepton::array_data>> simpletree::Lepton::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Lepton::singlesPos_(-1, simpletree::Lepton::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Lepton::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Lepton::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Lepton::Lepton() :
+  RecoParticle(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  tauDecay(singlesData_.at(singlesPos_.first)->tauDecay[singlesPos_.second]),
+  hadDecay(singlesData_.at(singlesPos_.first)->hadDecay[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Lepton::Lepton(array_data& _data, UInt_t _idx) :
   RecoParticle(_data, _idx),
   tauDecay(_data.tauDecay[_idx]),
@@ -735,6 +1042,14 @@ simpletree::Lepton::Lepton(Lepton const& _src) :
   tauDecay(_src.tauDecay),
   hadDecay(_src.hadDecay)
 {
+}
+
+simpletree::Lepton::~Lepton()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Lepton&
@@ -818,6 +1133,53 @@ simpletree::Electron::array_data::book(TTree& _tree, TString const& _name, flatu
   flatutils::book(_tree, _name, "veto", "[" + _name + ".size]", 'O', veto, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Electron::array_data>> simpletree::Electron::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Electron::singlesPos_(-1, simpletree::Electron::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Electron::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Electron::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Electron::Electron() :
+  Lepton(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  chIsoPh(singlesData_.at(singlesPos_.first)->chIsoPh[singlesPos_.second]),
+  nhIsoPh(singlesData_.at(singlesPos_.first)->nhIsoPh[singlesPos_.second]),
+  phIsoPh(singlesData_.at(singlesPos_.first)->phIsoPh[singlesPos_.second]),
+  combRelIso(singlesData_.at(singlesPos_.first)->combRelIso[singlesPos_.second]),
+  ecalIso(singlesData_.at(singlesPos_.first)->ecalIso[singlesPos_.second]),
+  hcalIso(singlesData_.at(singlesPos_.first)->hcalIso[singlesPos_.second]),
+  sieie(singlesData_.at(singlesPos_.first)->sieie[singlesPos_.second]),
+  sipip(singlesData_.at(singlesPos_.first)->sipip[singlesPos_.second]),
+  sieip(singlesData_.at(singlesPos_.first)->sieip[singlesPos_.second]),
+  hOverE(singlesData_.at(singlesPos_.first)->hOverE[singlesPos_.second]),
+  isEB(singlesData_.at(singlesPos_.first)->isEB[singlesPos_.second]),
+  veto(singlesData_.at(singlesPos_.first)->veto[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Electron::Electron(array_data& _data, UInt_t _idx) :
   Lepton(_data, _idx),
   chIsoPh(_data.chIsoPh[_idx]),
@@ -850,6 +1212,14 @@ simpletree::Electron::Electron(Electron const& _src) :
   isEB(_src.isEB),
   veto(_src.veto)
 {
+}
+
+simpletree::Electron::~Electron()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Electron&
@@ -920,6 +1290,42 @@ simpletree::Muon::array_data::book(TTree& _tree, TString const& _name, flatutils
   flatutils::book(_tree, _name, "combRelIso", "[" + _name + ".size]", 'F', combRelIso, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Muon::array_data>> simpletree::Muon::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Muon::singlesPos_(-1, simpletree::Muon::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Muon::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Muon::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Muon::Muon() :
+  Lepton(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  combRelIso(singlesData_.at(singlesPos_.first)->combRelIso[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Muon::Muon(array_data& _data, UInt_t _idx) :
   Lepton(_data, _idx),
   combRelIso(_data.combRelIso[_idx])
@@ -930,6 +1336,14 @@ simpletree::Muon::Muon(Muon const& _src) :
   Lepton(_src),
   combRelIso(_src.combRelIso)
 {
+}
+
+simpletree::Muon::~Muon()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Muon&
@@ -981,6 +1395,43 @@ simpletree::Tau::array_data::book(TTree& _tree, TString const& _name, flatutils:
   flatutils::book(_tree, _name, "combIso", "[" + _name + ".size]", 'F', combIso, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Tau::array_data>> simpletree::Tau::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Tau::singlesPos_(-1, simpletree::Tau::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Tau::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Tau::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Tau::Tau() :
+  RecoParticleM(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  decayMode(singlesData_.at(singlesPos_.first)->decayMode[singlesPos_.second]),
+  combIso(singlesData_.at(singlesPos_.first)->combIso[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Tau::Tau(array_data& _data, UInt_t _idx) :
   RecoParticleM(_data, _idx),
   decayMode(_data.decayMode[_idx]),
@@ -993,6 +1444,14 @@ simpletree::Tau::Tau(Tau const& _src) :
   decayMode(_src.decayMode),
   combIso(_src.combIso)
 {
+}
+
+simpletree::Tau::~Tau()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Tau&
@@ -1058,6 +1517,47 @@ simpletree::Jet::array_data::book(TTree& _tree, TString const& _name, flatutils:
   flatutils::book(_tree, _name, "cisv", "[" + _name + ".size]", 'F', cisv, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Jet::array_data>> simpletree::Jet::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Jet::singlesPos_(-1, simpletree::Jet::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Jet::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Jet::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Jet::Jet() :
+  RecoParticleM(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  ptRaw(singlesData_.at(singlesPos_.first)->ptRaw[singlesPos_.second]),
+  ptCorrUp(singlesData_.at(singlesPos_.first)->ptCorrUp[singlesPos_.second]),
+  ptCorrDown(singlesData_.at(singlesPos_.first)->ptCorrDown[singlesPos_.second]),
+  ptResCorr(singlesData_.at(singlesPos_.first)->ptResCorr[singlesPos_.second]),
+  phiResCorr(singlesData_.at(singlesPos_.first)->phiResCorr[singlesPos_.second]),
+  cisv(singlesData_.at(singlesPos_.first)->cisv[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Jet::Jet(array_data& _data, UInt_t _idx) :
   RecoParticleM(_data, _idx),
   ptRaw(_data.ptRaw[_idx]),
@@ -1078,6 +1578,14 @@ simpletree::Jet::Jet(Jet const& _src) :
   phiResCorr(_src.phiResCorr),
   cisv(_src.cisv)
 {
+}
+
+simpletree::Jet::~Jet()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Jet&
@@ -1117,6 +1625,10 @@ simpletree::Met::Met(Met const& _src) :
   met(_src.met),
   phi(_src.phi),
   sumEt(_src.sumEt)
+{
+}
+
+simpletree::Met::~Met()
 {
 }
 
@@ -1178,6 +1690,10 @@ simpletree::CorrectedMet::CorrectedMet(CorrectedMet const& _src) :
   phiUnclUp(_src.phiUnclUp),
   metUnclDown(_src.metUnclDown),
   phiUnclDown(_src.phiUnclDown)
+{
+}
+
+simpletree::CorrectedMet::~CorrectedMet()
 {
 }
 
@@ -1296,6 +1812,42 @@ simpletree::Parton::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "pid", "[" + _name + ".size]", 'B', pid, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::Parton::array_data>> simpletree::Parton::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Parton::singlesPos_(-1, simpletree::Parton::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Parton::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Parton::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Parton::Parton() :
+  ParticleM(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  pid(singlesData_.at(singlesPos_.first)->pid[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::Parton::Parton(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx),
   pid(_data.pid[_idx])
@@ -1306,6 +1858,14 @@ simpletree::Parton::Parton(Parton const& _src) :
   ParticleM(_src),
   pid(_src.pid)
 {
+}
+
+simpletree::Parton::~Parton()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::Parton&
@@ -1357,6 +1917,43 @@ simpletree::MCParticle::array_data::book(TTree& _tree, TString const& _name, fla
   flatutils::book(_tree, _name, "ancestor", "[" + _name + ".size]", 'b', ancestor, _branches, _whitelist);
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::MCParticle::array_data>> simpletree::MCParticle::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::MCParticle::singlesPos_(-1, simpletree::MCParticle::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::MCParticle::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::MCParticle::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::MCParticle::MCParticle() :
+  ParticleM(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second),
+  pid(singlesData_.at(singlesPos_.first)->pid[singlesPos_.second]),
+  ancestor(singlesData_.at(singlesPos_.first)->ancestor[singlesPos_.second])
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::MCParticle::MCParticle(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx),
   pid(_data.pid[_idx]),
@@ -1369,6 +1966,14 @@ simpletree::MCParticle::MCParticle(MCParticle const& _src) :
   pid(_src.pid),
   ancestor(_src.ancestor)
 {
+}
+
+simpletree::MCParticle::~MCParticle()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::MCParticle&
@@ -1390,6 +1995,41 @@ simpletree::MCParticle::init()
   ancestor = 0;
 }
 
+/*static*/
+std::vector<std::auto_ptr<simpletree::GenJet::array_data>> simpletree::GenJet::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::GenJet::singlesPos_(-1, simpletree::GenJet::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::GenJet::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::GenJet::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::GenJet::GenJet() :
+  ParticleM(*singlesData_.at(nextSinglesPos_().first), singlesPos_.second)
+{
+  pos_ = singlesPos_;
+  usedSinglesPos_.insert(pos_);
+}
+
 simpletree::GenJet::GenJet(array_data& _data, UInt_t _idx) :
   ParticleM(_data, _idx)
 {
@@ -1398,6 +2038,14 @@ simpletree::GenJet::GenJet(array_data& _data, UInt_t _idx) :
 simpletree::GenJet::GenJet(GenJet const& _src) :
   ParticleM(_src)
 {
+}
+
+simpletree::GenJet::~GenJet()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
 }
 
 simpletree::GenJet&
@@ -1424,6 +2072,10 @@ simpletree::HLTBits::HLTBits(HLTBits const& _src) :
   name_(_src.name_)
 {
   std::copy_n(_src.words, 16, words);
+}
+
+simpletree::HLTBits::~HLTBits()
+{
 }
 
 void
@@ -1471,6 +2123,10 @@ simpletree::MetFilters::MetFilters(MetFilters const& _src) :
   badsc(_src.badsc),
   badTrack(_src.badTrack),
   badMuonTrack(_src.badMuonTrack)
+{
+}
+
+simpletree::MetFilters::~MetFilters()
 {
 }
 
