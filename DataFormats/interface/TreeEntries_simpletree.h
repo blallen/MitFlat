@@ -33,9 +33,9 @@ namespace simpletree {
     UInt_t lumi{};
     UInt_t event{};
     Double_t weight{1.};
-    Double_t scaleReweight[6]{};
-    Double_t pdfDW{};
-    Double_t rho{};
+    Float_t scaleReweight[6]{};
+    Float_t pdfDW{};
+    Float_t rho{};
     Float_t npvTrue{};
     UShort_t npv{};
     PartonCollection partons = PartonCollection("partons");

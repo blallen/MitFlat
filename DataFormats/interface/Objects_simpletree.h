@@ -97,6 +97,9 @@ namespace simpletree {
     Particle(Particle const&);
     virtual ~Particle();
     Particle& operator=(Particle const&);
+    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
     LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, m()); }
@@ -144,6 +147,9 @@ namespace simpletree {
     ParticleM(ParticleM const&);
     virtual ~ParticleM();
     ParticleM& operator=(ParticleM const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
@@ -164,7 +170,6 @@ namespace simpletree {
     struct array_data : public Particle::array_data {
       array_data();
 
-      Bool_t positive[NMAX]{};
       Bool_t loose[NMAX]{};
       Bool_t medium[NMAX]{};
       Bool_t tight[NMAX]{};
@@ -181,6 +186,9 @@ namespace simpletree {
     RecoParticle(RecoParticle const&);
     virtual ~RecoParticle();
     RecoParticle& operator=(RecoParticle const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
   private:
@@ -190,7 +198,6 @@ namespace simpletree {
     static SinglesPos const& nextSinglesPos_();
 
   public:
-    Bool_t& positive;
     Bool_t& loose;
     Bool_t& medium;
     Bool_t& tight;
@@ -215,6 +222,9 @@ namespace simpletree {
     RecoParticleM(RecoParticleM const&);
     virtual ~RecoParticleM();
     RecoParticleM& operator=(RecoParticleM const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
@@ -297,6 +307,9 @@ namespace simpletree {
     Photon(Photon const&);
     virtual ~Photon();
     Photon& operator=(Photon const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
@@ -364,6 +377,7 @@ namespace simpletree {
     struct array_data : public RecoParticle::array_data {
       array_data();
 
+      Bool_t positive[NMAX]{};
       Bool_t tauDecay[NMAX]{};
       Bool_t hadDecay[NMAX]{};
 
@@ -377,6 +391,9 @@ namespace simpletree {
     Lepton(Lepton const&);
     virtual ~Lepton();
     Lepton& operator=(Lepton const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     int charge() const { return positive ? 1 : -1; }
@@ -388,6 +405,7 @@ namespace simpletree {
     static SinglesPos const& nextSinglesPos_();
 
   public:
+    Bool_t& positive;
     Bool_t& tauDecay;
     Bool_t& hadDecay;
   };
@@ -420,6 +438,9 @@ namespace simpletree {
     Electron(Electron const&);
     virtual ~Electron();
     Electron& operator=(Electron const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     double m() const override { return 5.109989e-4; }
@@ -467,6 +488,9 @@ namespace simpletree {
     Muon(Muon const&);
     virtual ~Muon();
     Muon& operator=(Muon const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     double m() const override { return 1.05658e-2; }
@@ -499,6 +523,9 @@ namespace simpletree {
     Tau(Tau const&);
     virtual ~Tau();
     Tau& operator=(Tau const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
   private:
@@ -534,6 +561,9 @@ namespace simpletree {
     Jet(Jet const&);
     virtual ~Jet();
     Jet& operator=(Jet const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
   private:
@@ -560,8 +590,11 @@ namespace simpletree {
 
     void setName(TString const& name) { name_ = name; }
     virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
     virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
@@ -582,8 +615,11 @@ namespace simpletree {
     virtual ~CorrectedMet();
     CorrectedMet& operator=(CorrectedMet const&);
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
     virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
@@ -618,6 +654,9 @@ namespace simpletree {
     Parton(Parton const&);
     virtual ~Parton();
     Parton& operator=(Parton const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
   private:
@@ -648,6 +687,9 @@ namespace simpletree {
     MCParticle(MCParticle const&);
     virtual ~MCParticle();
     MCParticle& operator=(MCParticle const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
   private:
@@ -671,6 +713,9 @@ namespace simpletree {
     GenJet(GenJet const&);
     virtual ~GenJet();
     GenJet& operator=(GenJet const&);
+    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
+    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
   private:
@@ -689,8 +734,11 @@ namespace simpletree {
 
     void setName(TString const& name) { name_ = name; }
     virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
     void set(unsigned iB) { words[iB / 32] |= (1 << (iB % 32)); }
@@ -712,8 +760,11 @@ namespace simpletree {
 
     void setName(TString const& name) { name_ = name; }
     virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
     virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }

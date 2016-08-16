@@ -65,6 +65,7 @@ ASSERT nMaxHLTObjects >= nMuonHLTObjects
 pt/F
 eta/F
 phi/F
+
 LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, m()); }
 TLorentzVector p4v() const { TLorentzVector p4; p4.SetPtEtaPhiM(pt, eta, phi, m()); return p4; }
 virtual double e() const { return pt * std::cosh(eta); }
@@ -80,11 +81,11 @@ double dR(Particle const& p) const { return std::sqrt(dR2(p)); }
 
 [ParticleM:Particle]
 mass/F
+
 double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
 double m() const override { return mass; }
 
 [RecoParticle:Particle]
-positive/O
 loose/O
 medium/O
 tight/O
@@ -93,6 +94,7 @@ matchHLT[nMaxHLTObjects]/O
 
 [RecoParticleM:RecoParticle]
 mass/F
+
 double e() const override { return std::sqrt(std::pow(pt * std::cosh(eta), 2.) + m() * m()); }
 double m() const override { return mass; }
 
@@ -155,9 +157,11 @@ static double const sieieCuts[2][3]{{0.0102, 0.0102, 0.0100}, {0.0274, 0.0268, 0
 static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
 [Lepton:RecoParticle]
-int charge() const { return positive ? 1 : -1; }
+positive/O
 tauDecay/O
 hadDecay/O
+
+int charge() const { return positive ? 1 : -1; }
 
 [Electron:Lepton]
 chIsoPh/F
@@ -201,6 +205,7 @@ cisv/F
 met/F
 phi/F
 sumEt/F
+
 virtual TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
 [CorrectedMet:Met]
@@ -214,6 +219,7 @@ metUnclUp/F
 phiUnclUp/F
 metUnclDown/F
 phiUnclDown/F
+
 virtual TVector2 vCorr(int corr = 0) const { if (corr == 0) return v(); TVector2 vec; switch (corr) { case 1: vec.SetMagPhi(metCorrUp, phiCorrUp); break; case -1: vec.SetMagPhi(metCorrDown, phiCorrDown); break; } return vec; }
 
 [Parton:ParticleM]
@@ -226,9 +232,10 @@ ancestor/b
 [GenJet:ParticleM]
 
 [HLTBits:SINGLE]
+words[16]/i
+
 void set(unsigned iB) { words[iB / 32] |= (1 << (iB % 32)); }
 bool pass(unsigned iB) const { return ((words[iB / 32] >> (iB % 32)) & 1) != 0; }
-words[16]/i
 
 [MetFilters:SINGLE]
 cschalo/O
@@ -238,6 +245,7 @@ hbheIso/O
 badsc/O
 badTrack/O
 badMuonTrack/O
+
 virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
 
 {Event}
@@ -245,9 +253,9 @@ run/i
 lumi/i
 event/i
 weight/D = 1.
-scaleReweight[6]/D
-pdfDW/D
-rho/D
+scaleReweight[6]/F
+pdfDW/F
+rho/F
 npvTrue/F
 npv/s
 partons/PartonCollection

@@ -76,9 +76,9 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   flatutils::book(_tree, "", "lumi", "", 'i', &lumi, _branches, _whitelist);
   flatutils::book(_tree, "", "event", "", 'i', &event, _branches, _whitelist);
   flatutils::book(_tree, "", "weight", "", 'D', &weight, _branches, _whitelist);
-  flatutils::book(_tree, "", "scaleReweight", "[6]", 'D', scaleReweight, _branches, _whitelist);
-  flatutils::book(_tree, "", "pdfDW", "", 'D', &pdfDW, _branches, _whitelist);
-  flatutils::book(_tree, "", "rho", "", 'D', &rho, _branches, _whitelist);
+  flatutils::book(_tree, "", "scaleReweight", "[6]", 'F', scaleReweight, _branches, _whitelist);
+  flatutils::book(_tree, "", "pdfDW", "", 'F', &pdfDW, _branches, _whitelist);
+  flatutils::book(_tree, "", "rho", "", 'F', &rho, _branches, _whitelist);
   flatutils::book(_tree, "", "npvTrue", "", 'F', &npvTrue, _branches, _whitelist);
   flatutils::book(_tree, "", "npv", "", 's', &npv, _branches, _whitelist);
 

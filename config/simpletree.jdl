@@ -1,7 +1,0 @@
-Requirements            = Arch == "X86_64" && OpSysAndVer == "SL6" && HasFileTransfer
-Notification            = Error
-Rank                    = Mips
-transfer_input_files = $ENV(CMSSW_BASE)/src/MitFlat/config/copyoutput.py
-transfer_output_files = {fileset}.root
-#transfer_output_remaps = "simpletree.root = simpletree_{fileset}.root"
-accounting_group = group_cmsuser

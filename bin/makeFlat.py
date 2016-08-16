@@ -369,13 +369,29 @@ with open(args.package + '/interface/Objects_' + namespace + '.h', 'w') as heade
         if obj in singleObjs:
             if obj in inheritance:
                 header.write('\n    void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
                 header.write('\n    void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
                 header.write('\n    void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
             else:
                 header.write('\n\n    void setName(TString const& name) { name_ = name; }')
                 header.write('\n    virtual void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
                 header.write('\n    virtual void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
                 header.write('\n    virtual void book(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+
+        else:
+            if obj in inheritance:
+                header.write('\n    void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+                header.write('\n    void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;')
+            else:
+                header.write('\n    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
+                header.write('\n    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);')
 
         if obj in inheritance:
             header.write('\n    void init() override;')
@@ -583,7 +599,7 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
                 else:
                     src.write('  flatutils::setStatusAndAddress(_tree, name_, "' + br.name + '", ' + br.name + ', _branches, _whitelist);\n')
             src.write('}\n\n')
-    
+
             src.write('void\n')
             src.write(namespace + '::' + obj + '::book(TTree& _tree, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)\n')
             src.write('{\n')
@@ -658,6 +674,44 @@ with open(args.package + '/src/Objects_' + namespace + '.cc', 'w') as src:
 
                 src.write('}\n\n')
 
+        src.write('void\n')
+        src.write(namespace + '::' + obj + '::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
+        src.write('{\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + '::setStatus(_tree, _name, _status, _branches, _whitelist);\n\n')
+
+        for br in defs[obj].branches:
+            src.write('  flatutils::setStatus(_tree, _name, "' + br.name + '", _status, _branches, _whitelist);\n')
+
+        src.write('}\n\n')
+
+        src.write('void\n')
+        src.write(namespace + '::' + obj + '::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)\n')
+        src.write('{\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + '::setAddress(_tree, _name, _branches, _whitelist);\n\n')
+
+        for br in defs[obj].branches:
+            if br.size == 1:
+                src.write('  flatutils::setStatusAndAddress(_tree, _name, "' + br.name + '", &' + br.name + ', _branches, _whitelist);\n')
+            else:
+                src.write('  flatutils::setStatusAndAddress(_tree, _name, "' + br.name + '", ' + br.name + ', _branches, _whitelist);\n')
+        src.write('}\n\n')
+    
+        src.write('void\n')
+        src.write(namespace + '::' + obj + '::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)\n')
+        src.write('{\n')
+        if obj in inheritance:
+            src.write('  ' + inheritance[obj] + '::book(_tree, _name, _branches, _whitelist);\n\n')
+
+        for br in defs[obj].branches:
+            if br.size == 1:
+                src.write('  flatutils::book(_tree, _name, "' + br.name + '", "", \'' + br.type + '\', &' + br.name + ', _branches, _whitelist);\n')
+            else:
+                src.write('  flatutils::book(_tree, _name, "' + br.name + '", TString::Format("[%d]", ' + str(br.size) + '), \'' + br.type + '\', ' + br.name + ', _branches, _whitelist);\n')
+        src.write('}\n\n')
+
+        if obj not in singleObjs:
             src.write('/*static*/\n')
             src.write('std::vector<std::auto_ptr<' + namespace + '::' + obj + '::array_data>> ' + namespace + '::' + obj + '::singlesData_{};\n')
             src.write('/*static*/\n')
