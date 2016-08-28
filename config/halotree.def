@@ -4,52 +4,80 @@
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
 
+enum HLTPath {
+  kPhoton120,
+  kPhoton135MET100,
+  kPhoton165HE10,
+  kPhoton175,
+  kEle23Loose,
+  kEle27Loose,
+  kMET170,
+  kMETNoMu90MHTNoMu90,
+  kMETNoMu120MHTNoMu120,
+  nHLTPaths
+};
+
+[Particle:MAX=256]
+pt/F
+eta/F
+phi/F
+virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
+
+[Jet:Particle]
+chFraction/F
+nhFraction/F
+neFraction/F
+
 [Met:SINGLE]
 met/F
 phi/F
 sumEt/F
 TVector2 v() const { TVector2 vec; vec.SetMagPhi(met, phi); return vec; }
 
-[Photon:MAX=32]
-pt/F
-eta/F
-phi/F
+[Photon:Particle]
 chIso/F
 nhIso/F
 phIso/F
 sieie/F
 hOverE/F
 seedTime/F
+maxTimeOffPos/F
+maxTimeOffNeg/F
 pixelVeto/O
+electronVeto/O
 loose/O
 medium/O
 tight/O
 isEB/O
+isHalo/O
 virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 bool passCHIso(UInt_t wp) const { return chIso < (isEB ? chIsoCuts[0][wp] : chIsoCuts[1][wp]); }
 bool passNHIso(UInt_t wp) const { return nhIso < (isEB ? nhIsoCuts[0][wp] : nhIsoCuts[1][wp]); }
 bool passPhIso(UInt_t wp) const { return phIso < (isEB ? phIsoCuts[0][wp] : phIsoCuts[1][wp]); }
 bool passSieie(UInt_t wp) const { return sieie < (isEB ? sieieCuts[0][wp] : sieieCuts[1][wp]); }
 bool passHOverE(UInt_t wp) const { return hOverE < (isEB ? hOverECuts[0][wp] : hOverECuts[1][wp]); }
-static double const chIsoCuts[2][3]{{2.67, 1.79, 1.66}, {1.79, 1.09, 1.04}};
-static double const nhIsoCuts[2][3]{{7.23, 0.16, 0.14}, {8.89, 4.31, 3.89}};
-static double const phIsoCuts[2][3]{{2.11, 1.9, 1.4}, {3.09, 1.9, 1.4}};
-static double const sieieCuts[2][3]{{0.0107, 0.01, 0.01}, {0.0272, 0.0267, 0.0265}};
-static double const hOverECuts[2][3]{{0.028, 0.012, 0.01}, {0.093, 0.023, 0.015}};
+static double const chIsoCuts[2][3]{{2.44, 1.31, 0.91}, {1.84, 1.25, 0.65}};
+static double const nhIsoCuts[2][3]{{2.57, 0.60, 0.33}, {4., 1.65, 0.93}};
+static double const phIsoCuts[2][3]{{1.92, 1.33, 0.61}, {2.15, 1.02, 0.54}};
+static double const sieieCuts[2][3]{{0.0103, 0.01, 0.01}, {0.0277, 0.0267, 0.0267}};
+static double const hOverECuts[2][3]{{0.05, 0.05, 0.05}, {0.05, 0.05, 0.05}};
 
-[Muon:MAX=32]
-pt/F
-eta/F
-phi/F
+[Muon:Particle]
 
 [MIP:SINGLE]
 energy/F
 phi/F
 r/F
-nclus/s
+nEBclus/s
+nEEclus/s
+
+[HLT:SIZE=nHLTPaths]
+pass/O
 
 {Event}
 photons/PhotonCollection
-met/Met
+jets/JetCollection
+pfMet/Met
 muons/MuonCollection
 mip/MIP
+hlt/HLTCollection
