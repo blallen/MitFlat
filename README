@@ -1,0 +1,153 @@
+<< Introduction >>
+
+MitFlat contains tools to create fully flat (simple C types and arrays only) ROOT
+ntuples. The ntuples are extremely slim, fast, and fully portable (no libraries needed) because of
+its dumbness. However, by loading the MitFlat libraries, the flat ntuples can be read as C++ objects
+with inheritance, so the analysis code does not have to be flat and dumb.
+
+Tree structures are defined in a tree definition file and then converted to C++ code by bin/makeFlat.py.
+Example definition files can be found in config/ directory.
+
+<< Definition file syntax >>
+
+Tree definition file is made of various sections and blocks. A comment line starts with a '%' character.
+All typedefs, enums, constants, and classes will be defined under a namespace whose name is taken from the
+name of the definition file (e.g. simpletree.def --> namespace simpletree).
+
+1. Includes
+Define all headers to be included in the object definition headers.
+
+2. Typedefs
+Similarly, define all typedefs.
+
+3. Constants
+Constants defined in this section can be used in the object definitions.
+
+4. Objects
+This section is the core of the definition file. Each object definition is started with a line
+
+[Obj:SPEC]
+
+where Obj is the name of the object, and SPEC is either
+
+ . "MAX=n" (n integer) -> define a dynamic collectable object. A class ObjCollection will be automatically created. The collection class behaves like std::vector but has a maximum size of n. 
+ . "SIZE=n" (n integer) -> define a static collectable object. A class ObjCollection will be automatically created. The collection class behaves like a C array of Objs with array size n.
+ . "SINGLE" -> define a non-collectable object (e.g. MET).
+ . Name of the base class -> define a class that inherits from another class. Collection multiplicity (max size or SINGLE) is inherited.
+
+Everything that follows after the object name until next object or tree declaration are parsed as
+the definition of the object. Within this block, object variables (i.e. ROOT branches) and
+single-line methods can be defined. Variables are defined by syntax
+
+name/type
+or
+name[size]/type
+
+where size is either a integer literal or one of the constants defined in the constants section.
+
+Branch types follow the ROOT convention:
+ O -> Bool_t (capital o)
+ b -> UChar_t
+ B -> Chart_t
+ s -> UShort_t
+ S -> Short_t
+ i -> UInt_t
+ I -> Int_t
+ l -> ULong64_t
+ L -> Long64_t
+ F -> Float_t
+ D -> Double_t
+ C -> Chart_t*
+
+5. Trees
+
+Tree names are specified by {Name}. Everything that follows a tree declaration until the next tree
+declaration is considered as tree definition.
+
+Syntax for tree blocks are identical to that in object blocks.
+
+<< Tree input/output >>
+
+Each object variable is booked an independent TBranch. The objects know how to write out and read in
+the branch values from TTree. Collections use variable names in the tree definition to book branches.
+For example, consider a file particles.def with the following content:
+===========================
+[Particle:MAX=10]
+pt/F
+eta/F
+phi/F
+
+{Event}
+myparts/ParticleCollection
+===========================
+
+bin/makeFlat.py particles.def
+will result in the following TTree structure:
+tree (name not fixed)
+ L myparts.size/i
+ L myparts.pt[myparts.size]/F
+ L myparts.eta[myparts.size]/F
+ L myparts.phi[myparts.size]/F
+
+<< Analysis code >>
+
+bin/makeFlat.py <conf>.def
+
+will produce multiple files under DataFormats/interface and DataFormats/src. In the analysis code,
+it suffices to include only
+
+#include "MitFlat/DataFormats/interface/TreeEntries_<conf>.h"
+
+as all relevant headers are included in this file.
+
+Using the example above, one can fill the tree like
+
+  TTree* tree = new TTree("mytree", "My Tree");
+  particles::Event event;
+  event.book(*tree); // creates branches
+
+  ...
+  for each event
+    for (auto&& inPart : inParticles) {
+      event.myparts.resize(event.myparts.size() + 1); // create one particle at the end - throws if maximum size has been reached
+      particles::Particle& outPart(event.myparts.back());
+  
+      outPart.pt = inPart.pt();
+      outPart.eta = inPart.eta();
+      outPart.phi = inPart.phi();
+    }
+  
+    tree->Fill();
+
+or process the tree written above like
+
+  TTree* tree = static_cast<TTree*>(inputFile->Get("mytree"));
+  particles::Event event;
+  event.setInput(*tree);
+
+  long iEntry = 0;
+  while (tree->GetEntry(iEntry++) > 0) {
+    histogram1->Fill(event.particles.size());
+    for (auto& part : event.particles) {
+      histogram2->Fill(part.pt);
+    }
+  }
+
+<< Inheritance >>
+
+When a collectable object class is declared as derived from another class, both the element and the
+collection have inheritance relations. For example, if
+
+[Particle:SIZE=10]
+pt/F
+eta/F
+phi/F
+
+[ParticleM:Particle]
+mass/F
+
+then in the resulting C++ code, ParticleM is a subclass of Particle, and ParticleMCollection is a
+subclass of ParticleCollection. This is in contrast to e.g. having a std::vector of inheriting classes;
+std::vector<ParticleM> and std::vector<Particle> are not related.
+
+These inheritance relations can be used effectively to make the analysis code compact.
