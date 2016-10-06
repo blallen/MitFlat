@@ -10,9 +10,14 @@ eta/F
 phi/F
 virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 
-[Jet:Particle]
+[ParticleM:Particle]
 mass/F
 LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+
+[Jet:ParticleM]
+
+[Boson:ParticleM]
+flavor/s
 
 [Photon:Particle]
 isot/F
@@ -28,5 +33,6 @@ photons/PhotonCollection
 electrons/ParticleCollection
 muons/ParticleCollection
 neutrinos/ParticleCollection
+boson/Boson
 jets/JetCollection
 met/Met
