@@ -190,35 +190,12 @@ jetLooseId = mithep.JetIdMod('JetId',
 )
 
 if run == 2:
-    synchWith = '80Xv1'
-
-    if synchWith == '76':
-        jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k74CHS)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_0_2_newNames.xml', 0)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2_2p5_newNames.xml', 1)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_2p5_3_newNames.xml', 2)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/TMVAClassificationCategory_BDTG.weights_jteta_3_5_newNames.xml', 3)
-        jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_150807.dat')
-        jetLooseId.SetUseBuggyPullForMVA(True)
-        jetLooseId.SetUseBuggyCovarianceForMVA(True)
-    elif synchWith == '80Xv1':
-        # to synch with 80X MINIAODv1 or privately recomputed 76X using tag pileupJetId76X of https://github.com/jbrands/cmssw.git
-        jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k76CHS)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta0to2p5_BDT.weights.xml', 0)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p5to2p75_BDT.weights.xml', 1)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta2p75to3_BDT.weights.xml', 2)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_76x_Eta3to5_BDT.weights.xml', 3)
-        jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160225.dat')
-        jetLooseId.SetUseBuggyCovarianceForMVA(True)
-    elif synchWith == '80Xv2':
-        # to synch with 80X MINIAODv2
-        jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k80CHS)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta0to2p5_BDT.weights.xml', 0)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p5to2p75_BDT.weights.xml', 1)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta2p75to3_BDT.weights.xml', 2)
-        jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80x_Eta3to5_BDT.weights.xml', 3)
-        jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160416.dat')
-        jetLooseId.SetUseBuggyCovarianceForMVA(True)
+    jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.k80CHS)
+    jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80XvarFix_Eta0to2p5_BDT.weights.xml', 0)
+    jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80XvarFix_Eta2p5to2p75_BDT.weights.xml', 1)
+    jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80XvarFix_Eta2p75to3_BDT.weights.xml', 2)
+    jetLooseId.SetMVAWeightsFile(mitdata + '/JetId/pileupJetId_80XvarFix_Eta3to5_BDT.weights.xml', 3)
+    jetLooseId.SetMVACutsFile(mitdata + '/JetId/jetIDCuts_160715.dat')
 
 else:
     jetLooseId.SetMVATrainingSet(mithep.JetIDMVA.nMVATypes)
@@ -438,22 +415,17 @@ ntuples = mithep.SimpleTreeMod(
     IsMC = not analysis.isRealData
 )
 
-if 'usehlt' in analysis.custom and not analysis.custom['usehlt']:
-    analysis.SetUseHLT(False)
-    ntuples.SetUseTrigger(False)
+for fname, filt in photonL1Objects:
+    ntuples.SetPhotonL1ModuleName(fname, filt)
 
-else:
-    for fname, filt in photonL1Objects:
-        ntuples.SetPhotonL1ModuleName(fname, filt)
-    
-    for fname, filt in photonHLTObjects:
-        ntuples.SetPhotonTriggerModuleName(fname, filt)
-    
-    for fname, filt in electronHLTObjects:
-        ntuples.SetElectronTriggerModuleName(fname, filt)
-    
-    for fname, filt in muonHLTObjects:
-        ntuples.SetMuonTriggerModuleName(fname, filt)
+for fname, filt in photonHLTObjects:
+    ntuples.SetPhotonTriggerModuleName(fname, filt)
+
+for fname, filt in electronHLTObjects:
+    ntuples.SetElectronTriggerModuleName(fname, filt)
+
+for fname, filt in muonHLTObjects:
+    ntuples.SetMuonTriggerModuleName(fname, filt)
 
 ################################
 ### DATA/MC SPECIFIC MODULES ###
