@@ -159,6 +159,7 @@ NeroToSimple::translate(long _iEntry/* = -1*/)
     event_.jets.resize(event_.jets.size() + 1);
     auto& jet(event_.jets.back());
     p4ToParticle(inJets_, iJ, jet);
+    jet.cisv = inJets_.bDiscr->at(iJ);
   }
 
   // printf("\nnpho %d \n", inPhotons_.size());
