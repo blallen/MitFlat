@@ -495,8 +495,13 @@ with open(args.package + '/interface/TreeEntries_' + namespace + '.h', 'w') as h
                         header.write('\n    ' + branchType(br.type) + ' ' + br.name + '[' + str(br.size) + ']{};')
     
             for br in treeDef.branches:
-                if not isSimple(br.type):
+                if isSimple(br.type):
+                    continue
+
+                if br.type in singleObjs or br.type.endswith('Collection'):
                     header.write('\n    ' + branchType(br.type) + ' ' + br.name + ' = ' + branchType(br.type) + '("' + br.name + '");')
+                else:
+                    header.write('\n    ' + branchType(br.type) + ' ' + br.name + ' = ' + branchType(br.type) + '();') 
     
             header.write('\n')
 
@@ -861,8 +866,13 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('\n')
     
         for br in treeDef.branches:
-            if not isSimple(br.type):
+            if isSimple(br.type):
+                continue
+
+            if br.type in singleObjs or br.type.endswith('Collection'):
                 src.write('  ' + br.name + '.setStatus(_tree, _status, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
+            else:
+                src.write('  ' + br.name + '.setStatus(_tree, "' + br.name + '", _status, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
     
         src.write('}\n\n')
 
@@ -879,8 +889,13 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('\n')
     
         for br in treeDef.branches:
-            if not isSimple(br.type):
+            if isSimple(br.type):
+                continue
+
+            if br.type in singleObjs or br.type.endswith('Collection'):
                 src.write('  ' + br.name + '.setAddress(_tree, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
+            else:
+                src.write('  ' + br.name + '.setAddress(_tree, "' + br.name + '", flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
 
         src.write('\n  input_ = &_tree;\n')
     
@@ -899,8 +914,13 @@ with open(args.package + '/src/TreeEntries_' + namespace + '.cc', 'w') as src:
         src.write('\n')
         
         for br in treeDef.branches:
-            if not isSimple(br.type):
+            if isSimple(br.type):
+                continue
+
+            if br.type in singleObjs or br.type.endswith('Collection'):
                 src.write('  ' + br.name + '.book(_tree, flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
+            else:
+                src.write('  ' + br.name + '.book(_tree, "' + br.name + '", flatutils::subBranchList(_branches, "' + br.name + '"), _whitelist);\n')
     
         src.write('}\n\n')
 
@@ -946,19 +966,19 @@ makefile = open(args.package + '/tools/Makefile')
 for line in makefile:
     if line.startswith('trees=') and namespace in line:
         break
-    else:
-        makefile.close()
-        makefile = open(args.package + '/tools/Makefile')
-        newMakefile = open(args.package + '/tools/Makefile_tmp', 'w')
-        for line in makefile:
-            if line.startswith('trees='):
-                newMakefile.write(line.strip() + ' ' + namespace + '\n')
-            else:
-                newMakefile.write(line)
+else:
+    makefile.close()
+    makefile = open(args.package + '/tools/Makefile')
+    newMakefile = open(args.package + '/tools/Makefile_tmp', 'w')
+    for line in makefile:
+        if line.startswith('trees='):
+            newMakefile.write(line.strip() + ' ' + namespace + '\n')
+        else:
+            newMakefile.write(line)
 
-        newMakefile.close()
-        makefile.close()
-        os.rename(args.package + '/tools/Makefile_tmp', args.package + '/tools/Makefile')
+    newMakefile.close()
+    makefile.close()
+    os.rename(args.package + '/tools/Makefile_tmp', args.package + '/tools/Makefile')
 
 if args.makeLinkdef:
     try:
