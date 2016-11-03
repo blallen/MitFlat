@@ -100,6 +100,10 @@ with open(args.config) as configFile:
     for line in configFile:
         line = line.strip()
 
+        if line.startswith('%'):
+            #comment line
+            continue
+
         if enclosure:
             if enclosure == 'enum':
                 for elem in line.split(','):

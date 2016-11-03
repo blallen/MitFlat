@@ -1,3 +1,5 @@
+% INCLUDES
+
 #include "Math/GenVector/LorentzVector.h"
 #include "Math/GenVector/PtEtaPhiM4D.h"
 #include "TLorentzVector.h"
@@ -5,7 +7,11 @@
 
 #include <cmath>
 
+% TYPEDEFS
+
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> LorentzVectorM;
+
+% CONSTANTS
 
 enum PhotonL1Object {
   fSEG34IorSEG40,
@@ -60,6 +66,8 @@ unsigned const nMaxHLTObjects(nElectronHLTObjects);
 ASSERT nMaxHLTObjects >= nPhotonHLTObjects
 ASSERT nMaxHLTObjects >= nElectronHLTObjects
 ASSERT nMaxHLTObjects >= nMuonHLTObjects
+
+% OBJECTS
 
 [Particle:MAX=256]
 pt/F
@@ -247,6 +255,8 @@ badTrack/O
 badMuonTrack/O
 
 virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+
+% TREES
 
 {Event}
 run/i
