@@ -415,17 +415,22 @@ ntuples = mithep.SimpleTreeMod(
     IsMC = not analysis.isRealData
 )
 
-for fname, filt in photonL1Objects:
-    ntuples.SetPhotonL1ModuleName(fname, filt)
+if 'usehlt' in analysis.custom and not analysis.custom['usehlt']:
+    analysis.SetUseHLT(False)
+    ntuples.SetUseTrigger(False)
 
-for fname, filt in photonHLTObjects:
-    ntuples.SetPhotonTriggerModuleName(fname, filt)
-
-for fname, filt in electronHLTObjects:
-    ntuples.SetElectronTriggerModuleName(fname, filt)
-
-for fname, filt in muonHLTObjects:
-    ntuples.SetMuonTriggerModuleName(fname, filt)
+else:
+    for fname, filt in photonL1Objects:
+        ntuples.SetPhotonL1ModuleName(fname, filt)
+    
+    for fname, filt in photonHLTObjects:
+        ntuples.SetPhotonTriggerModuleName(fname, filt)
+    
+    for fname, filt in electronHLTObjects:
+        ntuples.SetElectronTriggerModuleName(fname, filt)
+    
+    for fname, filt in muonHLTObjects:
+        ntuples.SetMuonTriggerModuleName(fname, filt)
 
 ################################
 ### DATA/MC SPECIFIC MODULES ###
