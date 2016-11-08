@@ -1,4 +1,4 @@
-trees=simpletree
+trees=simpletree genkintree
 enums=$(patsubst %,../obj/%_enums.o,$(trees))
 enumsrc=$(enums:.o=.cc)
 classes=$(patsubst %,../obj/%_classes.o,$(trees))

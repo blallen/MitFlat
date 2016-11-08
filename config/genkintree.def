@@ -14,13 +14,18 @@ virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 mass/F
 LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
 
-[Jet:ParticleM]
+[Parton:ParticleM]
+pid/B
 
 [Boson:ParticleM]
 flavor/s
 
 [Photon:Particle]
 isot/F
+
+[Lepton:Particle]
+charge/B
+minDRJ/F
 
 [Met:SINGLE]
 pt/F
@@ -29,10 +34,11 @@ TVector2 v() const { TVector2 vec; vec.SetMagPhi(pt, phi); return vec; }
 
 {Event}
 weight/D
+partons/PartonCollection
 photons/PhotonCollection
-electrons/ParticleCollection
-muons/ParticleCollection
+electrons/LeptonCollection
+muons/LeptonCollection
 neutrinos/ParticleCollection
 boson/Boson
-jets/JetCollection
+jets/ParticleMCollection
 met/Met
