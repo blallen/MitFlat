@@ -74,6 +74,7 @@ namespace flatutils {
     reference back() { return operator[](this->base_type::size_ - 1); }
     const_reference back() const { return operator[](this->base_type::size_ - 1); }
     void push_back(const_reference);
+    reference create_back() { resize(this->base_type::size_ + 1); return back(); }
     void copy(self_type const& source) { clear(); for (auto& s : source) push_back(s); }
     void resize(UInt_t size);
     void init();
