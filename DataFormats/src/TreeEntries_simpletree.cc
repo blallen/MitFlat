@@ -30,6 +30,7 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   electrons.setStatus(_tree, _status, flatutils::subBranchList(_branches, "electrons"), _whitelist);
   muons.setStatus(_tree, _status, flatutils::subBranchList(_branches, "muons"), _whitelist);
   taus.setStatus(_tree, _status, flatutils::subBranchList(_branches, "taus"), _whitelist);
+  superClusters.setStatus(_tree, _status, flatutils::subBranchList(_branches, "superClusters"), _whitelist);
   rawMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setStatus(_tree, _status, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   caloMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "caloMet"), _whitelist);
@@ -59,6 +60,7 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   electrons.setAddress(_tree, flatutils::subBranchList(_branches, "electrons"), _whitelist);
   muons.setAddress(_tree, flatutils::subBranchList(_branches, "muons"), _whitelist);
   taus.setAddress(_tree, flatutils::subBranchList(_branches, "taus"), _whitelist);
+  superClusters.setAddress(_tree, flatutils::subBranchList(_branches, "superClusters"), _whitelist);
   rawMet.setAddress(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.setAddress(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   caloMet.setAddress(_tree, flatutils::subBranchList(_branches, "caloMet"), _whitelist);
@@ -90,6 +92,7 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   electrons.book(_tree, flatutils::subBranchList(_branches, "electrons"), _whitelist);
   muons.book(_tree, flatutils::subBranchList(_branches, "muons"), _whitelist);
   taus.book(_tree, flatutils::subBranchList(_branches, "taus"), _whitelist);
+  superClusters.book(_tree, flatutils::subBranchList(_branches, "superClusters"), _whitelist);
   rawMet.book(_tree, flatutils::subBranchList(_branches, "rawMet"), _whitelist);
   t1Met.book(_tree, flatutils::subBranchList(_branches, "t1Met"), _whitelist);
   caloMet.book(_tree, flatutils::subBranchList(_branches, "caloMet"), _whitelist);
@@ -119,6 +122,7 @@ simpletree::Event::init()
   electrons.init();
   muons.init();
   taus.init();
+  superClusters.init();
   rawMet.init();
   t1Met.init();
   caloMet.init();

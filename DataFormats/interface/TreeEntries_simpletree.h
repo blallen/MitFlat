@@ -21,6 +21,7 @@ namespace simpletree {
   typedef flatutils::Collection<Muon, LeptonCollection> MuonCollection;
   typedef flatutils::Collection<Tau, RecoParticleMCollection> TauCollection;
   typedef flatutils::Collection<Jet, RecoParticleMCollection> JetCollection;
+  typedef flatutils::Collection<SuperCluster, flatutils::DynamicCollection> SuperClusterCollection;
   typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
   typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
   typedef flatutils::Collection<GenJet, ParticleMCollection> GenJetCollection;
@@ -46,6 +47,7 @@ namespace simpletree {
     ElectronCollection electrons = ElectronCollection("electrons");
     MuonCollection muons = MuonCollection("muons");
     TauCollection taus = TauCollection("taus");
+    SuperClusterCollection superClusters = SuperClusterCollection("superClusters");
     Met rawMet = Met("rawMet");
     CorrectedMet t1Met = CorrectedMet("t1Met");
     Met caloMet = Met("caloMet");

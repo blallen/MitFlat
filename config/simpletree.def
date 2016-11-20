@@ -209,6 +209,16 @@ ptResCorr/F
 phiResCorr/F
 cisv/F
 
+[SuperCluster:MAX=128]
+rawPt/F
+eta/F
+phi/F
+isEB/O
+time/F
+sieie/F
+sipip/F
+e2e9/F
+
 [Met:SINGLE]
 met/F
 phi/F
@@ -250,11 +260,12 @@ cschalo/O
 globalHalo16/O
 hbhe/O
 hbheIso/O
+ecalDeadCell/O
 badsc/O
 badTrack/O
 badMuonTrack/O
 
-virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !ecalDeadCell && !badsc && !badTrack && !badMuonTrack; }
 
 % TREES
 
@@ -276,6 +287,7 @@ photons/PhotonCollection
 electrons/ElectronCollection
 muons/MuonCollection
 taus/TauCollection
+superClusters/SuperClusterCollection
 rawMet/Met
 t1Met/CorrectedMet
 caloMet/Met

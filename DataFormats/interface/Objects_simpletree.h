@@ -581,6 +581,57 @@ namespace simpletree {
     Float_t& cisv;
   };
 
+  class SuperCluster {
+  public:
+    struct array_data {
+      static UInt_t const NMAX{128};
+
+      array_data();
+
+      Float_t rawPt[NMAX]{};
+      Float_t eta[NMAX]{};
+      Float_t phi[NMAX]{};
+      Bool_t isEB[NMAX]{};
+      Float_t time[NMAX]{};
+      Float_t sieie[NMAX]{};
+      Float_t sipip[NMAX]{};
+      Float_t e2e9[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    SuperCluster();
+    SuperCluster(array_data&, UInt_t idx);
+    SuperCluster(SuperCluster const&);
+    virtual ~SuperCluster();
+    SuperCluster& operator=(SuperCluster const&);
+    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void init();
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
+
+  protected:
+    SinglesPos pos_{-1, -1};
+
+  public:
+    Float_t& rawPt;
+    Float_t& eta;
+    Float_t& phi;
+    Bool_t& isEB;
+    Float_t& time;
+    Float_t& sieie;
+    Float_t& sipip;
+    Float_t& e2e9;
+  };
+
   class Met {
   public:
     Met(TString const& name);
@@ -767,7 +818,7 @@ namespace simpletree {
     virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     virtual void init();
 
-    virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !badsc && !badTrack && !badMuonTrack; }
+    virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !ecalDeadCell && !badsc && !badTrack && !badMuonTrack; }
 
   protected:
     TString name_;
@@ -777,6 +828,7 @@ namespace simpletree {
     Bool_t globalHalo16{};
     Bool_t hbhe{};
     Bool_t hbheIso{};
+    Bool_t ecalDeadCell{};
     Bool_t badsc{};
     Bool_t badTrack{};
     Bool_t badMuonTrack{};

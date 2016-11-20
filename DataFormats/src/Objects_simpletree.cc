@@ -2056,6 +2056,189 @@ simpletree::Jet::init()
   cisv = 0.;
 }
 
+simpletree::SuperCluster::array_data::array_data()
+{
+}
+
+void
+simpletree::SuperCluster::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatus(_tree, _name, "rawPt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "eta", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "phi", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "time", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "sipip", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e2e9", _status, _branches, _whitelist);
+}
+
+void
+simpletree::SuperCluster::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatusAndAddress(_tree, _name, "rawPt", rawPt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "eta", eta, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "phi", phi, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "isEB", isEB, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "time", time, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "sipip", sipip, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e2e9", e2e9, _branches, _whitelist);
+}
+
+void
+simpletree::SuperCluster::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::book(_tree, _name, "rawPt", "[" + _name + ".size]", 'F', rawPt, _branches, _whitelist);
+  flatutils::book(_tree, _name, "eta", "[" + _name + ".size]", 'F', eta, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phi", "[" + _name + ".size]", 'F', phi, _branches, _whitelist);
+  flatutils::book(_tree, _name, "isEB", "[" + _name + ".size]", 'O', isEB, _branches, _whitelist);
+  flatutils::book(_tree, _name, "time", "[" + _name + ".size]", 'F', time, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sieie", "[" + _name + ".size]", 'F', sieie, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sipip", "[" + _name + ".size]", 'F', sipip, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e2e9", "[" + _name + ".size]", 'F', e2e9, _branches, _whitelist);
+}
+
+void
+simpletree::SuperCluster::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatus(_tree, _name, "rawPt", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "eta", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "phi", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "isEB", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "time", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "sipip", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e2e9", _status, _branches, _whitelist);
+}
+
+void
+simpletree::SuperCluster::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatusAndAddress(_tree, _name, "rawPt", &rawPt, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "eta", &eta, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "phi", &phi, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "isEB", &isEB, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "time", &time, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "sieie", &sieie, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "sipip", &sipip, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e2e9", &e2e9, _branches, _whitelist);
+}
+
+void
+simpletree::SuperCluster::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
+{
+  flatutils::book(_tree, _name, "rawPt", "", 'F', &rawPt, _branches, _whitelist);
+  flatutils::book(_tree, _name, "eta", "", 'F', &eta, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phi", "", 'F', &phi, _branches, _whitelist);
+  flatutils::book(_tree, _name, "isEB", "", 'O', &isEB, _branches, _whitelist);
+  flatutils::book(_tree, _name, "time", "", 'F', &time, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sieie", "", 'F', &sieie, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sipip", "", 'F', &sipip, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e2e9", "", 'F', &e2e9, _branches, _whitelist);
+}
+
+/*static*/
+std::vector<std::auto_ptr<simpletree::SuperCluster::array_data>> simpletree::SuperCluster::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::SuperCluster::singlesPos_(-1, simpletree::SuperCluster::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::SuperCluster::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::SuperCluster::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::SuperCluster::SuperCluster() :
+  pos_(nextSinglesPos_()),
+  rawPt(singlesData_.at(singlesPos_.first)->rawPt[singlesPos_.second]),
+  eta(singlesData_.at(singlesPos_.first)->eta[singlesPos_.second]),
+  phi(singlesData_.at(singlesPos_.first)->phi[singlesPos_.second]),
+  isEB(singlesData_.at(singlesPos_.first)->isEB[singlesPos_.second]),
+  time(singlesData_.at(singlesPos_.first)->time[singlesPos_.second]),
+  sieie(singlesData_.at(singlesPos_.first)->sieie[singlesPos_.second]),
+  sipip(singlesData_.at(singlesPos_.first)->sipip[singlesPos_.second]),
+  e2e9(singlesData_.at(singlesPos_.first)->e2e9[singlesPos_.second])
+{
+  usedSinglesPos_.insert(pos_);
+}
+
+simpletree::SuperCluster::SuperCluster(array_data& _data, UInt_t _idx) :
+  rawPt(_data.rawPt[_idx]),
+  eta(_data.eta[_idx]),
+  phi(_data.phi[_idx]),
+  isEB(_data.isEB[_idx]),
+  time(_data.time[_idx]),
+  sieie(_data.sieie[_idx]),
+  sipip(_data.sipip[_idx]),
+  e2e9(_data.e2e9[_idx])
+{
+}
+
+simpletree::SuperCluster::SuperCluster(SuperCluster const& _src) :
+  rawPt(_src.rawPt),
+  eta(_src.eta),
+  phi(_src.phi),
+  isEB(_src.isEB),
+  time(_src.time),
+  sieie(_src.sieie),
+  sipip(_src.sipip),
+  e2e9(_src.e2e9)
+{
+}
+
+simpletree::SuperCluster::~SuperCluster()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
+}
+
+simpletree::SuperCluster&
+simpletree::SuperCluster::operator=(SuperCluster const& _rhs)
+{
+  rawPt = _rhs.rawPt;
+  eta = _rhs.eta;
+  phi = _rhs.phi;
+  isEB = _rhs.isEB;
+  time = _rhs.time;
+  sieie = _rhs.sieie;
+  sipip = _rhs.sipip;
+  e2e9 = _rhs.e2e9;
+  return *this;
+}
+
+void
+simpletree::SuperCluster::init()
+{
+  rawPt = 0.;
+  eta = 0.;
+  phi = 0.;
+  isEB = false;
+  time = 0.;
+  sieie = 0.;
+  sipip = 0.;
+  e2e9 = 0.;
+}
+
 simpletree::Met::Met(TString const& _name) :
   name_(_name)
 {
@@ -2726,6 +2909,7 @@ simpletree::MetFilters::MetFilters(MetFilters const& _src) :
   globalHalo16(_src.globalHalo16),
   hbhe(_src.hbhe),
   hbheIso(_src.hbheIso),
+  ecalDeadCell(_src.ecalDeadCell),
   badsc(_src.badsc),
   badTrack(_src.badTrack),
   badMuonTrack(_src.badMuonTrack)
@@ -2743,6 +2927,7 @@ simpletree::MetFilters::setStatus(TTree& _tree, Bool_t _status, flatutils::Branc
   flatutils::setStatus(_tree, name_, "globalHalo16", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "hbhe", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "hbheIso", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, name_, "ecalDeadCell", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "badsc", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "badTrack", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, name_, "badMuonTrack", _status, _branches, _whitelist);
@@ -2755,6 +2940,7 @@ simpletree::MetFilters::setAddress(TTree& _tree, flatutils::BranchList const& _b
   flatutils::setStatusAndAddress(_tree, name_, "globalHalo16", &globalHalo16, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "hbhe", &hbhe, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "hbheIso", &hbheIso, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, name_, "ecalDeadCell", &ecalDeadCell, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "badsc", &badsc, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "badTrack", &badTrack, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, name_, "badMuonTrack", &badMuonTrack, _branches, _whitelist);
@@ -2767,6 +2953,7 @@ simpletree::MetFilters::book(TTree& _tree, flatutils::BranchList const& _branche
   flatutils::book(_tree, name_, "globalHalo16", "", 'O', &globalHalo16, _branches, _whitelist);
   flatutils::book(_tree, name_, "hbhe", "", 'O', &hbhe, _branches, _whitelist);
   flatutils::book(_tree, name_, "hbheIso", "", 'O', &hbheIso, _branches, _whitelist);
+  flatutils::book(_tree, name_, "ecalDeadCell", "", 'O', &ecalDeadCell, _branches, _whitelist);
   flatutils::book(_tree, name_, "badsc", "", 'O', &badsc, _branches, _whitelist);
   flatutils::book(_tree, name_, "badTrack", "", 'O', &badTrack, _branches, _whitelist);
   flatutils::book(_tree, name_, "badMuonTrack", "", 'O', &badMuonTrack, _branches, _whitelist);
@@ -2779,6 +2966,7 @@ simpletree::MetFilters::setStatus(TTree& _tree, TString const& _name, Bool_t _st
   flatutils::setStatus(_tree, _name, "globalHalo16", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hbhe", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hbheIso", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ecalDeadCell", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "badsc", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "badTrack", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "badMuonTrack", _status, _branches, _whitelist);
@@ -2791,6 +2979,7 @@ simpletree::MetFilters::setAddress(TTree& _tree, TString const& _name, flatutils
   flatutils::setStatusAndAddress(_tree, _name, "globalHalo16", &globalHalo16, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hbhe", &hbhe, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hbheIso", &hbheIso, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ecalDeadCell", &ecalDeadCell, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "badsc", &badsc, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "badTrack", &badTrack, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "badMuonTrack", &badMuonTrack, _branches, _whitelist);
@@ -2803,6 +2992,7 @@ simpletree::MetFilters::book(TTree& _tree, TString const& _name, flatutils::Bran
   flatutils::book(_tree, _name, "globalHalo16", "", 'O', &globalHalo16, _branches, _whitelist);
   flatutils::book(_tree, _name, "hbhe", "", 'O', &hbhe, _branches, _whitelist);
   flatutils::book(_tree, _name, "hbheIso", "", 'O', &hbheIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ecalDeadCell", "", 'O', &ecalDeadCell, _branches, _whitelist);
   flatutils::book(_tree, _name, "badsc", "", 'O', &badsc, _branches, _whitelist);
   flatutils::book(_tree, _name, "badTrack", "", 'O', &badTrack, _branches, _whitelist);
   flatutils::book(_tree, _name, "badMuonTrack", "", 'O', &badMuonTrack, _branches, _whitelist);
@@ -2815,6 +3005,7 @@ simpletree::MetFilters::operator=(MetFilters const& _rhs)
   globalHalo16 = _rhs.globalHalo16;
   hbhe = _rhs.hbhe;
   hbheIso = _rhs.hbheIso;
+  ecalDeadCell = _rhs.ecalDeadCell;
   badsc = _rhs.badsc;
   badTrack = _rhs.badTrack;
   badMuonTrack = _rhs.badMuonTrack;
@@ -2828,6 +3019,7 @@ simpletree::MetFilters::init()
   globalHalo16 = false;
   hbhe = false;
   hbheIso = false;
+  ecalDeadCell = false;
   badsc = false;
   badTrack = false;
   badMuonTrack = false;
