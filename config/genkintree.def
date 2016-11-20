@@ -12,9 +12,9 @@ virtual LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, 0.); }
 
 [ParticleM:Particle]
 mass/F
-LorentzVectorM p4() const { return LorentzVectorM(pt, eta, phi, mass); }
+LorentzVectorM p4() const override { return LorentzVectorM(pt, eta, phi, mass); }
 
-[Parton:ParticleM]
+[Parton:Particle]
 pid/B
 
 [Boson:ParticleM]
