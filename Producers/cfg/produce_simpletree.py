@@ -115,12 +115,33 @@ process.ntuples = cms.EDAnalyzer('SimpleTreeProducer',
     )
 )
 
-process.load('RecoMET.METFilters.BadPFMuonSummer16Filter_cfi')
+process.BadPFMuonSummer16Filter = cms.EDFilter(
+    "BadPFMuonSummer16Filter",
+    PFCandidates  = cms.InputTag("particleFlow"),   # Collection to test
+    muons  = cms.InputTag("muons"),   # Collection to test 
+    taggingMode   = cms.bool(False),
+    debug         = cms.bool(False),
+    algo          = cms.int32(14),
+    minDZ         = cms.double(0.1),              # dz threshold on PF muons to consider; this is not used
+    minMuPt       = cms.double(100),               # pt threshold on PF muons 
+    minTrkPtError  = cms.double(0.5),               # threshold on inner track pt Error
+)
 process.BadPFMuonSummer16Filter.muons = cms.InputTag("slimmedMuons")
 process.BadPFMuonSummer16Filter.PFCandidates = cms.InputTag("packedPFCandidates")
 process.BadPFMuonSummer16Filter.taggingMode = cms.bool(True)
 
-process.load('RecoMET.METFilters.BadChargedCandidateSummer16Filter_cfi')
+process.BadChargedCandidateSummer16Filter = cms.EDFilter(
+    "BadChargedCandidateSummer16Filter",
+    PFCandidates  = cms.InputTag("particleFlow"),   # Collection to test
+    muons  = cms.InputTag("muons"),   # Collection to test
+    taggingMode   = cms.bool(False),
+    debug         = cms.bool(False),
+    maxDR         = cms.double(0.001),              # Maximum DR between reco::muon->innerTrack and pfCandidate 
+    minPtDiffRel = cms.double(-0.5),               # lower threshold on difference between pt of reco::muon->innerTrack and pfCandidate
+                                                   # computed as (pfcand.pt - muon.track.pt)/(0.5*(pfcand.pt + muon.track.pt))
+    minMuonTrackRelErr = cms.double(0.5),          # minimum ptError/pt on muon innertrack 
+    minMuonPt     = cms.double(100),               # minimum muon pt 
+)
 process.BadChargedCandidateSummer16Filter.muons = cms.InputTag("slimmedMuons")
 process.BadChargedCandidateSummer16Filter.PFCandidates = cms.InputTag("packedPFCandidates")
 process.BadChargedCandidateSummer16Filter.taggingMode = cms.bool(True)

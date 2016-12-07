@@ -1065,6 +1065,8 @@ mithep::SimpleTreeMod::SlaveBegin()
     unusedBranches.emplace_back("*.matchL1");
   }
 
+  unusedBranches.emplace_back("superClusters");
+
   fEvent.book(*fEventTree, unusedBranches, false);
 
   fRunTree = new TTree("runs", "Runs");

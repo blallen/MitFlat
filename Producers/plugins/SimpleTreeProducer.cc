@@ -104,7 +104,7 @@ SimpleTreeProducer::beginJob()
   eventTree_ = new TTree("events", "");
   runTree_ = new TTree("runs", "");
   outEvent_.book(*eventTree_);
-  outEvent_.book(*runTree_);
+  outRun_.book(*runTree_);
 
   for (auto* filler : fillers_)
     filler->addOutput(*outputFile_);
