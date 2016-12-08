@@ -617,6 +617,8 @@ simpletree::Photon::array_data::setStatus(TTree& _tree, TString const& _name, Bo
   flatutils::setStatus(_tree, _name, "chIsoMax", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "nhIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "phIso", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "nhIsoS16", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "phIsoS16", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ecalIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hcalIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
@@ -669,6 +671,8 @@ simpletree::Photon::array_data::setAddress(TTree& _tree, TString const& _name, f
   flatutils::setStatusAndAddress(_tree, _name, "chIsoMax", chIsoMax, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "nhIso", nhIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "phIso", phIso, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "nhIsoS16", nhIsoS16, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "phIsoS16", phIsoS16, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ecalIso", ecalIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hcalIso", hcalIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
@@ -721,6 +725,8 @@ simpletree::Photon::array_data::book(TTree& _tree, TString const& _name, flatuti
   flatutils::book(_tree, _name, "chIsoMax", "[" + _name + ".size]", 'F', chIsoMax, _branches, _whitelist);
   flatutils::book(_tree, _name, "nhIso", "[" + _name + ".size]", 'F', nhIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "phIso", "[" + _name + ".size]", 'F', phIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "nhIsoS16", "[" + _name + ".size]", 'F', nhIsoS16, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phIsoS16", "[" + _name + ".size]", 'F', phIsoS16, _branches, _whitelist);
   flatutils::book(_tree, _name, "ecalIso", "[" + _name + ".size]", 'F', ecalIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "hcalIso", "[" + _name + ".size]", 'F', hcalIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", "[" + _name + ".size]", 'F', sieie, _branches, _whitelist);
@@ -773,6 +779,8 @@ simpletree::Photon::setStatus(TTree& _tree, TString const& _name, Bool_t _status
   flatutils::setStatus(_tree, _name, "chIsoMax", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "nhIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "phIso", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "nhIsoS16", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "phIsoS16", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "ecalIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "hcalIso", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
@@ -825,6 +833,8 @@ simpletree::Photon::setAddress(TTree& _tree, TString const& _name, flatutils::Br
   flatutils::setStatusAndAddress(_tree, _name, "chIsoMax", &chIsoMax, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "nhIso", &nhIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "phIso", &phIso, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "nhIsoS16", &nhIsoS16, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "phIsoS16", &phIsoS16, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "ecalIso", &ecalIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "hcalIso", &hcalIso, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sieie", &sieie, _branches, _whitelist);
@@ -877,6 +887,8 @@ simpletree::Photon::book(TTree& _tree, TString const& _name, flatutils::BranchLi
   flatutils::book(_tree, _name, "chIsoMax", "", 'F', &chIsoMax, _branches, _whitelist);
   flatutils::book(_tree, _name, "nhIso", "", 'F', &nhIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "phIso", "", 'F', &phIso, _branches, _whitelist);
+  flatutils::book(_tree, _name, "nhIsoS16", "", 'F', &nhIsoS16, _branches, _whitelist);
+  flatutils::book(_tree, _name, "phIsoS16", "", 'F', &phIsoS16, _branches, _whitelist);
   flatutils::book(_tree, _name, "ecalIso", "", 'F', &ecalIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "hcalIso", "", 'F', &hcalIso, _branches, _whitelist);
   flatutils::book(_tree, _name, "sieie", "", 'F', &sieie, _branches, _whitelist);
@@ -954,6 +966,8 @@ simpletree::Photon::Photon() :
   chIsoMax(singlesData_.at(singlesPos_.first)->chIsoMax[singlesPos_.second]),
   nhIso(singlesData_.at(singlesPos_.first)->nhIso[singlesPos_.second]),
   phIso(singlesData_.at(singlesPos_.first)->phIso[singlesPos_.second]),
+  nhIsoS16(singlesData_.at(singlesPos_.first)->nhIsoS16[singlesPos_.second]),
+  phIsoS16(singlesData_.at(singlesPos_.first)->phIsoS16[singlesPos_.second]),
   ecalIso(singlesData_.at(singlesPos_.first)->ecalIso[singlesPos_.second]),
   hcalIso(singlesData_.at(singlesPos_.first)->hcalIso[singlesPos_.second]),
   sieie(singlesData_.at(singlesPos_.first)->sieie[singlesPos_.second]),
@@ -1006,6 +1020,8 @@ simpletree::Photon::Photon(array_data& _data, UInt_t _idx) :
   chIsoMax(_data.chIsoMax[_idx]),
   nhIso(_data.nhIso[_idx]),
   phIso(_data.phIso[_idx]),
+  nhIsoS16(_data.nhIsoS16[_idx]),
+  phIsoS16(_data.phIsoS16[_idx]),
   ecalIso(_data.ecalIso[_idx]),
   hcalIso(_data.hcalIso[_idx]),
   sieie(_data.sieie[_idx]),
@@ -1056,6 +1072,8 @@ simpletree::Photon::Photon(Photon const& _src) :
   chIsoMax(_src.chIsoMax),
   nhIso(_src.nhIso),
   phIso(_src.phIso),
+  nhIsoS16(_src.nhIsoS16),
+  phIsoS16(_src.phIsoS16),
   ecalIso(_src.ecalIso),
   hcalIso(_src.hcalIso),
   sieie(_src.sieie),
@@ -1117,6 +1135,8 @@ simpletree::Photon::operator=(Photon const& _rhs)
   chIsoMax = _rhs.chIsoMax;
   nhIso = _rhs.nhIso;
   phIso = _rhs.phIso;
+  nhIsoS16 = _rhs.nhIsoS16;
+  phIsoS16 = _rhs.phIsoS16;
   ecalIso = _rhs.ecalIso;
   hcalIso = _rhs.hcalIso;
   sieie = _rhs.sieie;
@@ -1170,6 +1190,8 @@ simpletree::Photon::init()
   chIsoMax = 0.;
   nhIso = 0.;
   phIso = 0.;
+  nhIsoS16 = 0.;
+  phIsoS16 = 0.;
   ecalIso = 0.;
   hcalIso = 0.;
   sieie = 0.;

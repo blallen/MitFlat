@@ -113,6 +113,8 @@ chWorstIso/F
 chIsoMax/F
 nhIso/F
 phIso/F
+nhIsoS16/F
+phIsoS16/F
 ecalIso/F
 hcalIso/F
 sieie/F

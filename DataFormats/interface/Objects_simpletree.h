@@ -257,6 +257,8 @@ namespace simpletree {
       Float_t chIsoMax[NMAX]{};
       Float_t nhIso[NMAX]{};
       Float_t phIso[NMAX]{};
+      Float_t nhIsoS16[NMAX]{};
+      Float_t phIsoS16[NMAX]{};
       Float_t ecalIso[NMAX]{};
       Float_t hcalIso[NMAX]{};
       Float_t sieie[NMAX]{};
@@ -331,6 +333,8 @@ namespace simpletree {
     Float_t& chIsoMax;
     Float_t& nhIso;
     Float_t& phIso;
+    Float_t& nhIsoS16;
+    Float_t& phIsoS16;
     Float_t& ecalIso;
     Float_t& hcalIso;
     Float_t& sieie;
