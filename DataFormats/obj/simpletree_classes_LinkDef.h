@@ -19,6 +19,7 @@
 #pragma link C++ class simpletree::Muon;
 #pragma link C++ class simpletree::Tau;
 #pragma link C++ class simpletree::Jet;
+#pragma link C++ class simpletree::SuperCluster;
 #pragma link C++ class simpletree::Met;
 #pragma link C++ class simpletree::CorrectedMet;
 #pragma link C++ class simpletree::Parton;
@@ -46,6 +47,8 @@
 #pragma link C++ typedef simpletree::TauCollection;
 #pragma link C++ class flatutils::Collection<simpletree::Jet, simpletree::RecoParticleMCollection>;
 #pragma link C++ typedef simpletree::JetCollection;
+#pragma link C++ class flatutils::Collection<simpletree::SuperCluster, flatutils::DynamicCollection>;
+#pragma link C++ typedef simpletree::SuperClusterCollection;
 #pragma link C++ class flatutils::Collection<simpletree::Parton, simpletree::ParticleMCollection>;
 #pragma link C++ typedef simpletree::PartonCollection;
 #pragma link C++ class flatutils::Collection<simpletree::MCParticle, simpletree::ParticleMCollection>;

@@ -242,11 +242,11 @@ namespace simpletree {
 
   class Photon : public RecoParticle {
   public:
-    static double const chIsoCuts[2][3];
-    static double const nhIsoCuts[2][3];
-    static double const phIsoCuts[2][3];
-    static double const sieieCuts[2][3];
-    static double const hOverECuts[2][3];
+    static double const chIsoCuts[2][2][4];
+    static double const nhIsoCuts[2][2][4];
+    static double const phIsoCuts[2][2][4];
+    static double const sieieCuts[2][2][4];
+    static double const hOverECuts[2][2][4];
 
     struct array_data : public RecoParticle::array_data {
       array_data();
@@ -314,11 +314,11 @@ namespace simpletree {
     void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE) override;
     void init() override;
 
-    bool passCHIso(UInt_t wp) const { return chIso < chIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passNHIso(UInt_t wp) const { return nhIso < nhIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passPhIso(UInt_t wp) const { return phIso < phIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passSieie(UInt_t wp) const { return sieie < sieieCuts[isEB ? 0 : 1][wp]; }
-    bool passHOverE(UInt_t wp) const { return hOverE < hOverECuts[isEB ? 0 : 1][wp]; }
+    bool passCHIso(UInt_t wp, UInt_t era = 0) const { return chIso < chIsoCuts[era][isEB ? 0 : 1][wp]; }
+    bool passNHIso(UInt_t wp, UInt_t era = 0) const { return nhIso < nhIsoCuts[era][isEB ? 0 : 1][wp]; }
+    bool passPhIso(UInt_t wp, UInt_t era = 0) const { return phIso < phIsoCuts[era][isEB ? 0 : 1][wp]; }
+    bool passSieie(UInt_t wp, UInt_t era = 0) const { return sieie < sieieCuts[era][isEB ? 0 : 1][wp]; }
+    bool passHOverE(UInt_t wp, UInt_t era = 0) const { return hOverE < hOverECuts[era][isEB ? 0 : 1][wp]; }
 
   private:
     static std::vector<std::auto_ptr<array_data>> singlesData_;
@@ -448,11 +448,11 @@ namespace simpletree {
     void init() override;
 
     double m() const override { return 5.109989e-4; }
-    bool passCHIsoPh(UInt_t wp) const { return chIsoPh < Photon::chIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passNHIsoPh(UInt_t wp) const { return nhIsoPh < Photon::nhIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passPhIsoPh(UInt_t wp) const { return phIsoPh < Photon::phIsoCuts[isEB ? 0 : 1][wp]; }
-    bool passSieiePh(UInt_t wp) const { return sieie < Photon::sieieCuts[isEB ? 0 : 1][wp]; }
-    bool passHOverEPh(UInt_t wp) const { return hOverE < Photon::hOverECuts[isEB ? 0 : 1][wp]; }
+    bool passCHIsoPh(UInt_t wp, UInt_t era = 0) const { return chIsoPh < Photon::chIsoCuts[era][isEB ? 0 : 1][wp]; }
+    bool passNHIsoPh(UInt_t wp, UInt_t era = 0) const { return nhIsoPh < Photon::nhIsoCuts[era][isEB ? 0 : 1][wp]; }
+    bool passPhIsoPh(UInt_t wp, UInt_t era = 0) const { return phIsoPh < Photon::phIsoCuts[era][isEB ? 0 : 1][wp]; }
+    bool passSieiePh(UInt_t wp, UInt_t era = 0) const { return sieie < Photon::sieieCuts[era][isEB ? 0 : 1][wp]; }
+    bool passHOverEPh(UInt_t wp, UInt_t era = 0) const { return hOverE < Photon::hOverECuts[era][isEB ? 0 : 1][wp]; }
 
   private:
     static std::vector<std::auto_ptr<array_data>> singlesData_;
