@@ -47,8 +47,8 @@ namespace simpletree {
   extern TString PhotonHLTObjectName[nPhotonHLTObjects];
 
   enum ElectronHLTObject {
-    fEl23Loose,
-    fEl27Loose,
+    fEl27ERLoose,
+    fEl27Tight,
     fEl120Ph,
     fEl135Ph,
     fEl165HE10Ph,
@@ -600,6 +600,10 @@ namespace simpletree {
       Float_t sieie[NMAX]{};
       Float_t sipip[NMAX]{};
       Float_t e2e9[NMAX]{};
+      Float_t emax[NMAX]{};
+      Float_t e2nd[NMAX]{};
+      Float_t e4[NMAX]{};
+      Float_t timeSpan[NMAX]{};
 
       void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
       void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
@@ -634,6 +638,10 @@ namespace simpletree {
     Float_t& sieie;
     Float_t& sipip;
     Float_t& e2e9;
+    Float_t& emax;
+    Float_t& e2nd;
+    Float_t& e4;
+    Float_t& timeSpan;
   };
 
   class Met {
