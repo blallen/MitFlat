@@ -10,6 +10,7 @@ class SimpleTreeVerticesFiller : public SimpleTreeFiller {
   SimpleTreeVerticesFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeVerticesFiller() {}
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("npv*"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:

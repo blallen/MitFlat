@@ -17,6 +17,7 @@ class SimpleTreeFiller {
   SimpleTreeFiller(std::string const& fillerName) : fillerName_(fillerName) {}
   virtual ~SimpleTreeFiller() {}
 
+  virtual void addBranch(flatutils::BranchList&) {}
   virtual void addOutput(TFile&) {}
   virtual void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) = 0;
   virtual void fillRun(simpletree::Run&, edm::Run const&, edm::EventSetup const&) {}
@@ -51,9 +52,10 @@ SimpleTreeFiller::getToken_(edm::EDGetTokenT<Product>& _token, edm::ParameterSet
     else
       _token = edm::EDGetTokenT<Product>();
   }
- 
-  edm::InputTag tag(paramValue);
-  _token = _coll.consumes<Product, B>(tag);
+  else {
+    edm::InputTag tag(paramValue);
+    _token = _coll.consumes<Product, B>(tag);
+  }
 }
 
 template<class Product>

@@ -17,6 +17,7 @@ class SimpleTreePhotonsFiller : public SimpleTreeFiller {
   SimpleTreePhotonsFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreePhotonsFiller() {}
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("photons"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:

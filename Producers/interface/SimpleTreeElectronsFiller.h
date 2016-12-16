@@ -16,6 +16,7 @@ class SimpleTreeElectronsFiller : public SimpleTreeFiller {
   SimpleTreeElectronsFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeElectronsFiller() {}
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("electrons"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:

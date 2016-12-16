@@ -1,6 +1,9 @@
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing('analysis')
+options.register('lumis', default = [], mult = VarParsing.multiplicity.list, mytype = VarParsing.varType.string, info = 'lumis')
+options.register('fillers', default = [], mult = VarParsing.multiplicity.list, mytype = VarParsing.varType.string, info = 'Fillers')
+options.register('tags', default = [], mult = VarParsing.multiplicity.list, mytype = VarParsing.varType.string, info = 'Tags')
 options.parseArguments()
 
 import FWCore.ParameterSet.Config as cms
@@ -10,6 +13,8 @@ process = cms.Process('NTUPLES')
 process.source = cms.Source('PoolSource',
     fileNames = cms.untracked.vstring(options.inputFiles)
 )
+if len(options.lumis) != 0:
+    process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange(*options.lumis)
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
@@ -39,6 +44,7 @@ electronId = 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-'
 electronEA = 'RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_'
 
 process.ntuples = cms.EDAnalyzer('SimpleTreeProducer',
+    fillers = cms.untracked.vstring('Electrons', 'HLT', 'Jets', 'MetFilters', 'Muons', 'Photons', 'Rho', 'SuperClusters', 'T1Met', 'Taus', 'Vertices'),
     useTrigger = cms.untracked.bool(True),
     photons = cms.untracked.string('slimmedPhotons'),
     electrons = cms.untracked.string('slimmedElectrons'),
@@ -112,8 +118,16 @@ process.ntuples = cms.EDAnalyzer('SimpleTreeProducer',
         'hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09',
         'hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09',
         'hltL3crIsoL1sMu22Or25L1f0L2f10QL3f27QL3trkIsoFiltered0p09'
-    )
+    ),
+    outputFile = cms.untracked.string(options.outputFile)
 )
+
+if len(options.fillers) != 0:
+    process.ntuples.fillers = options.fillers
+
+for tagSpec in options.tags:
+    prod, tag = tagSpec.split('=')
+    setattr(process.ntuples, prod, tag)
 
 process.BadPFMuonSummer16Filter = cms.EDFilter(
     "BadPFMuonSummer16Filter",

@@ -11,6 +11,7 @@ class SimpleTreeTausFiller : public SimpleTreeFiller {
   SimpleTreeTausFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeTausFiller() {}
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("taus"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:
