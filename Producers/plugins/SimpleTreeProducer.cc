@@ -37,6 +37,7 @@ private:
 
   std::vector<SimpleTreeFiller*> fillers_;
 
+  std::string outputName_;
   TFile* outputFile_{0};
   TTree* eventTree_{0};
   TTree* runTree_{0};
@@ -44,21 +45,39 @@ private:
   simpletree::Run outRun_;
 };
 
-SimpleTreeProducer::SimpleTreeProducer(edm::ParameterSet const& _cfg)
+SimpleTreeProducer::SimpleTreeProducer(edm::ParameterSet const& _cfg) :
+  outputName_(_cfg.getUntrackedParameter<std::string>("outputFile"))
 {
   auto&& coll(consumesCollector());
 
-  fillers_.push_back(new SimpleTreeElectronsFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeHLTFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeJetsFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeMetFiltersFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeMuonsFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreePhotonsFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeRhoFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeSuperClustersFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeT1MetFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeTausFiller(_cfg, coll));
-  fillers_.push_back(new SimpleTreeVerticesFiller(_cfg, coll));
+  auto fillers(_cfg.getUntrackedParameter<std::vector<std::string>>("fillers"));
+
+  auto wantFiller([&fillers](std::string const& name)->bool {
+      return std::find(fillers.begin(), fillers.end(), name) != fillers.end();
+    });
+
+  if (wantFiller("Electrons"))
+    fillers_.push_back(new SimpleTreeElectronsFiller(_cfg, coll));
+  if (wantFiller("HLT"))
+    fillers_.push_back(new SimpleTreeHLTFiller(_cfg, coll));
+  if (wantFiller("Jets"))
+    fillers_.push_back(new SimpleTreeJetsFiller(_cfg, coll));
+  if (wantFiller("MetFilters"))
+    fillers_.push_back(new SimpleTreeMetFiltersFiller(_cfg, coll));
+  if (wantFiller("Muons"))
+    fillers_.push_back(new SimpleTreeMuonsFiller(_cfg, coll));
+  if (wantFiller("Photons"))
+    fillers_.push_back(new SimpleTreePhotonsFiller(_cfg, coll));
+  if (wantFiller("Rho"))
+    fillers_.push_back(new SimpleTreeRhoFiller(_cfg, coll));
+  if (wantFiller("SuperClusters"))
+    fillers_.push_back(new SimpleTreeSuperClustersFiller(_cfg, coll));
+  if (wantFiller("T1Met"))
+    fillers_.push_back(new SimpleTreeT1MetFiller(_cfg, coll));
+  if (wantFiller("Taus"))
+    fillers_.push_back(new SimpleTreeTausFiller(_cfg, coll));
+  if (wantFiller("Vertices"))
+    fillers_.push_back(new SimpleTreeVerticesFiller(_cfg, coll));
 }
 
 SimpleTreeProducer::~SimpleTreeProducer()
@@ -100,10 +119,15 @@ SimpleTreeProducer::beginRun(edm::Run const& _run, edm::EventSetup const& _setup
 void 
 SimpleTreeProducer::beginJob()
 {
-  outputFile_ = TFile::Open("simpletree.root", "recreate");
+  outputFile_ = TFile::Open(outputName_.c_str(), "recreate");
   eventTree_ = new TTree("events", "");
   runTree_ = new TTree("runs", "");
-  outEvent_.book(*eventTree_);
+
+  flatutils::BranchList branchList{{"run", "lumi", "event", "weight"}};
+  for (auto* filler : fillers_)
+    filler->addBranch(branchList);
+
+  outEvent_.book(*eventTree_, branchList);
   outRun_.book(*runTree_);
 
   for (auto* filler : fillers_)

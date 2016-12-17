@@ -13,6 +13,7 @@ class SimpleTreeMuonsFiller : public SimpleTreeFiller {
   SimpleTreeMuonsFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeMuonsFiller() {}
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("muons"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:

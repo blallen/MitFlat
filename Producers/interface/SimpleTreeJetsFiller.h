@@ -13,6 +13,7 @@ class SimpleTreeJetsFiller : public SimpleTreeFiller {
   SimpleTreeJetsFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeJetsFiller();
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("jets"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:

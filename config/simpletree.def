@@ -38,8 +38,8 @@ enum PhotonHLTObject {
 };
 
 enum ElectronHLTObject {
-  fEl23Loose,
-  fEl27Loose,
+  fEl27ERLoose,
+  fEl27Tight,
   fEl120Ph,
   fEl135Ph,
   fEl165HE10Ph,
@@ -220,6 +220,10 @@ time/F
 sieie/F
 sipip/F
 e2e9/F
+emax/F
+e2nd/F
+e4/F
+timeSpan/F
 
 [Met:SINGLE]
 met/F

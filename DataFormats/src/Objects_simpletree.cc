@@ -28,8 +28,8 @@ namespace simpletree {
   };
 
   TString ElectronHLTObjectName[] = {
-    "fEl23Loose",
-    "fEl27Loose",
+    "fEl27ERLoose",
+    "fEl27Tight",
     "fEl120Ph",
     "fEl135Ph",
     "fEl165HE10Ph",
@@ -2093,6 +2093,10 @@ simpletree::SuperCluster::array_data::setStatus(TTree& _tree, TString const& _na
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sipip", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "e2e9", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "emax", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e2nd", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e4", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "timeSpan", _status, _branches, _whitelist);
 }
 
 void
@@ -2106,6 +2110,10 @@ simpletree::SuperCluster::array_data::setAddress(TTree& _tree, TString const& _n
   flatutils::setStatusAndAddress(_tree, _name, "sieie", sieie, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sipip", sipip, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "e2e9", e2e9, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "emax", emax, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e2nd", e2nd, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e4", e4, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "timeSpan", timeSpan, _branches, _whitelist);
 }
 
 void
@@ -2119,6 +2127,10 @@ simpletree::SuperCluster::array_data::book(TTree& _tree, TString const& _name, f
   flatutils::book(_tree, _name, "sieie", "[" + _name + ".size]", 'F', sieie, _branches, _whitelist);
   flatutils::book(_tree, _name, "sipip", "[" + _name + ".size]", 'F', sipip, _branches, _whitelist);
   flatutils::book(_tree, _name, "e2e9", "[" + _name + ".size]", 'F', e2e9, _branches, _whitelist);
+  flatutils::book(_tree, _name, "emax", "[" + _name + ".size]", 'F', emax, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e2nd", "[" + _name + ".size]", 'F', e2nd, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e4", "[" + _name + ".size]", 'F', e4, _branches, _whitelist);
+  flatutils::book(_tree, _name, "timeSpan", "[" + _name + ".size]", 'F', timeSpan, _branches, _whitelist);
 }
 
 void
@@ -2132,6 +2144,10 @@ simpletree::SuperCluster::setStatus(TTree& _tree, TString const& _name, Bool_t _
   flatutils::setStatus(_tree, _name, "sieie", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "sipip", _status, _branches, _whitelist);
   flatutils::setStatus(_tree, _name, "e2e9", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "emax", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e2nd", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "e4", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "timeSpan", _status, _branches, _whitelist);
 }
 
 void
@@ -2145,6 +2161,10 @@ simpletree::SuperCluster::setAddress(TTree& _tree, TString const& _name, flatuti
   flatutils::setStatusAndAddress(_tree, _name, "sieie", &sieie, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "sipip", &sipip, _branches, _whitelist);
   flatutils::setStatusAndAddress(_tree, _name, "e2e9", &e2e9, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "emax", &emax, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e2nd", &e2nd, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "e4", &e4, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "timeSpan", &timeSpan, _branches, _whitelist);
 }
 
 void
@@ -2158,6 +2178,10 @@ simpletree::SuperCluster::book(TTree& _tree, TString const& _name, flatutils::Br
   flatutils::book(_tree, _name, "sieie", "", 'F', &sieie, _branches, _whitelist);
   flatutils::book(_tree, _name, "sipip", "", 'F', &sipip, _branches, _whitelist);
   flatutils::book(_tree, _name, "e2e9", "", 'F', &e2e9, _branches, _whitelist);
+  flatutils::book(_tree, _name, "emax", "", 'F', &emax, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e2nd", "", 'F', &e2nd, _branches, _whitelist);
+  flatutils::book(_tree, _name, "e4", "", 'F', &e4, _branches, _whitelist);
+  flatutils::book(_tree, _name, "timeSpan", "", 'F', &timeSpan, _branches, _whitelist);
 }
 
 /*static*/
@@ -2197,7 +2221,11 @@ simpletree::SuperCluster::SuperCluster() :
   time(singlesData_.at(singlesPos_.first)->time[singlesPos_.second]),
   sieie(singlesData_.at(singlesPos_.first)->sieie[singlesPos_.second]),
   sipip(singlesData_.at(singlesPos_.first)->sipip[singlesPos_.second]),
-  e2e9(singlesData_.at(singlesPos_.first)->e2e9[singlesPos_.second])
+  e2e9(singlesData_.at(singlesPos_.first)->e2e9[singlesPos_.second]),
+  emax(singlesData_.at(singlesPos_.first)->emax[singlesPos_.second]),
+  e2nd(singlesData_.at(singlesPos_.first)->e2nd[singlesPos_.second]),
+  e4(singlesData_.at(singlesPos_.first)->e4[singlesPos_.second]),
+  timeSpan(singlesData_.at(singlesPos_.first)->timeSpan[singlesPos_.second])
 {
   usedSinglesPos_.insert(pos_);
 }
@@ -2210,7 +2238,11 @@ simpletree::SuperCluster::SuperCluster(array_data& _data, UInt_t _idx) :
   time(_data.time[_idx]),
   sieie(_data.sieie[_idx]),
   sipip(_data.sipip[_idx]),
-  e2e9(_data.e2e9[_idx])
+  e2e9(_data.e2e9[_idx]),
+  emax(_data.emax[_idx]),
+  e2nd(_data.e2nd[_idx]),
+  e4(_data.e4[_idx]),
+  timeSpan(_data.timeSpan[_idx])
 {
 }
 
@@ -2222,7 +2254,11 @@ simpletree::SuperCluster::SuperCluster(SuperCluster const& _src) :
   time(_src.time),
   sieie(_src.sieie),
   sipip(_src.sipip),
-  e2e9(_src.e2e9)
+  e2e9(_src.e2e9),
+  emax(_src.emax),
+  e2nd(_src.e2nd),
+  e4(_src.e4),
+  timeSpan(_src.timeSpan)
 {
 }
 
@@ -2245,6 +2281,10 @@ simpletree::SuperCluster::operator=(SuperCluster const& _rhs)
   sieie = _rhs.sieie;
   sipip = _rhs.sipip;
   e2e9 = _rhs.e2e9;
+  emax = _rhs.emax;
+  e2nd = _rhs.e2nd;
+  e4 = _rhs.e4;
+  timeSpan = _rhs.timeSpan;
   return *this;
 }
 
@@ -2259,6 +2299,10 @@ simpletree::SuperCluster::init()
   sieie = 0.;
   sipip = 0.;
   e2e9 = 0.;
+  emax = 0.;
+  e2nd = 0.;
+  e4 = 0.;
+  timeSpan = 0.;
 }
 
 simpletree::Met::Met(TString const& _name) :

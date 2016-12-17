@@ -11,6 +11,7 @@ class SimpleTreeHLTFiller : public SimpleTreeFiller {
   SimpleTreeHLTFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeHLTFiller();
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("hlt"); }
   void addOutput(TFile&) override;
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
   void fillRun(simpletree::Run&, edm::Run const&, edm::EventSetup const&) override;

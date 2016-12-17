@@ -233,8 +233,8 @@ simpletree::makeElectronHLTObjectTree()
   tree->Branch("name", name, "name/C");
 
   TString names[] = {
-    "fEl23Loose",
-    "fEl27Loose",
+    "fEl27ERLoose",
+    "fEl27Tight",
     "fEl120Ph",
     "fEl135Ph",
     "fEl165HE10Ph",

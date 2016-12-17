@@ -69,8 +69,8 @@ if run == 2:
     ]
 
     electronHLTObjects = [
-        ('fEl23Loose', 'hltEle23WPLooseGsfTrackIsoFilter'), # HLT_Ele23_WPLoose_Gsf
-        ('fEl27Loose', 'hltEle27noerWPLooseGsfTrackIsoFilter'), # HLT_Ele27_WPLoose_Gsf
+        ('fEl27ERLoose', 'hltEle27erWPLooseGsfTrackIsoFilter'), # HLT_Ele27_eta2p1_WPLoose_Gsf
+        ('fEl27Tight', 'hltEle27WPTightGsfTrackIsoFilter'), # HLT_Ele27_WPTight_Gsf
         ('fEl120Ph', 'hltEG120HEFilter'),
         ('fEl135Ph', 'hltEG135HEFilter'),
         ('fEl165HE10Ph', 'hltEG165HE10Filter'),

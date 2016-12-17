@@ -11,6 +11,7 @@ class SimpleTreeT1MetFiller : public SimpleTreeFiller {
   SimpleTreeT1MetFiller(edm::ParameterSet const&, edm::ConsumesCollector&);
   ~SimpleTreeT1MetFiller() {}
 
+  void addBranch(flatutils::BranchList& _list) override { _list.emplace_back("t1Met"); }
   void fill(simpletree::Event&, edm::Event const&, edm::EventSetup const&) override;
 
  private:
