@@ -845,6 +845,51 @@ namespace simpletree {
     Bool_t badTrack{};
     Bool_t badMuonTrack{};
   };
+
+  class Vertex {
+  public:
+    struct array_data {
+      static UInt_t const NMAX{128};
+
+      array_data();
+
+      Float_t x[NMAX]{};
+      Float_t y[NMAX]{};
+      Float_t z[NMAX]{};
+      UShort_t ntrk[NMAX]{};
+      Float_t sumPt2[NMAX]{};
+
+      void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+      void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    };
+
+    Vertex();
+    Vertex(array_data&, UInt_t idx);
+    Vertex(Vertex const&);
+    virtual ~Vertex();
+    Vertex& operator=(Vertex const&);
+    virtual void setStatus(TTree&, TString const&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void setAddress(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void book(TTree&, TString const&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
+    virtual void init();
+
+  private:
+    static std::vector<std::auto_ptr<array_data>> singlesData_;
+    static SinglesPos singlesPos_;
+    static std::set<SinglesPos> usedSinglesPos_;
+    static SinglesPos const& nextSinglesPos_();
+
+  protected:
+    SinglesPos pos_{-1, -1};
+
+  public:
+    Float_t& x;
+    Float_t& y;
+    Float_t& z;
+    UShort_t& ntrk;
+    Float_t& sumPt2;
+  };
 }
 
 #endif

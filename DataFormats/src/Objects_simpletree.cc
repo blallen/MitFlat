@@ -3091,3 +3091,153 @@ simpletree::MetFilters::init()
   badMuonTrack = false;
 }
 
+simpletree::Vertex::array_data::array_data()
+{
+}
+
+void
+simpletree::Vertex::array_data::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatus(_tree, _name, "x", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "y", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "z", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ntrk", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "sumPt2", _status, _branches, _whitelist);
+}
+
+void
+simpletree::Vertex::array_data::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatusAndAddress(_tree, _name, "x", x, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "y", y, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "z", z, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ntrk", ntrk, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "sumPt2", sumPt2, _branches, _whitelist);
+}
+
+void
+simpletree::Vertex::array_data::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::book(_tree, _name, "x", "[" + _name + ".size]", 'F', x, _branches, _whitelist);
+  flatutils::book(_tree, _name, "y", "[" + _name + ".size]", 'F', y, _branches, _whitelist);
+  flatutils::book(_tree, _name, "z", "[" + _name + ".size]", 'F', z, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ntrk", "[" + _name + ".size]", 's', ntrk, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sumPt2", "[" + _name + ".size]", 'F', sumPt2, _branches, _whitelist);
+}
+
+void
+simpletree::Vertex::setStatus(TTree& _tree, TString const& _name, Bool_t _status, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatus(_tree, _name, "x", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "y", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "z", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "ntrk", _status, _branches, _whitelist);
+  flatutils::setStatus(_tree, _name, "sumPt2", _status, _branches, _whitelist);
+}
+
+void
+simpletree::Vertex::setAddress(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist/* = kTRUE*/)
+{
+  flatutils::setStatusAndAddress(_tree, _name, "x", &x, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "y", &y, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "z", &z, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "ntrk", &ntrk, _branches, _whitelist);
+  flatutils::setStatusAndAddress(_tree, _name, "sumPt2", &sumPt2, _branches, _whitelist);
+}
+
+void
+simpletree::Vertex::book(TTree& _tree, TString const& _name, flatutils::BranchList const& _branches/* = {"*"}*/, Bool_t _whitelist)
+{
+  flatutils::book(_tree, _name, "x", "", 'F', &x, _branches, _whitelist);
+  flatutils::book(_tree, _name, "y", "", 'F', &y, _branches, _whitelist);
+  flatutils::book(_tree, _name, "z", "", 'F', &z, _branches, _whitelist);
+  flatutils::book(_tree, _name, "ntrk", "", 's', &ntrk, _branches, _whitelist);
+  flatutils::book(_tree, _name, "sumPt2", "", 'F', &sumPt2, _branches, _whitelist);
+}
+
+/*static*/
+std::vector<std::auto_ptr<simpletree::Vertex::array_data>> simpletree::Vertex::singlesData_{};
+/*static*/
+simpletree::SinglesPos simpletree::Vertex::singlesPos_(-1, simpletree::Vertex::array_data::NMAX - 1);
+/*static*/
+std::set<simpletree::SinglesPos> simpletree::Vertex::usedSinglesPos_{};
+
+/*static*/
+simpletree::SinglesPos const&
+simpletree::Vertex::nextSinglesPos_()
+{
+  for (unsigned iC(0); iC != singlesData_.size(); ++iC) {
+    singlesPos_.first = iC;
+    for (singlesPos_.second = 0; singlesPos_.second != array_data::NMAX; ++singlesPos_.second) {
+      if (usedSinglesPos_.find(singlesPos_) == usedSinglesPos_.end())
+        break;
+    }
+  }
+
+  if (singlesPos_.first == unsigned(singlesData_.size() - 1) && singlesPos_.second == array_data::NMAX - 1) {
+    singlesData_.emplace_back(new array_data);
+    singlesPos_.first = singlesData_.size() - 1;
+    singlesPos_.second = 0;
+  }
+
+  return singlesPos_;
+}
+
+simpletree::Vertex::Vertex() :
+  pos_(nextSinglesPos_()),
+  x(singlesData_.at(singlesPos_.first)->x[singlesPos_.second]),
+  y(singlesData_.at(singlesPos_.first)->y[singlesPos_.second]),
+  z(singlesData_.at(singlesPos_.first)->z[singlesPos_.second]),
+  ntrk(singlesData_.at(singlesPos_.first)->ntrk[singlesPos_.second]),
+  sumPt2(singlesData_.at(singlesPos_.first)->sumPt2[singlesPos_.second])
+{
+  usedSinglesPos_.insert(pos_);
+}
+
+simpletree::Vertex::Vertex(array_data& _data, UInt_t _idx) :
+  x(_data.x[_idx]),
+  y(_data.y[_idx]),
+  z(_data.z[_idx]),
+  ntrk(_data.ntrk[_idx]),
+  sumPt2(_data.sumPt2[_idx])
+{
+}
+
+simpletree::Vertex::Vertex(Vertex const& _src) :
+  x(_src.x),
+  y(_src.y),
+  z(_src.z),
+  ntrk(_src.ntrk),
+  sumPt2(_src.sumPt2)
+{
+}
+
+simpletree::Vertex::~Vertex()
+{
+  if (pos_.first != unsigned(-1)) {
+    usedSinglesPos_.erase(pos_);
+    pos_.first = -1;
+  }
+}
+
+simpletree::Vertex&
+simpletree::Vertex::operator=(Vertex const& _rhs)
+{
+  x = _rhs.x;
+  y = _rhs.y;
+  z = _rhs.z;
+  ntrk = _rhs.ntrk;
+  sumPt2 = _rhs.sumPt2;
+  return *this;
+}
+
+void
+simpletree::Vertex::init()
+{
+  x = 0.;
+  y = 0.;
+  z = 0.;
+  ntrk = 0;
+  sumPt2 = 0.;
+}
+

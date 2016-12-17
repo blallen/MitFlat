@@ -37,6 +37,7 @@ simpletree::Event::setStatus(TTree& _tree, Bool_t _status, flatutils::BranchList
   genMet.setStatus(_tree, _status, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hltBits.setStatus(_tree, _status, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.setStatus(_tree, _status, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
+  vertices.setStatus(_tree, _status, flatutils::subBranchList(_branches, "vertices"), _whitelist);
 }
 
 void
@@ -67,6 +68,7 @@ simpletree::Event::setAddress(TTree& _tree, flatutils::BranchList const& _branch
   genMet.setAddress(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hltBits.setAddress(_tree, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.setAddress(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
+  vertices.setAddress(_tree, flatutils::subBranchList(_branches, "vertices"), _whitelist);
 
   input_ = &_tree;
 }
@@ -99,6 +101,7 @@ simpletree::Event::book(TTree& _tree, flatutils::BranchList const& _branches/* =
   genMet.book(_tree, flatutils::subBranchList(_branches, "genMet"), _whitelist);
   hltBits.book(_tree, flatutils::subBranchList(_branches, "hltBits"), _whitelist);
   metFilters.book(_tree, flatutils::subBranchList(_branches, "metFilters"), _whitelist);
+  vertices.book(_tree, flatutils::subBranchList(_branches, "vertices"), _whitelist);
 }
 
 void
@@ -129,6 +132,7 @@ simpletree::Event::init()
   genMet.init();
   hltBits.init();
   metFilters.init();
+  vertices.init();
 }
 
 simpletree::Run::Run()

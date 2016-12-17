@@ -273,6 +273,13 @@ badMuonTrack/O
 
 virtual bool pass() const { return !globalHalo16 && !hbhe && !hbheIso && !ecalDeadCell && !badsc && !badTrack && !badMuonTrack; }
 
+[Vertex:MAX=128]
+x/F
+y/F
+z/F
+ntrk/s
+sumPt2/F
+
 % TREES
 
 {Event}
@@ -300,6 +307,7 @@ caloMet/Met
 genMet/Met
 hltBits/HLTBits
 metFilters/MetFilters
+vertices/VertexCollection
 
 {Run}
 run/i

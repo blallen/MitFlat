@@ -996,6 +996,21 @@ mithep::SimpleTreeMod::Process()
     fEvent.jets.resize(nJ);
   }
 
+  fEvent.vertices.resize(vertices->GetEntries());
+
+  for (unsigned iV(0); iV != vertices->GetEntries(); ++iV) {
+    auto& vertex(*vertices->At(iV));
+    auto& outVertex(fEvent.vertices[iV]);
+
+    outVertex.x = vertex.X();
+    outVertex.y = vertex.Y();
+    outVertex.z = vertex.Z();
+    outVertex.ntrk = vertex.NTracks();
+    outVertex.sumPt2 = 0.;
+    for (unsigned iT(0); iT != vertex.NTracks(); ++iT)
+      outVertex.sumPt2 += std::pow(vertex.Trk(iT)->Pt(), 2.);
+  }
+
   fEventTree->Fill();
 }
 

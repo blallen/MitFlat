@@ -25,6 +25,7 @@ namespace simpletree {
   typedef flatutils::Collection<Parton, ParticleMCollection> PartonCollection;
   typedef flatutils::Collection<MCParticle, ParticleMCollection> MCParticleCollection;
   typedef flatutils::Collection<GenJet, ParticleMCollection> GenJetCollection;
+  typedef flatutils::Collection<Vertex, flatutils::DynamicCollection> VertexCollection;
 
   class Event {
   public:
@@ -54,6 +55,7 @@ namespace simpletree {
     Met genMet = Met("genMet");
     HLTBits hltBits = HLTBits("hltBits");
     MetFilters metFilters = MetFilters("metFilters");
+    VertexCollection vertices = VertexCollection("vertices");
 
     void setStatus(TTree&, Bool_t, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
     void setAddress(TTree&, flatutils::BranchList const& = {"*"}, Bool_t whitelist = kTRUE);
